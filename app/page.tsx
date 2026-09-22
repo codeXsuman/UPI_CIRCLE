@@ -19,6 +19,7 @@ export default function Home() {
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
   const [generated, setGenerated] = useState(false);
   const [toast, setToast] = useState("");
+  const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   const pop = (message: string) => {
@@ -34,15 +35,10 @@ export default function Home() {
     } catch {}
   };
 
-  // Restore the current workspace before deciding where the user should land.
-  // This keeps unsaved form/profile drafts alive across accidental refreshes.
   useEffect(() => {
     (async () => {
       let saved: any = null;
-      try {
-        saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null");
-      } catch {}
-
+      try { saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null"); } catch {}
       if (saved?.page) setPage(saved.page);
       if (saved?.register) setRegister(saved.register);
       if (saved?.login) setLogin(saved.login);
@@ -69,19 +65,11 @@ export default function Home() {
     })();
   }, []);
 
-  // Save the active page and all non-submitted drafts in this browser session.
-  // Server-backed account data remains the source of truth after saving.
   useEffect(() => {
     if (!hydrated) return;
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
-        page,
-        profileDraft: profile,
-        register,
-        login,
-        items,
-        selected,
-        generated
+        page, profileDraft: profile, register, login, items, selected, generated
       }));
     } catch {}
   }, [hydrated, page, profile, register, login, items, selected, generated]);
@@ -101,9 +89,7 @@ export default function Home() {
       setPage("product");
       await loadMembers();
       pop("Account created successfully");
-    } catch {
-      pop("Unable to create account");
-    }
+    } catch { pop("Unable to create account"); }
   };
 
   const loginAccount = async () => {
@@ -120,9 +106,7 @@ export default function Home() {
       setPage("product");
       await loadMembers();
       pop("Logged in successfully");
-    } catch {
-      pop("Unable to login");
-    }
+    } catch { pop("Unable to login"); }
   };
 
   const logout = async () => {
@@ -149,9 +133,7 @@ export default function Home() {
       setProfile({ ...data.user, password: "" });
       await loadMembers();
       pop("Profile updated successfully");
-    } catch {
-      pop("Unable to update profile");
-    }
+    } catch { pop("Unable to update profile"); }
   };
 
   const toggleMember = (id: string) =>
@@ -192,22 +174,22 @@ export default function Home() {
       if (!res.ok) return pop(data.error || "Unable to save bill");
       setGenerated(true);
       pop("Bill saved successfully");
-    } catch {
-      pop("Unable to save bill");
-    }
+    } catch { pop("Unable to save bill"); }
   };
 
-  const shareBill = async (member: User) => {
+  const shareText = (member: User) => {
     const itemLines = items
       .filter(i => i.name.trim())
       .map(i => "• " + i.name.trim() + " — ₹" + money(Number(i.amount) || 0))
       .join("\n");
 
-    const text = [
+    return [
       "UPI Circle Bill",
       "",
-      "Bill for: " + member.name,
-      "Items:",
+      "Hi " + member.name + ",",
+      "Here is your bill:",
+      "",
+      "Billing items:",
       itemLines,
       "",
       "Total amount: ₹" + money(total),
@@ -217,7 +199,13 @@ export default function Home() {
       "Direct payment link:",
       paymentLink
     ].join("\n");
+  };
 
+  const shareBill = (member: User) => setShareTarget(member);
+
+  const shareWithApps = async () => {
+    if (!shareTarget) return;
+    const text = shareText(shareTarget);
     if (navigator.share) {
       try {
         await navigator.share({
@@ -225,25 +213,37 @@ export default function Home() {
           text,
           url: paymentLink
         });
+        setShareTarget(null);
         return;
-      } catch {}
+      } catch (error: any) {
+        if (error?.name === "AbortError") return;
+      }
     }
+    pop("Your browser does not provide the app share menu. Try WhatsApp or copy the link.");
+  };
 
+  const shareOnWhatsApp = () => {
+    if (!shareTarget) return;
+    const text = shareText(shareTarget);
+    const whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(text);
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    setShareTarget(null);
+  };
+
+  const copyBill = async () => {
+    if (!shareTarget) return;
     try {
-      await navigator.clipboard?.writeText(text);
+      await navigator.clipboard.writeText(shareText(shareTarget));
+      setShareTarget(null);
       pop("Bill details and payment link copied");
-    } catch {
-      pop("Unable to share bill");
-    }
+    } catch { pop("Unable to copy bill"); }
   };
 
   const copyPaymentLink = async () => {
     try {
       await navigator.clipboard.writeText(paymentLink);
       pop("Payment link copied");
-    } catch {
-      pop("Unable to copy payment link");
-    }
+    } catch { pop("Unable to copy payment link"); }
   };
 
   const selectedMembers = members.filter(m => selected.includes(m.id));
@@ -401,11 +401,7 @@ export default function Home() {
                     <h3>Billing details</h3>
                     {items.filter(i => i.name.trim()).map(i => <div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount) || 0)}</b></div>)}
                     <div className="detailTotal"><span>Total amount</span><b>₹{money(total)}</b></div>
-                    <small>
-                      Bill for: {member.name}<br />
-                      Pay to: {profile.name}<br />
-                      UPI ID: {profile.upi}
-                    </small>
+                    <small>Bill for: {member.name}<br />Pay to: {profile.name}<br />UPI ID: {profile.upi}</small>
                     <div className="paymentLinkBox">
                       <span>DIRECT PAYMENT LINK</span>
                       <code>{paymentLink}</code>
@@ -421,6 +417,30 @@ export default function Home() {
             ))}</div>
           </div>}
         </section>
+      )}
+
+      {shareTarget && (
+        <div className="shareOverlay" onClick={() => setShareTarget(null)}>
+          <div className="shareModal" onClick={e => e.stopPropagation()}>
+            <button className="shareClose" onClick={() => setShareTarget(null)} aria-label="Close">×</button>
+            <div className="shareIcon">↗</div>
+            <span className="live">SHARE BILL</span>
+            <h2>Send {shareTarget.name}'s bill</h2>
+            <p>Choose where you want to send the bill. The message includes the billing items, total amount and direct UPI payment link.</p>
+            <div className="shareChoices">
+              <button className="shareChoice whatsappChoice" onClick={shareOnWhatsApp}>
+                <span>◉</span><strong>WhatsApp</strong><small>Open WhatsApp with the bill ready to send</small><b>→</b>
+              </button>
+              <button className="shareChoice" onClick={shareWithApps}>
+                <span>↗</span><strong>Other apps</strong><small>Use your phone's share menu for chats and apps</small><b>→</b>
+              </button>
+              <button className="shareChoice" onClick={copyBill}>
+                <span>⧉</span><strong>Copy bill</strong><small>Copy the complete bill text and payment link</small><b>→</b>
+              </button>
+            </div>
+            <small className="shareHint">WhatsApp opens WhatsApp Web on desktop or the WhatsApp app when supported on your device.</small>
+          </div>
+        </div>
       )}
 
       <footer>© 2026 UPI Circle · Split. Scan. Done.</footer>
