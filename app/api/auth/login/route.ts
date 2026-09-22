@@ -6,7 +6,7 @@ import { setSession } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
-    const rows = await sql`SELECT id,name,upi_id,mobile,email,password_hash FROM users WHERE email=${String(email || "").trim().toLowerCase()} LIMIT 1`;
+    const rows = await sql`SELECT id,name,upi_id AS upi,mobile,email,password_hash FROM users WHERE email=${String(email || "").trim().toLowerCase()} LIMIT 1`;
     if (!rows.length || !(await bcrypt.compare(password || "", rows[0].password_hash))) return NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
     await setSession(rows[0].id);
     const { password_hash, ...user } = rows[0];
