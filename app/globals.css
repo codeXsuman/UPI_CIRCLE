@@ -468,3 +468,38 @@ main{width:100%;overflow-x:hidden}
   }
   .shareBill{margin-top:10px;padding:11px!important;font-size:11px}
 }
+
+/* Ensure bill-item remove controls stay visible and inside the card */
+.billItem{position:relative}
+.billItem>button{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  color:#98a2b3;
+  font-size:18px;
+  line-height:1;
+  z-index:2;
+}
+.billItem>button:hover{background:#f3f4f6;color:#344054}
+@media(max-width:600px){
+  .billItem{
+    padding-right:34px;
+  }
+  .billItem>button{
+    position:absolute;
+    right:0;
+    top:20px;
+    width:28px;
+    height:28px;
+    font-size:18px;
+    background:#f8f9fb;
+    border:1px solid #e5e7eb;
+  }
+  .billItem>button:disabled{
+    opacity:.45;
+    background:transparent;
+    border-color:transparent;
+  }
+}
