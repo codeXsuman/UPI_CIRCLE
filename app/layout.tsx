@@ -1,0 +1,1 @@
+import "./globals.css";import type{Metadata}from"next";export const metadata:Metadata={title:"UPI Circle — Split. Scan. Done.",description:"Split expenses with friends using UPI."};export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
