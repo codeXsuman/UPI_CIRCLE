@@ -10,7 +10,7 @@ const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 
 const DRAFT_KEY = "upi-circle-draft-v3";
 
 export default function Home() {
-  const [page, setPage] = useState<"home" | "account" | "login" | "product" | "profile">("home");
+  const [page, setPage] = useState<"home" | "account" | "login" | "product" | "profile" | "history">("home");
   const [profile, setProfile] = useState<User | null>(null);
   const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -18,6 +18,9 @@ export default function Home() {
   const [login, setLogin] = useState({ email: "", password: "" });
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
   const [generated, setGenerated] = useState(false);
+  const [generatedBillId, setGeneratedBillId] = useState<string | null>(null);
+  const [savedInHistory, setSavedInHistory] = useState(false);
+  const [historyBills, setHistoryBills] = useState<any[]>([]);
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -45,6 +48,8 @@ export default function Home() {
       if (Array.isArray(saved?.items) && saved.items.length) setItems(saved.items);
       if (Array.isArray(saved?.selected)) setSelected(saved.selected);
       if (typeof saved?.generated === "boolean") setGenerated(saved.generated);
+      if (saved?.generatedBillId) setGeneratedBillId(saved.generatedBillId);
+      if (typeof saved?.savedInHistory === "boolean") setSavedInHistory(saved.savedInHistory);
 
       try {
         const res = await fetch("/api/auth/me", { cache: "no-store" });
@@ -69,10 +74,11 @@ export default function Home() {
     if (!hydrated) return;
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
-        page, profileDraft: profile, register, login, items, selected, generated
+        page, profileDraft: profile, register, login, items, selected, generated,
+        generatedBillId, savedInHistory
       }));
     } catch {}
-  }, [hydrated, page, profile, register, login, items, selected, generated]);
+  }, [hydrated, page, profile, register, login, items, selected, generated, generatedBillId, savedInHistory]);
 
   const registerAccount = async () => {
     if (Object.values(register).some(v => !v.trim())) return pop("Please complete all registration details");
@@ -160,6 +166,37 @@ export default function Home() {
       + "&tn=" + encodeURIComponent(note);
   }, [profile, items, total]);
 
+  const loadHistory = async () => {
+    try {
+      const res = await fetch("/api/bills/history", { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok) setHistoryBills(data.bills || []);
+    } catch {}
+  };
+
+  const openHistory = async () => {
+    setPage("history");
+    await loadHistory();
+  };
+
+  const saveInHistory = async () => {
+    if (!generatedBillId) return pop("Generate the bill first");
+    try {
+      const res = await fetch("/api/bills/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ billId: generatedBillId })
+      });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to save in history");
+      setSavedInHistory(true);
+      await loadHistory();
+      pop("Bill saved in history");
+    } catch {
+      pop("Unable to save in history");
+    }
+  };
+
   const generateBill = async () => {
     if (!profile) return;
     if (!selected.length) return pop("Select at least one registered member");
@@ -172,8 +209,10 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) return pop(data.error || "Unable to save bill");
+      setGeneratedBillId(data.billId);
+      setSavedInHistory(false);
       setGenerated(true);
-      pop("Bill saved successfully");
+      pop("Bill generated successfully");
     } catch { pop("Unable to save bill"); }
   };
 
@@ -250,6 +289,8 @@ export default function Home() {
     setSelected([]);
     setItems([{ id: Date.now(), name: "", amount: "" }]);
     setGenerated(false);
+    setGeneratedBillId(null);
+    setSavedInHistory(false);
     setShareTarget(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
     pop("Ready to create a new bill");
@@ -264,9 +305,12 @@ export default function Home() {
           <b>U</b><strong>UPI<span>Circle</span></strong>
         </div>
         {profile ? (
-          <button className="profile profileButton" onClick={() => setPage("profile")}>
-            <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
-          </button>
+          <div className="headerActions">
+            <button className="historyNav" onClick={openHistory}>History</button>
+            <button className="profile profileButton" onClick={() => setPage("profile")}>
+              <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
+            </button>
+          </div>
         ) : <div className="profilePlaceholder">Account</div>}
       </header>
 
@@ -356,7 +400,10 @@ export default function Home() {
         <section className="productPage">
           <div className="productHeader">
             <div><div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR SPACE</b></div><h1>Create a bill</h1><p>Create a UPI bill for people who are registered on UPI Circle.</p></div>
-            <button className="profileMini" onClick={() => setPage("profile")}><span>{profile.name.charAt(0).toUpperCase()}</span>{profile.name.split(" ")[0]}</button>
+            <div className="productHeaderActions">
+              <button className="secondary historyMini" onClick={openHistory}>History</button>
+              <button className="profileMini" onClick={() => setPage("profile")}><span>{profile.name.charAt(0).toUpperCase()}</span>{profile.name.split(" ")[0]}</button>
+            </div>
           </div>
           <div className="productGrid">
             <div className="productMain">
@@ -400,7 +447,7 @@ export default function Home() {
           </div>
 
           {generated && <div className="generatedBills">
-            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit bill</button><button className="primary newBillBtn" onClick={createNewBill}>＋ Create new bill</button></div></div>
+            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit bill</button><button className={"historySaveBtn " + (savedInHistory ? "saved" : "")} onClick={saveInHistory} disabled={savedInHistory}>{savedInHistory ? "✓ Saved in history" : "＋ Save in history"}</button><button className="primary newBillBtn" onClick={createNewBill}>＋ Create new bill</button></div></div>
             <div className="qrBillGrid">{selectedMembers.map(member => (
               <div className="card qrBill" key={member.id}>
                 <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(total)}</strong></div>
@@ -425,6 +472,57 @@ export default function Home() {
               </div>
             ))}</div>
           </div>}
+        </section>
+      )}
+
+      {page === "history" && profile && (
+        <section className="historyPage">
+          <div className="historyHeader">
+            <div>
+              <div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR HISTORY</b></div>
+              <h1>Bill history</h1>
+              <p>Saved bills are stored with your account so you can revisit their items, amount and payment details.</p>
+            </div>
+            <div className="historyHeaderActions">
+              <button className="secondary" onClick={() => setPage("product")}>Create a bill</button>
+            </div>
+          </div>
+          {!historyBills.length ? (
+            <div className="card historyEmpty">
+              <div className="historyEmptyIcon">↗</div>
+              <h2>No saved bills yet</h2>
+              <p>Generate a bill and choose “Save in history” to keep it here.</p>
+              <button className="primary" onClick={() => setPage("product")}>Create your first bill →</button>
+            </div>
+          ) : (
+            <div className="historyList">
+              {historyBills.map((bill) => (
+                <div className="card historyCard" key={bill.id}>
+                  <div className="historyCardTop">
+                    <div>
+                      <span className="live">● SAVED BILL</span>
+                      <h2>Bill to {bill.recipients.map((r:any) => r.name).join(", ")}</h2>
+                      <small>{new Date(bill.savedAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small>
+                    </div>
+                    <strong>₹{money(Number(bill.totalAmount))}</strong>
+                  </div>
+                  <div className="historyItems">
+                    {bill.items.map((item:any) => (
+                      <div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>
+                    ))}
+                  </div>
+                  <div className="historyMeta">
+                    <span>Pay to <b>{bill.creatorName}</b></span>
+                    <span>UPI ID <b>{bill.creatorUpi}</b></span>
+                  </div>
+                  <div className="historyCardActions">
+                    <button className="secondary" onClick={() => setPage("product")}>Create new bill</button>
+                    <button className="primary" onClick={() => pop("Historical bill details are shown above")}>View bill details</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
