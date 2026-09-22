@@ -12,10 +12,10 @@ export async function POST(req: Request) {
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
     if (!/^[6-9]\d{9}$/.test(normalizedMobile)) return NextResponse.json({ error: "Enter a valid 10-digit mobile number" }, { status: 400 });
     if (password.length < 6) return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
-    const existing = await sql\`SELECT id FROM users WHERE email=${normalizedEmail} OR upi_id=${normalizedUpi} OR mobile=${normalizedMobile} LIMIT 1\`;
+    const existing = await sql`SELECT id FROM users WHERE email=${normalizedEmail} OR upi_id=${normalizedUpi} OR mobile=${normalizedMobile} LIMIT 1\`;
     if (existing.length) return NextResponse.json({ error: "An account with this email, UPI ID or mobile number already exists" }, { status: 409 });
     const id = randomUUID(), passwordHash = await bcrypt.hash(password, 12);
-    const rows = await sql\`INSERT INTO users (id,name,upi_id,mobile,email,password_hash) VALUES (${id},${name.trim()},${normalizedUpi},${normalizedMobile},${normalizedEmail},${passwordHash}) RETURNING id,name,upi_id AS upi,mobile,email\`;
+    const rows = await sql`INSERT INTO users (id,name,upi_id,mobile,email,password_hash) VALUES (${id},${name.trim()},${normalizedUpi},${normalizedMobile},${normalizedEmail},${passwordHash}) RETURNING id,name,upi_id AS upi,mobile,email\`;
     await setSession(id);
     return NextResponse.json({ user: rows[0] }, { status: 201 });
   } catch (error) { console.error(error); return NextResponse.json({ error: "Unable to create account" }, { status: 500 }); }
