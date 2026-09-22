@@ -14,7 +14,7 @@ export async function PATCH(req: Request) {
     const conflict=await sql`SELECT id FROM users WHERE (email=${normalizedEmail} OR upi_id=${normalizedUpi} OR mobile=${normalizedMobile}) AND id<>${id} LIMIT 1`;
     if(conflict.length) return NextResponse.json({error:"Email, UPI ID or mobile number is already in use"},{status:409});
     const passwordHash = password?.trim() ? await bcrypt.hash(password.trim(),12) : null;
-    const rows=passwordHash ? await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},password_hash=${passwordHash},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id,mobile,email` : await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id,mobile,email`;
+    const rows=passwordHash ? await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},password_hash=${passwordHash},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email` : await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`;
     return NextResponse.json({user:rows[0]});
   } catch(error){console.error(error);return NextResponse.json({error:"Unable to update profile"},{status:500});}
 }
