@@ -119,10 +119,12 @@ nav button:hover,.navActive{background:#fff!important;color:#111827!important;bo
 }
 
 /* --- Account registration + profile --- */
-.profileButton{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;padding:5px 11px 5px 5px;border-radius:999px;box-shadow:0 5px 16px #1018280b}
-.profileButton span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#151922;color:#fff;font-size:11px;font-weight:800}
-.profileButton strong{font-size:11px;color:#344054}
+.profileButton{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e5e7eb;padding:4px 12px 4px 4px;border-radius:999px;box-shadow:0 5px 16px #1018280b;cursor:pointer;transition:.18s ease}
+.profileButton:hover{border-color:#c9c5ff;background:#faf9ff;transform:translateY(-1px)}
+.profileButton span{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#635bff,#8b72ff);color:#fff;font:800 12px 'Space Grotesk';box-shadow:0 4px 10px #635bff35}
+.profileButton strong{font:700 11px 'Space Grotesk';color:#344054;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .profilePlaceholder{font-size:10px;color:#98a2b3;border:1px solid #e5e7eb;padding:9px 12px;border-radius:999px;background:#fff}
+@media(max-width:480px){.profileButton strong{display:none}.profileButton{padding-right:4px}.profileButton span{width:31px;height:31px}}
 .formStack{display:grid;gap:14px;margin:22px 0}
 .formStack>label,.accountCard>label{display:block;font-size:11px;color:#475467;font-weight:700}
 .formStack input{margin-top:7px!important}
