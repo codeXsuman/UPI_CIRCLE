@@ -343,3 +343,52 @@ main{width:100%;overflow-x:hidden}
  .productHeaderActions{width:100%;display:grid;grid-template-columns:1fr 1fr}
  .historyCardActions{grid-template-columns:1fr}
 }
+
+.profileMenuWrap{position:relative;display:flex;align-items:center}
+.mobileProfileMenu{display:none}
+@media(max-width:600px){
+  header{padding:0 18px;height:70px}
+  .headerActions{gap:9px}
+  .historyNav{
+    padding:10px 14px;
+    border:1px solid #dcd9ff;
+    background:linear-gradient(180deg,#fff,#f8f7ff);
+    color:#4038a8;
+    border-radius:12px;
+    font-size:10px;
+    font-weight:800;
+    box-shadow:0 4px 12px #635bff18;
+  }
+  .profileButton{
+    width:42px;height:42px;padding:4px!important;
+    border:1px solid #d9d6ff;
+    background:#fff;
+    box-shadow:0 5px 16px #635bff22;
+    justify-content:center;
+  }
+  .profileButton span{width:32px;height:32px}
+  .profileButton strong{display:none}
+  .mobileProfileMenu{
+    display:grid;
+    position:absolute;
+    right:0;
+    top:52px;
+    width:145px;
+    padding:6px;
+    background:#fff;
+    border:1px solid #e4e1ff;
+    border-radius:14px;
+    box-shadow:0 14px 35px #10182822;
+    z-index:30;
+  }
+  .mobileProfileMenu button{
+    text-align:left;
+    padding:11px 12px;
+    border-radius:9px;
+    background:transparent;
+    color:#344054;
+    font-size:12px;
+    font-weight:700;
+  }
+  .mobileProfileMenu button:hover{background:#f5f3ff;color:#5147d8}
+}
