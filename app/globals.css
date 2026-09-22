@@ -72,3 +72,48 @@ nav button:hover,.navActive{background:#fff!important;color:#111827!important;bo
  .heroStats div{padding:0 10px}
  .mock{transform:scale(.88);margin:-25px 0}
 }
+
+/* --- Auth-first home redesign --- */
+.authLanding{max-width:1180px;min-height:calc(100vh - 76px);margin:auto;padding:70px 30px 90px;display:grid;grid-template-columns:1.05fr .95fr;gap:70px;align-items:center}
+.authHero{max-width:650px}
+.authHero h1{font:700 clamp(58px,7vw,88px)/.93 'Space Grotesk';letter-spacing:-5px;margin:22px 0 25px}
+.authHero h1 i{font-style:normal;color:#635bff}
+.authHero p{max-width:570px;color:#667085;font-size:18px;line-height:1.7;margin:0}
+.authActions{display:flex;gap:12px;margin:34px 0 18px}
+.authActions button{min-width:190px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 18px;border-radius:14px}
+.authPrimary{background:#151922}
+.authSecondary{background:#fff}
+.authActions button span{font-size:16px}
+.authNote{color:#98a2b3;font-size:10px}
+.authVisual{position:relative;min-height:500px;display:grid;place-items:center}
+.authOrb{position:absolute;border-radius:50%;filter:blur(.5px)}
+.orbOne{width:390px;height:390px;background:radial-gradient(circle,#e8e5ff 0,#f2f1ff 48%,transparent 72%)}
+.orbTwo{width:220px;height:220px;background:#edf7ff;right:0;bottom:20px;opacity:.8}
+.authPanel{position:relative;width:min(390px,100%);padding:25px;background:rgba(255,255,255,.88);border:1px solid #e4e7ee;border-radius:25px;box-shadow:0 30px 80px #10182820;backdrop-filter:blur(18px);transform:rotate(2deg)}
+.authPanelTop{display:flex;justify-content:space-between;align-items:center;color:#635bff;font:700 11px 'Space Grotesk';letter-spacing:1.5px}
+.authPanelTop b{font-size:10px;color:#19a463}
+.authPanelLine{height:1px;background:#edf0f4;margin:22px 0}
+.authPanelBalance small{display:block;color:#98a2b3;font-size:9px;letter-spacing:1px}
+.authPanelBalance strong{display:block;font:700 30px 'Space Grotesk';margin-top:7px;letter-spacing:-1px}
+.authRows{display:grid;gap:9px;margin-top:25px}
+.authRows>div{display:flex;align-items:center;gap:10px;padding:11px;background:#f8f9fb;border:1px solid #edf0f3;border-radius:13px}
+.authRows>div>b{width:34px;height:34px;border-radius:10px;background:#e8e5ff;color:#554be0;display:grid;place-items:center;font-size:9px}
+.authRows>div:nth-child(2)>b{background:#e5f8ef;color:#087443}
+.authRows>div:nth-child(3)>b{background:#fff0e7;color:#b54708}
+.authRows span{flex:1}
+.authRows strong,.authRows small{display:block}
+.authRows strong{font-size:11px}
+.authRows small{font-size:9px;color:#98a2b3;margin-top:2px}
+.authRows em{font-style:normal;font:700 12px 'Space Grotesk'}
+@media(max-width:800px){
+ .authLanding{grid-template-columns:1fr;gap:25px;padding-top:48px}
+ .authHero h1{font-size:58px;letter-spacing:-4px}
+ .authActions{flex-direction:column}
+ .authActions button{width:100%}
+ .authVisual{min-height:390px}
+}
+@media(max-width:480px){
+ .authLanding{padding:40px 20px 60px}
+ .authHero h1{font-size:50px}
+ .authVisual{transform:scale(.9);margin:-20px 0}
+}
