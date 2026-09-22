@@ -490,7 +490,7 @@ export default function Home() {
           </div>
 
           {generated && <div className="generatedBills">
-            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit bill</button><button className={"historySaveBtn " + (savedInHistory ? "saved" : "")} onClick={saveInHistory} disabled={savedInHistory}>{savedInHistory ? "✓ Saved in history" : "＋ Save in history"}</button><button className="primary newBillBtn" onClick={createNewBill}>＋ Create new bill</button></div></div>
+            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit</button><button className={"historySaveBtn " + (savedInHistory ? "saved" : "")} onClick={saveInHistory} disabled={savedInHistory}>{savedInHistory ? "✓ Saved" : "＋ Save"}</button><button className="primary newBillBtn" onClick={createNewBill}>＋ New bill</button></div></div>
             <div className="qrBillGrid">{selectedMembers.map(member => (
               <div className="card qrBill" key={member.id}>
                 <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(total)}</strong></div>
@@ -501,13 +501,9 @@ export default function Home() {
                     {items.filter(i => i.name.trim()).map(i => <div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount) || 0)}</b></div>)}
                     <div className="detailTotal"><span>Total amount</span><b>₹{money(total)}</b></div>
                     <small>Bill for: {member.name}<br />Pay to: {profile.name}<br />UPI ID: {profile.upi}</small>
-                    <div className="paymentLinkBox">
-                      <span>DIRECT PAYMENT LINK</span>
-                      <code>{paymentLink}</code>
-                      <div className="paymentActions">
-                        <a className="payNow" href={paymentLink}>Pay now ↗</a>
-                        <button onClick={copyPaymentLink}>Copy link</button>
-                      </div>
+                    <div className="paymentActions">
+                      <a className="payNow" href={paymentLink}>Pay now ↗</a>
+                      <button onClick={copyPaymentLink}>Copy link</button>
                     </div>
                     <button className="primary shareBill" onClick={() => shareBill(member)}>Share this bill ↗</button>
                   </div>
