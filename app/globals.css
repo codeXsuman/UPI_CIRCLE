@@ -117,3 +117,15 @@ nav button:hover,.navActive{background:#fff!important;color:#111827!important;bo
  .authHero h1{font-size:50px}
  .authVisual{transform:scale(.9);margin:-20px 0}
 }
+
+/* --- Account registration + profile --- */
+.profileButton{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;padding:5px 11px 5px 5px;border-radius:999px;box-shadow:0 5px 16px #1018280b}
+.profileButton span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#151922;color:#fff;font-size:11px;font-weight:800}
+.profileButton strong{font-size:11px;color:#344054}
+.profilePlaceholder{font-size:10px;color:#98a2b3;border:1px solid #e5e7eb;padding:9px 12px;border-radius:999px;background:#fff}
+.formStack{display:grid;gap:14px;margin:22px 0}
+.formStack>label,.accountCard>label{display:block;font-size:11px;color:#475467;font-weight:700}
+.formStack input{margin-top:7px!important}
+.accountSubmit{width:100%;margin-top:3px}
+.profilePage .accountCard{max-width:560px}
+@media(max-width:480px){.profileButton strong{display:none}.profileButton{padding-right:5px}}
