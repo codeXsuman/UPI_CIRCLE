@@ -12,6 +12,7 @@ const DRAFT_KEY = "upi-circle-draft-v3";
 export default function Home() {
   type AppPage = "home" | "account" | "login" | "product" | "profile" | "history";
   const [page, setPage] = useState<AppPage>("home");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const getPageFromUrl = (): AppPage | null => {
     const value = new URLSearchParams(window.location.search).get("view");
@@ -336,9 +337,25 @@ export default function Home() {
         {profile ? (
           <div className="headerActions">
             <button className="historyNav" onClick={openHistory}>History</button>
-            <button className="profile profileButton" onClick={() => navigate("profile")}>
-              <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
-            </button>
+            <div className="profileMenuWrap">
+              <button
+                className="profileButton"
+                aria-label="Open profile menu"
+                aria-expanded={profileMenuOpen}
+                onClick={() => {
+                  if (window.innerWidth <= 600) setProfileMenuOpen(v => !v);
+                  else navigate("profile");
+                }}
+              >
+                <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
+              </button>
+              {profileMenuOpen && (
+                <div className="mobileProfileMenu">
+                  <button onClick={() => { setProfileMenuOpen(false); openHistory(); }}>History</button>
+                  <button onClick={() => { setProfileMenuOpen(false); navigate("profile"); }}>Profile</button>
+                </div>
+              )}
+            </div>
           </div>
         ) : <div className="profilePlaceholder">Account</div>}
       </header>
