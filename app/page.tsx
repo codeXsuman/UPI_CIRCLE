@@ -1,32 +1,321 @@
-"use client";import{useEffect,useMemo,useState}from"react";import{QRCodeSVG}from"qrcode.react";
-type Member={id:number;name:string;upi:string;account?:boolean;amount:number};type UserProfile={name:string;upi:string;mobile:string;email:string;password:string;id?:string};type BillItem={id:number;name:string;amount:string};
-const friends=[{id:101,name:"Aarav",upi:"aarav@upi",account:true},{id:102,name:"Riya",upi:"riya@upi",account:true},{id:103,name:"Rahul",upi:"rahul@upi",account:true}];
-const money=(n:number)=>n.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
-export default function Home(){const[page,setPage]=useState<"home"|"account"|"login"|"profile"|"product">("home"),[profile,setProfile]=useState<UserProfile|null>(null),[registered,setRegistered]=useState<UserProfile[]>([]),[register,setRegister]=useState<UserProfile>({name:"",upi:"",mobile:"",email:"",password:""}),[loginEmail,setLoginEmail]=useState(""),[loginPassword,setLoginPassword]=useState(""),[selectedIds,setSelectedIds]=useState<string[]>([]),[items,setItems]=useState<BillItem[]>([{id:1,name:"",amount:""}]),[generated,setGenerated]=useState(false),[toast,setToast]=useState("");
-useEffect(()=>{const load=async()=>{try{const me=await fetch("/api/auth/me");const data=await me.json();if(data.user){const u={...data.user,password:""};setProfile(u);setPage("product");const mr=await fetch("/api/members");const md=await mr.json();setRegistered(md.members||[])} }catch{}};load()},[]);
-const registerAccount=async()=>{if(!register.name.trim()||!register.upi.trim()||!register.mobile.trim()||!register.email.trim()||!register.password)return pop("Please complete all registration details");try{const res=await fetch("/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(register)});const data=await res.json();if(!res.ok)return pop(data.error||"Unable to create account");const u={...data.user,password:""};setProfile(u);setRegister({name:"",upi:"",mobile:"",email:"",password:""});setSelectedIds([]);setItems([{id:1,name:"",amount:""}]);setGenerated(false);setPage("product");await loadMembers();pop("Account created successfully")}catch{pop("Unable to create account")}};
-const loginAccount=async()=>{try{const res=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:loginEmail,password:loginPassword})});const data=await res.json();if(!res.ok)return pop(data.error||"Unable to log in");setProfile({...data.user,password:""});setPage("product");setLoginEmail("");setLoginPassword("");await loadMembers();pop("Logged in successfully")}catch{pop("Unable to log in")}};
-const loadMembers=async()=>{try{const res=await fetch("/api/members");const data=await res.json();if(res.ok)setRegistered(data.members||[])}catch{}};
-const updateProfile=async()=>{if(!profile)return;try{const res=await fetch("/api/profile",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(profile)});const data=await res.json();if(!res.ok)return pop(data.error||"Unable to update profile");setProfile({...data.user,password:""});await loadMembers();pop("Profile updated successfully")}catch{pop("Unable to update profile")}};
-const otherMembers=registered.filter(u=>u.id!==profile?.id);
-const toggleMember=(id:string)=>setSelectedIds(x=>x.includes(id)?x.filter(v=>v!==id):[...x,id]);
-const updateItem=(id:number,key:"name"|"amount",value:string)=>setItems(x=>x.map(i=>i.id===id?{...i,[key]:key==="amount"?value.replace(/[^0-9.]/g,""):value}:i));
-const addItem=()=>setItems(x=>[...x,{id:Date.now(),name:"",amount:""}]);
-const removeItem=(id:number)=>setItems(x=>x.length===1?x:x.filter(i=>i.id!==id));
-const billTotal=items.reduce((sum,i)=>sum+(Number(i.amount)||0),0);
-const generateBills=async()=>{if(!profile)return;if(!selectedIds.length)return pop("Select at least one registered member");if(items.some(i=>!i.name.trim()||Number(i.amount)<=0))return pop("Complete every bill item first");if(billTotal<=0)return pop("Enter a valid bill amount");try{const res=await fetch("/api/bills",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items,recipientIds:selectedIds})});const data=await res.json();if(!res.ok)return pop(data.error||"Unable to save bill");setGenerated(true);pop("Bill saved successfully")}catch{pop("Unable to save bill")}};
-const shareBill=async(member:UserProfile)=>{const text="UPI Circle bill for "+member.name+" · ₹"+money(billTotal)+" · Pay to "+profile?.name+" ("+profile?.upi+")";if(navigator.share){try{await navigator.share({title:"UPI Circle Bill",text})}catch{}}else pop("Share is not supported on this browser")};
-const pop=(s:string)=>{setToast(s);setTimeout(()=>setToast(""),1700)};
-const equal=useMemo(()=>{const n=members.length;return n?Number(total||0)/n:0},[total,members.length]);
-const redistribute=(list:Member[],sum=Number(total||0))=>list.map(m=>({...m,amount:sum/list.length}));
-const updateTotal=(v:string)=>{setTotal(v.replace(/[^0-9.]/g,""))};
-const addFriend=(f:any)=>{if(members.some(m=>m.id===f.id))return;const list=[...members,{...f,amount:0}];setMembers(type==="equal"?redistribute(list):list)};
-const addGuest=()=>{const id=Date.now(),list=[...members,{id,name:"Person "+members.length,upi:"",account:false,amount:0}];setMembers(type==="equal"?redistribute(list):list)};
-const remove=(id:number)=>{const list=members.filter(m=>m.id!==id);setMembers(list.length&&type==="equal"?redistribute(list):list)};
-const changeName=(id:number,name:string)=>setMembers(members.map(m=>m.id===id?{...m,name}:m));
-const changeAmount=(id:number,v:string)=>setMembers(members.map(m=>m.id===id?{...m,amount:Number(v)||0}:m));
-const setEqual=()=>{setType("equal");setMembers(redistribute(members))};
-const customValid=Math.abs(members.reduce((s,m)=>s+m.amount,0)-Number(total||0))<0.000001;
-const createBill=()=>{if(!bill.trim()||!myUpi.trim()||Number(total)<=0)return pop("Please complete the bill details");if(type==="custom"&&!customValid)return pop("Custom amounts must equal the total");setStep(2)};
-return <main><header><div className="brand" onClick={()=>setPage("home")}><b>U</b><strong>UPI<span>Circle</span></strong></div>{profile?<button className="profile profileButton" onClick={()=>setPage("profile")}><span>{profile.name.trim().charAt(0).toUpperCase()||"U"}</span><strong>{profile.name.split(" ")[0]}</strong></button>:<div className="profilePlaceholder">Account</div>}</header>
-{page==="home"?<section className="authLanding"><div className="authHero"><div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR MONEY, TOGETHER</b></div><h1>Split money.<br/><i>Together.</i></h1><p>A simple space for friends to manage shared expenses, payments and circles.</p><div className="authActions"><button className="primary authPrimary" onClick={()=>setPage("account")}>Create a new account <span>→</span></button><button className="secondary authSecondary" onClick={()=>setPage("login")}>Login <span>↗</span></button></div><small className="authNote">Create your account once. Your circles and expenses stay connected.</small></div><div className="authVisual"><div className="authOrb orbOne"/><div className="authOrb orbTwo"/><div className="authPanel"><div className="authPanelTop"><span>UPI CIRCLE</span><b>●</b></div><div className="authPanelLine"/><div className="authPanelBalance"><small>SHARED EXPENSES</small><strong>₹ 2,450.00</strong></div><div className="authRows"><div><b>SC</b><span><strong>Shared coffee</strong><small>4 members</small></span><em>₹ 320</em></div><div><b>TR</b><span><strong>Trip expenses</strong><small>6 members</small></span><em>₹ 1,840</em></div><div><b>FD</b><span><strong>Food & dinner</strong><small>3 members</small></span><em>₹ 290</em></div></div></div></div></section>:page==="account"?<section className="account"><div className="card accountCard"><div className="accountBadge">CREATE ACCOUNT</div><label>UPI CIRCLE REGISTRATION</label><h1>Create your account</h1><p>Enter your details once to create your UPI Circle profile.</p><div className="formStack"><label>1. Enter your name<input value={register.name} placeholder="Your full name" onChange={e=>setRegister({...register,name:e.target.value})}/></label><label>2. Enter your UPI ID<input value={register.upi} placeholder="yourname@upi" onChange={e=>setRegister({...register,upi:e.target.value})}/></label><label>3. Enter your mobile number<input value={register.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e=>setRegister({...register,mobile:e.target.value.replace(/\D/g,"")})}/></label><label>4. Enter email<input value={register.email} type="email" placeholder="you@example.com" onChange={e=>setRegister({...register,email:e.target.value})}/></label><label>5. Enter password<input value={register.password} type="password" placeholder="Create a password" onChange={e=>setRegister({...register,password:e.target.value})}/></label></div><button className="primary accountSubmit" onClick={registerAccount}>Create account</button><button className="wideBtn" onClick={()=>setPage("home")}>Back to home</button></div></section>:page==="login"?<section className="account"><div className="card accountCard"><div className="accountBadge">WELCOME BACK</div><label>UPI CIRCLE LOGIN</label><h1>Login</h1><p>Use the email and password from your UPI Circle account.</p><label>Email address<input value={loginEmail} type="email" placeholder="you@example.com" onChange={e=>setLoginEmail(e.target.value)}/></label><label>Password<input value={loginPassword} type="password" placeholder="Your password" onChange={e=>setLoginPassword(e.target.value)}/></label><button className="primary accountSubmit" onClick={loginAccount}>Login</button><button className="wideBtn" onClick={()=>setPage("home")}>Back to home</button></div></section>:page==="profile"?<section className="account profilePage"><div className="card accountCard"><div className="accountBadge">YOUR PROFILE</div><label>UPI CIRCLE ACCOUNT</label><h1>Edit profile</h1><p>Update the details connected to your account.</p>{profile&&<div className="formStack"><label>Name<input value={profile.name} onChange={e=>setProfile({...profile,name:e.target.value})}/></label><label>UPI ID<input value={profile.upi} onChange={e=>setProfile({...profile,upi:e.target.value})}/></label><label>Mobile number<input value={profile.mobile} inputMode="numeric" maxLength={10} onChange={e=>setProfile({...profile,mobile:e.target.value.replace(/\D/g,"")})}/></label><label>Email<input value={profile.email} type="email" onChange={e=>setProfile({...profile,email:e.target.value})}/></label><label>Password<input value={profile.password} type="password" onChange={e=>setProfile({...profile,password:e.target.value})}/></label></div>}<button className="primary accountSubmit" onClick={updateProfile}>Save changes</button><button className="wideBtn" onClick={()=>setPage("home")}>Back to home</button></div></section>:<section className="productPage"><div className="productHeader"><div><div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR SPACE</b></div><h1>Create a bill</h1><p>Create a UPI bill for people who are registered on UPI Circle.</p></div><button className="profileMini" onClick={()=>setPage("profile")}><span>{profile?.name?.charAt(0).toUpperCase()}</span>{profile?.name?.split(" ")[0]}</button></div><div className="productGrid"><div className="productMain"><div className="card productCard"><div className="sectionTitle"><div><b>1</b><div><h2>Select members</h2><small>Choose one or more registered members who need to pay.</small></div></div><span>{selectedIds.length} selected</span></div>{otherMembers.length?<div className="registeredList">{otherMembers.map(u=><button className={"registeredMember "+(selectedIds.includes(u.id||"")?"selected":"")} key={u.id} onClick={()=>toggleMember(u.id||"")}><span className="memberAvatar">{u.name.charAt(0).toUpperCase()}</span><span><strong>{u.name}</strong><small>{u.upi} · Registered</small></span><i>{selectedIds.includes(u.id||"")?"✓":"+"}</i></button>)}</div>:<div className="emptyMembers"><strong>No other registered members yet</strong><small>Create another account on this browser to test member-to-member bills. A real multi-device member directory will be connected to the database next.</small></div>}</div><div className="card productCard"><div className="sectionTitle"><div><b>2</b><div><h2>Bill details</h2><small>Add every item and its exact amount.</small></div></div></div><div className="billItems">{items.map((item,index)=><div className="billItem" key={item.id}><span>{index+1}</span><input value={item.name} placeholder="e.g. Tea" onChange={e=>updateItem(item.id,"name",e.target.value)}/><div className="itemAmount"><span>₹</span><input value={item.amount} inputMode="decimal" placeholder="0.00" onChange={e=>updateItem(item.id,"amount",e.target.value)}/></div><button onClick={()=>removeItem(item.id)} disabled={items.length===1}>×</button></div>)}</div><button className="addItem" onClick={addItem}>＋ Add another item</button><div className="totalBar"><span>Total amount</span><strong>₹{money(billTotal)}</strong></div><button className="primary generateBtn" onClick={generateBills}>Generate UPI QR bill →</button></div></div><aside className="productSide"><div className="card previewCard"><span className="live">● BILL PREVIEW</span><h2>{items.filter(i=>i.name.trim()).map(i=>i.name).join(" + ")||"Your bill items"}</h2><div className="previewTotal">₹{money(billTotal)}</div><small>Paid to</small><strong>{profile?.name}</strong><span>{profile?.upi}</span>{selectedIds.length>0&&<div className="selectedPayers"><small>Bill for</small>{otherMembers.filter(u=>selectedIds.includes(u.id||"")).map(u=><div key={u.id}><span>{u.name}</span><b>₹{money(billTotal)}</b></div>)}</div>}<div className="secureNote">✓ UPI QR will use the selected member's registered UPI ID</div></div></aside></div>{generated&&<div className="generatedBills"><div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill addressed to their registered UPI ID.</p></div><button onClick={()=>setGenerated(false)}>Edit bill</button></div><div className="qrBillGrid">{otherMembers.filter(u=>selectedIds.includes(u.id||"")).map(member=>{const uri="upi://pay?pa="+encodeURIComponent(member.upi)+"&pn="+encodeURIComponent(member.name)+"&am="+billTotal.toFixed(2)+"&cu=INR";return <div className="card qrBill" key={member.id}><div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(billTotal)}</strong></div><div className="qrBillContent"><div className="qr"><QRCodeSVG value={uri} size={180} level="M"/></div><div className="billDetails"><h3>Billing details</h3>{items.filter(i=>i.name.trim()).map(i=><div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount)||0)}</b></div>)}<div className="detailTotal"><span>Total amount</span><b>₹{money(billTotal)}</b></div><small>Payer: {member.name}<br/>Registered UPI: {member.upi}</small><button className="primary shareBill" onClick={()=>shareBill(member)}>Share this bill ↗</button></div></div></div>})}</div></div>}</section></section>}<footer>© 2026 UPI Circle · Split. Scan. Done. · Prototype v0.2</footer>{toast&&<div className="toast">✓ {toast}</div>}</main>}
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
+
+type User = { id: string; name: string; upi: string; mobile: string; email: string; password?: string };
+type Item = { id: number; name: string; amount: string };
+
+const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+export default function Home() {
+  const [page, setPage] = useState<"home" | "account" | "login" | "product" | "profile">("home");
+  const [profile, setProfile] = useState<User | null>(null);
+  const [members, setMembers] = useState<User[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [register, setRegister] = useState({ name: "", upi: "", mobile: "", email: "", password: "" });
+  const [login, setLogin] = useState({ email: "", password: "" });
+  const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
+  const [generated, setGenerated] = useState(false);
+  const [toast, setToast] = useState("");
+
+  const pop = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2200);
+  };
+
+  const loadMembers = async () => {
+    try {
+      const res = await fetch("/api/members", { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok) setMembers(data.members || []);
+    } catch {}
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        const data = await res.json();
+        if (data.user) {
+          setProfile({ ...data.user, password: "" });
+          setPage("product");
+          await loadMembers();
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const registerAccount = async () => {
+    if (Object.values(register).some(v => !v.trim())) return pop("Please complete all registration details");
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(register)
+      });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to create account");
+      setProfile({ ...data.user, password: "" });
+      setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
+      setPage("product");
+      await loadMembers();
+      pop("Account created successfully");
+    } catch {
+      pop("Unable to create account");
+    }
+  };
+
+  const loginAccount = async () => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(login)
+      });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to login");
+      setProfile({ ...data.user, password: "" });
+      setLogin({ email: "", password: "" });
+      setPage("product");
+      await loadMembers();
+      pop("Logged in successfully");
+    } catch {
+      pop("Unable to login");
+    }
+  };
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setProfile(null);
+    setMembers([]);
+    setSelected([]);
+    setGenerated(false);
+    setPage("home");
+    pop("Logged out");
+  };
+
+  const updateProfile = async () => {
+    if (!profile) return;
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile)
+      });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to update profile");
+      setProfile({ ...data.user, password: "" });
+      await loadMembers();
+      pop("Profile updated successfully");
+    } catch {
+      pop("Unable to update profile");
+    }
+  };
+
+  const toggleMember = (id: string) =>
+    setSelected(old => old.includes(id) ? old.filter(x => x !== id) : [...old, id]);
+
+  const updateItem = (id: number, key: "name" | "amount", value: string) =>
+    setItems(old => old.map(item => item.id === id
+      ? { ...item, [key]: key === "amount" ? value.replace(/[^0-9.]/g, "") : value }
+      : item));
+
+  const total = useMemo(
+    () => items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
+    [items]
+  );
+
+  const generateBill = async () => {
+    if (!profile) return;
+    if (!selected.length) return pop("Select at least one registered member");
+    if (items.some(item => !item.name.trim() || Number(item.amount) <= 0)) return pop("Complete every bill item first");
+    try {
+      const res = await fetch("/api/bills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, recipientIds: selected })
+      });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to save bill");
+      setGenerated(true);
+      pop("Bill saved successfully");
+    } catch {
+      pop("Unable to save bill");
+    }
+  };
+
+  const shareBill = async (member: User) => {
+    const text = "UPI Circle bill: ₹" + money(total) + " · Pay to " + profile?.name + " (" + profile?.upi + ")";
+    if (navigator.share) {
+      try { await navigator.share({ title: "UPI Circle Bill", text }); } catch {}
+    } else {
+      await navigator.clipboard?.writeText(text);
+      pop("Bill details copied");
+    }
+  };
+
+  const selectedMembers = members.filter(m => selected.includes(m.id));
+
+  return (
+    <main>
+      <header>
+        <div className="brand" onClick={() => setPage(profile ? "product" : "home")}>
+          <b>U</b><strong>UPI<span>Circle</span></strong>
+        </div>
+        {profile ? (
+          <button className="profile profileButton" onClick={() => setPage("profile")}>
+            <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
+          </button>
+        ) : <div className="profilePlaceholder">Account</div>}
+      </header>
+
+      {page === "home" && (
+        <section className="authLanding">
+          <div className="authHero">
+            <div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR MONEY, TOGETHER</b></div>
+            <h1>Split money.<br /><i>Together.</i></h1>
+            <p>A simple space for friends to manage shared expenses, payments and circles.</p>
+            <div className="authActions">
+              <button className="primary authPrimary" onClick={() => setPage("account")}>Create a new account <span>→</span></button>
+              <button className="secondary authSecondary" onClick={() => setPage("login")}>Login <span>↗</span></button>
+            </div>
+            <small className="authNote">Create your account once. Your circles and expenses stay connected.</small>
+          </div>
+          <div className="authVisual">
+            <div className="authOrb orbOne" /><div className="authOrb orbTwo" />
+            <div className="authPanel">
+              <div className="authPanelTop"><span>UPI CIRCLE</span><b>●</b></div>
+              <div className="authPanelLine" />
+              <div className="authPanelBalance"><small>SHARED EXPENSES</small><strong>₹ 2,450.00</strong></div>
+              <div className="authRows">
+                <div><b>SC</b><span><strong>Shared coffee</strong><small>4 members</small></span><em>₹ 320</em></div>
+                <div><b>TR</b><span><strong>Trip expenses</strong><small>6 members</small></span><em>₹ 1,840</em></div>
+                <div><b>FD</b><span><strong>Food & dinner</strong><small>3 members</small></span><em>₹ 290</em></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {page === "account" && (
+        <section className="account">
+          <div className="card accountCard">
+            <div className="accountBadge">CREATE ACCOUNT</div>
+            <label>UPI CIRCLE REGISTRATION</label>
+            <h1>Create your account</h1>
+            <p>Enter your details once to create your UPI Circle profile.</p>
+            <div className="formStack">
+              <label>1. Enter your name<input value={register.name} placeholder="Your full name" onChange={e => setRegister({ ...register, name: e.target.value })} /></label>
+              <label>2. Enter your UPI ID<input value={register.upi} placeholder="yourname@upi" onChange={e => setRegister({ ...register, upi: e.target.value })} /></label>
+              <label>3. Enter your mobile number<input value={register.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") })} /></label>
+              <label>4. Enter email<input value={register.email} type="email" placeholder="you@example.com" onChange={e => setRegister({ ...register, email: e.target.value })} /></label>
+              <label>5. Enter password<input value={register.password} type="password" placeholder="Create a password" onChange={e => setRegister({ ...register, password: e.target.value })} /></label>
+            </div>
+            <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
+            <button className="wideBtn" onClick={() => setPage("home")}>Back to home</button>
+          </div>
+        </section>
+      )}
+
+      {page === "login" && (
+        <section className="account">
+          <div className="card accountCard">
+            <div className="accountBadge">WELCOME BACK</div>
+            <label>UPI CIRCLE LOGIN</label><h1>Login</h1>
+            <p>Use the email and password from your UPI Circle account.</p>
+            <label>Email address<input value={login.email} type="email" placeholder="you@example.com" onChange={e => setLogin({ ...login, email: e.target.value })} /></label>
+            <label>Password<input value={login.password} type="password" placeholder="Your password" onChange={e => setLogin({ ...login, password: e.target.value })} /></label>
+            <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
+            <button className="wideBtn" onClick={() => setPage("home")}>Back to home</button>
+          </div>
+        </section>
+      )}
+
+      {page === "profile" && profile && (
+        <section className="account profilePage">
+          <div className="card accountCard">
+            <div className="accountBadge">YOUR PROFILE</div>
+            <label>UPI CIRCLE ACCOUNT</label><h1>Edit profile</h1>
+            <p>Update the details connected to your account.</p>
+            <div className="formStack">
+              <label>Name<input value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} /></label>
+              <label>UPI ID<input value={profile.upi} onChange={e => setProfile({ ...profile, upi: e.target.value })} /></label>
+              <label>Mobile number<input value={profile.mobile} maxLength={10} onChange={e => setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") })} /></label>
+              <label>Email<input value={profile.email} type="email" onChange={e => setProfile({ ...profile, email: e.target.value })} /></label>
+              <label>Password<input value={profile.password || ""} type="password" placeholder="Leave blank to keep current" onChange={e => setProfile({ ...profile, password: e.target.value })} /></label>
+            </div>
+            <button className="primary accountSubmit" onClick={updateProfile}>Save changes</button>
+            <button className="wideBtn" onClick={() => setPage("product")}>Back to product</button>
+            <button className="wideBtn" onClick={logout}>Logout</button>
+          </div>
+        </section>
+      )}
+
+      {page === "product" && profile && (
+        <section className="productPage">
+          <div className="productHeader">
+            <div><div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR SPACE</b></div><h1>Create a bill</h1><p>Create a UPI bill for people who are registered on UPI Circle.</p></div>
+            <button className="profileMini" onClick={() => setPage("profile")}><span>{profile.name.charAt(0).toUpperCase()}</span>{profile.name.split(" ")[0]}</button>
+          </div>
+          <div className="productGrid">
+            <div className="productMain">
+              <div className="card productCard">
+                <div className="sectionTitle"><div><b>1</b><div><h2>Select members</h2><small>Choose registered members who need to pay.</small></div></div><span>{selected.length} selected</span></div>
+                {members.length ? <div className="registeredList">{members.map(member => (
+                  <button className={"registeredMember " + (selected.includes(member.id) ? "selected" : "")} key={member.id} onClick={() => toggleMember(member.id)}>
+                    <span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span>
+                    <span><strong>{member.name}</strong><small>{member.upi} · Registered</small></span>
+                    <i>{selected.includes(member.id) ? "✓" : "+"}</i>
+                  </button>
+                ))}</div> : <div className="emptyMembers"><strong>No other registered members yet</strong><small>Create another account to make a member-to-member bill.</small></div>}
+              </div>
+
+              <div className="card productCard">
+                <div className="sectionTitle"><div><b>2</b><div><h2>Bill details</h2><small>Add every item and its exact amount.</small></div></div></div>
+                <div className="billItems">{items.map((item, index) => (
+                  <div className="billItem" key={item.id}>
+                    <span>{index + 1}</span>
+                    <input value={item.name} placeholder="e.g. Tea" onChange={e => updateItem(item.id, "name", e.target.value)} />
+                    <div className="itemAmount"><span>₹</span><input value={item.amount} inputMode="decimal" placeholder="0.00" onChange={e => updateItem(item.id, "amount", e.target.value)} /></div>
+                    <button onClick={() => setItems(old => old.length === 1 ? old : old.filter(x => x.id !== item.id))} disabled={items.length === 1}>×</button>
+                  </div>
+                ))}</div>
+                <button className="addItem" onClick={() => setItems(old => [...old, { id: Date.now(), name: "", amount: "" }])}>＋ Add another item</button>
+                <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
+                <button className="primary generateBtn" onClick={generateBill}>Generate UPI QR bill →</button>
+              </div>
+            </div>
+
+            <aside className="productSide">
+              <div className="card previewCard">
+                <span className="live">● BILL PREVIEW</span>
+                <h2>{items.filter(i => i.name.trim()).map(i => i.name).join(" + ") || "Your bill items"}</h2>
+                <div className="previewTotal">₹{money(total)}</div>
+                <small>Paid to</small><strong>{profile.name}</strong><span>{profile.upi}</span>
+                {selectedMembers.length > 0 && <div className="selectedPayers"><small>Bill for</small>{selectedMembers.map(m => <div key={m.id}><span>{m.name}</span><b>₹{money(total)}</b></div>)}</div>}
+                <div className="secureNote">✓ QR bill uses the registered UPI ID of the person who will receive payment.</div>
+              </div>
+            </aside>
+          </div>
+
+          {generated && <div className="generatedBills">
+            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill.</p></div><button onClick={() => setGenerated(false)}>Edit bill</button></div>
+            <div className="qrBillGrid">{selectedMembers.map(member => {
+              const uri = "upi://pay?pa=" + encodeURIComponent(profile.upi) + "&pn=" + encodeURIComponent(profile.name) + "&am=" + total.toFixed(2) + "&cu=INR";
+              return <div className="card qrBill" key={member.id}>
+                <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(total)}</strong></div>
+                <div className="qrBillContent"><div className="qr"><QRCodeSVG value={uri} size={180} level="M" /></div>
+                  <div className="billDetails"><h3>Billing details</h3>{items.filter(i => i.name.trim()).map(i => <div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount) || 0)}</b></div>)}<div className="detailTotal"><span>Total amount</span><b>₹{money(total)}</b></div><small>Payer: {member.name}<br />Registered UPI: {member.upi}</small><button className="primary shareBill" onClick={() => shareBill(member)}>Share this bill ↗</button></div>
+                </div>
+              </div>;
+            })}</div>
+          </div>}
+        </section>
+      )}
+
+      <footer>© 2026 UPI Circle · Split. Scan. Done.</footer>
+      {toast && <div className="toast">✓ {toast}</div>}
+    </main>
+  );
+}
