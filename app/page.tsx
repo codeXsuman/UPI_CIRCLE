@@ -438,7 +438,9 @@ export default function Home() {
             <p>Choose where you want to send the bill. The message includes the billing items, total amount and direct UPI payment link.</p>
             <div className="shareChoices">
               <button className="shareChoice whatsappChoice" onClick={shareOnWhatsApp}>
-                <span>◉</span><strong>WhatsApp</strong><small>Open WhatsApp with the bill ready to send</small><b>→</b>
+                <span className="whatsappLogo" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" role="img"><path d="M16 3.2c-7.06 0-12.8 5.55-12.8 12.4 0 2.2.59 4.26 1.62 6.04L3.05 28.8l7.39-1.69A13 13 0 0 0 16 28c7.06 0 12.8-5.55 12.8-12.4S23.06 3.2 16 3.2Zm0 22.55c-1.98 0-3.83-.53-5.42-1.45l-.39-.23-4.38 1 1.01-4.17-.25-.4a10.36 10.36 0 0 1-1.59-5.5C4.98 10.48 9.92 5.7 16 5.7s11.02 4.78 11.02 10.3S22.08 25.75 16 25.75Zm5.96-7.68c-.33-.16-1.95-.94-2.25-1.05-.3-.11-.52-.16-.74.16-.22.33-.85 1.05-1.04 1.27-.19.22-.38.25-.71.08-.33-.16-1.39-.5-2.65-1.59-.98-.85-1.64-1.89-1.83-2.21-.19-.33-.02-.5.14-.66.15-.15.33-.38.49-.57.16-.19.22-.33.33-.55.11-.22.05-.41-.03-.57-.08-.16-.74-1.78-1.01-2.44-.27-.65-.54-.56-.74-.57h-.63c-.22 0-.57.08-.87.41-.3.33-1.14 1.11-1.14 2.71s1.17 3.14 1.33 3.36c.16.22 2.3 3.53 5.58 4.95.78.34 1.39.54 1.86.69.78.25 1.49.21 2.05.13.63-.09 1.95-.8 2.22-1.57.27-.77.27-1.43.19-1.57-.08-.14-.3-.22-.63-.38Z"/></svg>
+                </span><strong>WhatsApp</strong><small>Open WhatsApp with the bill ready to send</small><b>→</b>
               </button>
               <button className="shareChoice" onClick={shareWithApps}>
                 <span>↗</span><strong>Other apps</strong><small>Use your phone's share menu for chats and apps</small><b>→</b>
