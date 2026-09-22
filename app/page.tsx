@@ -330,7 +330,7 @@ export default function Home() {
   return (
     <main>
       <header>
-        <div className="brand" onClick={() => setPage(profile ? "product" : "home")}>
+        <div className="brand" onClick={() => navigate(profile ? "product" : "home")}>
           <b>U</b><strong>UPI<span>Circle</span></strong>
         </div>
         {profile ? (
@@ -429,10 +429,7 @@ export default function Home() {
         <section className="productPage">
           <div className="productHeader">
             <div><div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR SPACE</b></div><h1>Create a bill</h1><p>Create a UPI bill for people who are registered on UPI Circle.</p></div>
-            <div className="productHeaderActions">
-              <button className="secondary historyMini" onClick={openHistory}>History</button>
-              <button className="profileMini" onClick={() => navigate("profile")}><span>{profile.name.charAt(0).toUpperCase()}</span>{profile.name.split(" ")[0]}</button>
-            </div>
+
           </div>
           <div className="productGrid">
             <div className="productMain">
