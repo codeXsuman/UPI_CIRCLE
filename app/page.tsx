@@ -10,7 +10,22 @@ const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 
 const DRAFT_KEY = "upi-circle-draft-v3";
 
 export default function Home() {
-  const [page, setPage] = useState<"home" | "account" | "login" | "product" | "profile" | "history">("home");
+  type AppPage = "home" | "account" | "login" | "product" | "profile" | "history";
+  const [page, setPage] = useState<AppPage>("home");
+
+  const getPageFromUrl = (): AppPage | null => {
+    const value = new URLSearchParams(window.location.search).get("view");
+    return ["home", "account", "login", "product", "profile", "history"].includes(value || "")
+      ? value as AppPage
+      : null;
+  };
+
+  const navigate = (nextPage: AppPage, replace = false) => {
+    const url = nextPage === "home" ? "/" : "/?view=" + nextPage;
+    if (replace) window.history.replaceState({ view: nextPage }, "", url);
+    else window.history.pushState({ view: nextPage }, "", url);
+    setPage(nextPage);
+  };
   const [profile, setProfile] = useState<User | null>(null);
   const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -39,10 +54,22 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const handlePopState = () => {
+      const urlPage = getPageFromUrl();
+      if (urlPage) setPage(urlPage);
+      else setPage(profile ? "product" : "home");
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [profile]);
+
+  useEffect(() => {
     (async () => {
       let saved: any = null;
       try { saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null"); } catch {}
-      if (saved?.page) setPage(saved.page);
+      const urlPage = getPageFromUrl();
+      if (urlPage) setPage(urlPage);
+      else if (saved?.page) setPage(saved.page);
       if (saved?.register) setRegister(saved.register);
       if (saved?.login) setLogin(saved.login);
       if (Array.isArray(saved?.items) && saved.items.length) setItems(saved.items);
@@ -57,13 +84,15 @@ export default function Home() {
         if (data.user) {
           const savedProfile = saved?.profileDraft;
           setProfile(savedProfile ? { ...data.user, ...savedProfile } : { ...data.user, password: "" });
-          setPage(saved?.page || "product");
+          const targetPage = urlPage || saved?.page || "product";
+          setPage(targetPage);
+          if (!urlPage) { const url = targetPage === "home" ? "/" : "/?view=" + targetPage; window.history.replaceState({ view: targetPage }, "", url); }
           await loadMembers();
         } else if (saved?.page === "product" || saved?.page === "profile") {
-          setPage("home");
+          navigate("home");
         }
       } catch {
-        if (saved?.page === "product" || saved?.page === "profile") setPage("home");
+        if (saved?.page === "product" || saved?.page === "profile") navigate("home");
       } finally {
         setHydrated(true);
       }
@@ -92,7 +121,7 @@ export default function Home() {
       if (!res.ok) return pop(data.error || "Unable to create account");
       setProfile({ ...data.user, password: "" });
       setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
-      setPage("product");
+      navigate("product");
       await loadMembers();
       pop("Account created successfully");
     } catch { pop("Unable to create account"); }
@@ -109,7 +138,7 @@ export default function Home() {
       if (!res.ok) return pop(data.error || "Unable to login");
       setProfile({ ...data.user, password: "" });
       setLogin({ email: "", password: "" });
-      setPage("product");
+      navigate("product");
       await loadMembers();
       pop("Logged in successfully");
     } catch { pop("Unable to login"); }
@@ -121,7 +150,7 @@ export default function Home() {
     setMembers([]);
     setSelected([]);
     setGenerated(false);
-    setPage("home");
+    navigate("home");
     try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
     pop("Logged out");
   };
@@ -175,7 +204,7 @@ export default function Home() {
   };
 
   const openHistory = async () => {
-    setPage("history");
+    navigate("history");
     await loadHistory();
   };
 
@@ -307,7 +336,7 @@ export default function Home() {
         {profile ? (
           <div className="headerActions">
             <button className="historyNav" onClick={openHistory}>History</button>
-            <button className="profile profileButton" onClick={() => setPage("profile")}>
+            <button className="profile profileButton" onClick={() => navigate("profile")}>
               <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
             </button>
           </div>
@@ -321,8 +350,8 @@ export default function Home() {
             <h1>Split money.<br /><i>Together.</i></h1>
             <p>A simple space for friends to manage shared expenses, payments and circles.</p>
             <div className="authActions">
-              <button className="primary authPrimary" onClick={() => setPage("account")}>Create a new account <span>→</span></button>
-              <button className="secondary authSecondary" onClick={() => setPage("login")}>Login <span>↗</span></button>
+              <button className="primary authPrimary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
+              <button className="secondary authSecondary" onClick={() => navigate("login")}>Login <span>↗</span></button>
             </div>
             <small className="authNote">Create your account once. Your circles and expenses stay connected.</small>
           </div>
@@ -357,7 +386,7 @@ export default function Home() {
               <label>5. Enter password<input value={register.password} type="password" placeholder="Create a password" onChange={e => setRegister({ ...register, password: e.target.value })} /></label>
             </div>
             <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
-            <button className="wideBtn" onClick={() => setPage("home")}>Back to home</button>
+            <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
           </div>
         </section>
       )}
@@ -371,7 +400,7 @@ export default function Home() {
             <label>Email address<input value={login.email} type="email" placeholder="you@example.com" onChange={e => setLogin({ ...login, email: e.target.value })} /></label>
             <label>Password<input value={login.password} type="password" placeholder="Your password" onChange={e => setLogin({ ...login, password: e.target.value })} /></label>
             <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
-            <button className="wideBtn" onClick={() => setPage("home")}>Back to home</button>
+            <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
           </div>
         </section>
       )}
@@ -390,7 +419,7 @@ export default function Home() {
               <label>Password<input value={profile.password || ""} type="password" placeholder="Leave blank to keep current" onChange={e => setProfile({ ...profile, password: e.target.value })} /></label>
             </div>
             <button className="primary accountSubmit" onClick={updateProfile}>Save changes</button>
-            <button className="wideBtn" onClick={() => setPage("product")}>Back to product</button>
+            <button className="wideBtn" onClick={() => navigate("product")}>Back to product</button>
             <button className="wideBtn" onClick={logout}>Logout</button>
           </div>
         </section>
@@ -402,7 +431,7 @@ export default function Home() {
             <div><div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR SPACE</b></div><h1>Create a bill</h1><p>Create a UPI bill for people who are registered on UPI Circle.</p></div>
             <div className="productHeaderActions">
               <button className="secondary historyMini" onClick={openHistory}>History</button>
-              <button className="profileMini" onClick={() => setPage("profile")}><span>{profile.name.charAt(0).toUpperCase()}</span>{profile.name.split(" ")[0]}</button>
+              <button className="profileMini" onClick={() => navigate("profile")}><span>{profile.name.charAt(0).toUpperCase()}</span>{profile.name.split(" ")[0]}</button>
             </div>
           </div>
           <div className="productGrid">
@@ -484,7 +513,7 @@ export default function Home() {
               <p>Saved bills are stored with your account so you can revisit their items, amount and payment details.</p>
             </div>
             <div className="historyHeaderActions">
-              <button className="secondary" onClick={() => setPage("product")}>Create a bill</button>
+              <button className="secondary" onClick={() => navigate("product")}>Create a bill</button>
             </div>
           </div>
           {!historyBills.length ? (
@@ -492,7 +521,7 @@ export default function Home() {
               <div className="historyEmptyIcon">↗</div>
               <h2>No saved bills yet</h2>
               <p>Generate a bill and choose “Save in history” to keep it here.</p>
-              <button className="primary" onClick={() => setPage("product")}>Create your first bill →</button>
+              <button className="primary" onClick={() => navigate("product")}>Create your first bill →</button>
             </div>
           ) : (
             <div className="historyList">
@@ -516,7 +545,7 @@ export default function Home() {
                     <span>UPI ID <b>{bill.creatorUpi}</b></span>
                   </div>
                   <div className="historyCardActions">
-                    <button className="secondary" onClick={() => setPage("product")}>Create new bill</button>
+                    <button className="secondary" onClick={() => navigate("product")}>Create new bill</button>
                     <button className="primary" onClick={() => pop("Historical bill details are shown above")}>View bill details</button>
                   </div>
                 </div>
