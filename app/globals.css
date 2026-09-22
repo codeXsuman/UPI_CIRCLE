@@ -392,3 +392,79 @@ main{width:100%;overflow-x:hidden}
   }
   .mobileProfileMenu button:hover{background:#f5f3ff;color:#5147d8}
 }
+
+/* Mobile bill-flow polish */
+@media(max-width:600px){
+  .productCard{padding:16px;border-radius:17px}
+  .sectionTitle{gap:10px}
+  .sectionTitle h2{font-size:16px}
+  .sectionTitle small{font-size:9px;line-height:1.5}
+  .billItems{gap:8px}
+  .billItem{
+    display:grid;
+    grid-template-columns:18px minmax(0,1fr) 24px;
+    gap:7px;
+    align-items:center;
+  }
+  .billItem>span{font-size:9px}
+  .billItem>input{
+    min-width:0;
+    height:48px!important;
+    font-size:13px;
+  }
+  .itemAmount{
+    grid-column:2;
+    width:100%;
+    height:44px;
+  }
+  .itemAmount input{height:42px!important;font-size:13px}
+  .billItem>button{
+    grid-column:3;
+    grid-row:1 / span 2;
+    font-size:17px;
+  }
+  .addItem{margin-top:10px;padding:9px 11px;font-size:10px}
+  .totalBar{margin:18px 0 13px;padding-top:14px}
+  .totalBar strong{font-size:22px}
+  .generateBtn{padding:12px;font-size:12px}
+  .generatedHead{margin-bottom:11px}
+  .generatedHead h2{font-size:20px;line-height:1.15}
+  .generatedHead p{font-size:9px;line-height:1.45;margin-top:4px}
+  .generatedActions{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:5px;
+    margin-top:10px;
+    width:100%;
+  }
+  .generatedActions button{
+    min-width:0;
+    padding:8px 5px!important;
+    border-radius:8px;
+    font-size:9px;
+    line-height:1.1;
+  }
+  .generatedActions .newBillBtn{padding:8px 5px!important}
+  .qrBill{padding:15px}
+  .qrBillTop{padding-bottom:12px}
+  .qrBillTop>div{gap:8px}
+  .qrBillTop strong{font-size:17px}
+  .qrBillContent{padding-top:15px;gap:16px}
+  .qrBill .qr{width:min(190px,100%);margin:auto}
+  .billDetails h3{font-size:14px;margin-bottom:9px}
+  .billDetails>div{padding:5px 0;font-size:10px}
+  .billDetails small{font-size:8px;line-height:1.5;margin-top:9px}
+  .paymentActions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    margin-top:10px;
+  }
+  .payNow,.paymentActions button{
+    min-width:0;
+    padding:9px 6px;
+    font-size:10px;
+    border-radius:9px;
+  }
+  .shareBill{margin-top:10px;padding:11px!important;font-size:11px}
+}
