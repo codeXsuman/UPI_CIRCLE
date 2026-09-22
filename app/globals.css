@@ -290,3 +290,54 @@ main{width:100%;overflow-x:hidden}
  .paymentActions{flex-direction:column}
  .shareModal h2{font-size:22px}
 }
+
+/* --- Bill history --- */
+.headerActions,.productHeaderActions,.historyHeaderActions{display:flex;align-items:center;gap:9px}
+.historyNav,.historyMini{border:1px solid #e4e7ec;background:#fff;color:#344054;border-radius:11px;padding:9px 13px;font-size:10px;font-weight:800;cursor:pointer}
+.historyNav:hover,.historyMini:hover{border-color:#c8c4ff;background:#faf9ff}
+.historySaveBtn{border:1px solid #d9d6ff;background:#f4f2ff;color:#5148d9;border-radius:10px;padding:10px 13px;font-size:10px;font-weight:800;cursor:pointer}
+.historySaveBtn:hover{background:#ebe9ff}
+.historySaveBtn.saved{background:#eaf9f0;border-color:#bde8cf;color:#087443;cursor:default}
+.historySaveBtn:disabled{opacity:1}
+.historyPage{max-width:1120px;margin:0 auto;padding:54px 28px 80px}
+.historyHeader{display:flex;justify-content:space-between;align-items:flex-end;gap:25px;margin-bottom:28px}
+.historyHeader h1{font:700 clamp(38px,5vw,58px)/.98 'Space Grotesk';letter-spacing:-2.8px;margin:14px 0 9px}
+.historyHeader p{max-width:600px;color:#667085;font-size:13px;line-height:1.6;margin:0}
+.historyList{display:grid;gap:16px}
+.historyCard{padding:22px 24px}
+.historyCardTop{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid #eceef2}
+.historyCardTop h2{font:700 18px 'Space Grotesk';margin:9px 0 4px}
+.historyCardTop small{font-size:9px;color:#98a2b3}
+.historyCardTop>strong{font:700 22px 'Space Grotesk';white-space:nowrap}
+.historyItems{margin:15px 0}
+.historyItems>div{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid #f0f1f4;font-size:11px}
+.historyItems b{font-weight:800}
+.historyMeta{display:flex;gap:22px;flex-wrap:wrap;color:#98a2b3;font-size:9px}
+.historyMeta b{color:#344054}
+.historyCardActions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.historyCardActions button{font-size:10px;padding:10px 13px}
+.historyEmpty{text-align:center;padding:60px 25px}
+.historyEmptyIcon{width:54px;height:54px;margin:0 auto 16px;border-radius:16px;display:grid;place-items:center;background:#eeecff;color:#635bff;font-size:24px}
+.historyEmpty h2{font:700 22px 'Space Grotesk';margin:0 0 8px}
+.historyEmpty p{color:#667085;font-size:11px;margin:0 auto 20px;max-width:400px;line-height:1.6}
+@media(max-width:600px){
+ .headerActions{gap:6px}.historyNav{padding:8px 9px;font-size:9px}
+ .productHeaderActions{margin-top:14px}
+ .historyPage{padding:30px 14px 60px}
+ .historyHeader{display:block}
+ .historyHeaderActions{margin-top:15px}
+ .historyHeaderActions button{width:100%}
+ .historyHeader h1{font-size:39px}
+ .historyCard{padding:17px}
+ .historyCardTop h2{font-size:16px;line-height:1.25}
+ .historyCardTop>strong{font-size:18px}
+ .historyMeta{display:grid;gap:7px}
+ .historyCardActions{display:grid;grid-template-columns:1fr 1fr}
+ .historyCardActions button{width:100%}
+ .historySaveBtn{padding:10px 9px}
+}
+@media(max-width:390px){
+ .historyNav{display:none}
+ .productHeaderActions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+ .historyCardActions{grid-template-columns:1fr}
+}
