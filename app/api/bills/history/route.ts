@@ -3,10 +3,12 @@ import { getSessionUserId } from "@/lib/auth";
 import { sql } from "@/lib/db";
 
 async function ensureHistoryTable() {
+  // Use a separate lightweight table so existing bill schemas remain untouched.
+  // IDs are stored as text to work with either UUID/text database schemas.
   await sql`
-    CREATE TABLE IF NOT EXISTS bill_history (
-      bill_id UUID PRIMARY KEY REFERENCES bills(id) ON DELETE CASCADE,
-      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    CREATE TABLE IF NOT EXISTS saved_bill_history (
+      bill_id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
       saved_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
@@ -20,9 +22,9 @@ export async function GET() {
     await ensureHistoryTable();
     const bills = await sql`
       SELECT h.bill_id AS id, h.saved_at AS "savedAt",
-             b.total_amount AS "totalAmount", b.created_at AS "createdAt",
+             b.total_amount AS "totalAmount",
              u.name AS "creatorName", u.upi_id AS "creatorUpi"
-      FROM bill_history h
+      FROM saved_bill_history h
       JOIN bills b ON b.id = h.bill_id
       JOIN users u ON u.id = b.creator_id
       WHERE h.user_id = ${userId}
@@ -75,8 +77,8 @@ export async function POST(req: Request) {
     }
 
     await sql`
-      INSERT INTO bill_history (bill_id, user_id)
-      VALUES (${billId}, ${userId})
+      INSERT INTO saved_bill_history (bill_id, user_id)
+      VALUES (${String(billId)}, ${String(userId)})
       ON CONFLICT (bill_id) DO NOTHING
     `;
 
