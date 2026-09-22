@@ -246,6 +246,15 @@ export default function Home() {
     } catch { pop("Unable to copy payment link"); }
   };
 
+  const createNewBill = () => {
+    setSelected([]);
+    setItems([{ id: Date.now(), name: "", amount: "" }]);
+    setGenerated(false);
+    setShareTarget(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    pop("Ready to create a new bill");
+  };
+
   const selectedMembers = members.filter(m => selected.includes(m.id));
 
   return (
@@ -391,7 +400,7 @@ export default function Home() {
           </div>
 
           {generated && <div className="generatedBills">
-            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><button onClick={() => setGenerated(false)}>Edit bill</button></div>
+            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit bill</button><button className="primary newBillBtn" onClick={createNewBill}>＋ Create new bill</button></div></div>
             <div className="qrBillGrid">{selectedMembers.map(member => (
               <div className="card qrBill" key={member.id}>
                 <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(total)}</strong></div>
