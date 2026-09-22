@@ -194,3 +194,99 @@ nav button:hover,.navActive{background:#fff!important;color:#111827!important;bo
 @media(max-width:600px){.productPage{padding:35px 18px 70px}.productHeader{display:block}.profileMini{margin-top:15px}.productCard{padding:18px}.billItem{grid-template-columns:20px 1fr 110px 25px}.qrBillContent{grid-template-columns:1fr}.qrBill .qr{margin:auto}.generatedHead{display:block}.generatedHead>button{margin-top:12px}}
 
 .paymentLinkBox{margin-top:14px;padding:12px;border:1px solid #e4e7ec;border-radius:13px;background:#f8f9fb}.paymentLinkBox>span{display:block;font-size:8px;font-weight:800;letter-spacing:1px;color:#635bff}.paymentLinkBox code{display:block;margin-top:7px;padding:9px;background:#fff;border:1px solid #eceef2;border-radius:9px;font:9px/1.45 monospace;color:#667085;word-break:break-all}.paymentActions{display:flex;gap:8px;margin-top:9px}.payNow,.paymentActions button{flex:1;text-align:center;text-decoration:none;border-radius:9px;padding:9px 10px;font-size:10px;font-weight:800}.payNow{background:#151922;color:#fff}.paymentActions button{background:#fff;border:1px solid #e4e7ec;color:#344054;cursor:pointer}@media(max-width:600px){.paymentActions{flex-direction:column}}
+
+/* --- Responsive scale + sharing polish --- */
+html{font-size:16px}
+main{width:100%;overflow-x:hidden}
+.productPage,.authLanding,footer{width:100%}
+.productPage{max-width:1240px;padding-left:clamp(18px,3vw,36px);padding-right:clamp(18px,3vw,36px)}
+.productHeader h1{font-size:clamp(38px,4.2vw,58px)}
+.productCard,.previewCard,.qrBill{border-radius:18px}
+.productCard{padding:clamp(18px,2vw,26px)}
+.sectionTitle h2{font-size:clamp(16px,1.5vw,19px)}
+.billItem{grid-template-columns:24px minmax(0,1fr) minmax(120px,145px) 28px}
+.qrBillContent{grid-template-columns:minmax(180px,210px) minmax(0,1fr);gap:clamp(18px,2.5vw,30px)}
+.qrBill .qr{width:min(198px,100%);height:auto;aspect-ratio:1}
+.qrBill .qr svg{width:100%!important;height:auto!important}
+.generatedActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.generatedActions button{white-space:nowrap}
+.newBillBtn{padding:10px 14px!important}
+.shareOverlay{position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.46);backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px}
+.shareModal{position:relative;width:min(520px,100%);max-height:min(700px,calc(100vh - 40px));overflow:auto;background:#fff;border:1px solid #e7e9ef;border-radius:24px;padding:28px;box-shadow:0 30px 90px rgba(16,24,40,.28)}
+.shareClose{position:absolute;right:16px;top:14px;width:34px;height:34px;border-radius:50%;background:#f4f5f7;color:#667085;font-size:22px;line-height:1}
+.shareIcon{width:44px;height:44px;border-radius:14px;background:#eeecff;color:#635bff;display:grid;place-items:center;font-size:20px;margin-bottom:16px}
+.shareModal h2{font:700 28px/1.1 'Space Grotesk';letter-spacing:-1px;margin:10px 0 8px}
+.shareModal>p{color:#667085;font-size:12px;line-height:1.6;margin:0 0 20px}
+.shareChoices{display:grid;gap:9px}
+.shareChoice{width:100%;display:grid;grid-template-columns:42px 1fr 20px;grid-template-rows:auto auto;column-gap:12px;text-align:left;padding:13px;border:1px solid #e7e9ef;border-radius:14px;background:#fff;transition:.18s ease}
+.shareChoice:hover{border-color:#bcb7ff;background:#faf9ff;transform:translateY(-1px)}
+.shareChoice>span:first-child{grid-row:1/3;width:42px;height:42px;border-radius:12px;background:#f1f0ff;color:#635bff;display:grid;place-items:center;font-size:17px}
+.shareChoice strong{font-size:12px;align-self:end}
+.shareChoice small{font-size:9px;color:#98a2b3;margin-top:3px}
+.shareChoice>b{grid-column:3;grid-row:1/3;align-self:center;color:#635bff;font-size:16px}
+.whatsappLogo{background:#25D366!important;color:#fff!important}
+.whatsappLogo svg{width:23px;height:23px;fill:currentColor}
+.shareHint{display:block;margin-top:14px;color:#98a2b3;font-size:9px;line-height:1.5}
+@media(min-width:1200px){
+ .productGrid{grid-template-columns:minmax(0,1.62fr) minmax(300px,.68fr);gap:24px}
+ .qrBill{padding:26px}
+ .qrBillContent{grid-template-columns:220px minmax(0,1fr)}
+}
+@media(max-width:850px){
+ .productPage{padding-top:38px}
+ .productGrid{grid-template-columns:1fr}
+ .previewCard{position:static}
+ .productHeader{align-items:flex-start}
+ .qrBillContent{grid-template-columns:minmax(160px,190px) minmax(0,1fr)}
+}
+@media(max-width:600px){
+ header{height:68px;padding:0 16px}
+ .brand{font-size:18px;gap:8px}
+ .brand>b{width:32px;height:32px}
+ .productPage{padding:28px 14px 60px}
+ .productHeader h1{font-size:38px;letter-spacing:-2px}
+ .productHeader p{font-size:13px;line-height:1.5;max-width:420px}
+ .productCard{padding:16px;border-radius:16px}
+ .sectionTitle{gap:10px}
+ .sectionTitle>span{font-size:8px;padding:6px 8px}
+ .billItem{grid-template-columns:20px minmax(0,1fr);gap:7px}
+ .billItem .itemAmount{grid-column:2}
+ .billItem>button{position:absolute;right:2px;transform:translateY(-36px)}
+ .itemAmount{height:48px}
+ .billItem input{min-width:0}
+ .totalBar strong{font-size:22px}
+ .previewCard{padding:18px}
+ .previewCard h2{font-size:19px}
+ .previewTotal{font-size:32px}
+ .generatedBills{margin-top:22px}
+ .generatedHead h2{font-size:22px}
+ .generatedHead p{line-height:1.5}
+ .generatedActions{width:100%;display:grid;grid-template-columns:1fr 1fr;margin-top:12px}
+ .generatedActions button{width:100%;font-size:10px;padding:10px!important}
+ .qrBill{padding:16px;border-radius:16px}
+ .qrBillTop{align-items:flex-start}
+ .qrBillTop>div{min-width:0}
+ .qrBillTop strong{font-size:17px}
+ .qrBillContent{grid-template-columns:1fr;gap:18px}
+ .qrBill .qr{width:min(210px,78vw);margin:0 auto}
+ .billDetails h3{font-size:14px}
+ .billDetails>div{font-size:10px}
+ .paymentLinkBox{padding:10px}
+ .paymentLinkBox code{font-size:8px}
+ .paymentActions{flex-direction:row}
+ .payNow,.paymentActions button{font-size:9px;padding:9px 7px}
+ .shareOverlay{padding:12px}
+ .shareModal{padding:23px 17px 18px;border-radius:20px}
+ .shareModal h2{font-size:24px}
+ .shareChoice{grid-template-columns:38px 1fr 18px;padding:11px}
+ .shareChoice>span:first-child{width:38px;height:38px}
+ .shareChoice small{font-size:8px;line-height:1.35}
+ .shareHint{font-size:8px}
+ footer{padding:22px 16px 28px}
+}
+@media(max-width:360px){
+ .productPage{padding-left:10px;padding-right:10px}
+ .generatedActions{grid-template-columns:1fr}
+ .paymentActions{flex-direction:column}
+ .shareModal h2{font-size:22px}
+}
