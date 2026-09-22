@@ -7,6 +7,7 @@ type User = { id: string; name: string; upi: string; mobile: string; email: stri
 type Item = { id: number; name: string; amount: string };
 
 const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const DRAFT_KEY = "upi-circle-draft-v3";
 
 export default function Home() {
   const [page, setPage] = useState<"home" | "account" | "login" | "product" | "profile">("home");
@@ -18,6 +19,7 @@ export default function Home() {
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
   const [generated, setGenerated] = useState(false);
   const [toast, setToast] = useState("");
+  const [hydrated, setHydrated] = useState(false);
 
   const pop = (message: string) => {
     setToast(message);
@@ -32,19 +34,57 @@ export default function Home() {
     } catch {}
   };
 
+  // Restore the current workspace before deciding where the user should land.
+  // This keeps unsaved form/profile drafts alive across accidental refreshes.
   useEffect(() => {
     (async () => {
+      let saved: any = null;
+      try {
+        saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null");
+      } catch {}
+
+      if (saved?.page) setPage(saved.page);
+      if (saved?.register) setRegister(saved.register);
+      if (saved?.login) setLogin(saved.login);
+      if (Array.isArray(saved?.items) && saved.items.length) setItems(saved.items);
+      if (Array.isArray(saved?.selected)) setSelected(saved.selected);
+      if (typeof saved?.generated === "boolean") setGenerated(saved.generated);
+
       try {
         const res = await fetch("/api/auth/me", { cache: "no-store" });
         const data = await res.json();
         if (data.user) {
-          setProfile({ ...data.user, password: "" });
-          setPage("product");
+          const savedProfile = saved?.profileDraft;
+          setProfile(savedProfile ? { ...data.user, ...savedProfile } : { ...data.user, password: "" });
+          setPage(saved?.page || "product");
           await loadMembers();
+        } else if (saved?.page === "product" || saved?.page === "profile") {
+          setPage("home");
         }
-      } catch {}
+      } catch {
+        if (saved?.page === "product" || saved?.page === "profile") setPage("home");
+      } finally {
+        setHydrated(true);
+      }
     })();
   }, []);
+
+  // Save the active page and all non-submitted drafts in this browser session.
+  // Server-backed account data remains the source of truth after saving.
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+        page,
+        profileDraft: profile,
+        register,
+        login,
+        items,
+        selected,
+        generated
+      }));
+    } catch {}
+  }, [hydrated, page, profile, register, login, items, selected, generated]);
 
   const registerAccount = async () => {
     if (Object.values(register).some(v => !v.trim())) return pop("Please complete all registration details");
@@ -92,6 +132,7 @@ export default function Home() {
     setSelected([]);
     setGenerated(false);
     setPage("home");
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
     pop("Logged out");
   };
 
@@ -116,15 +157,26 @@ export default function Home() {
   const toggleMember = (id: string) =>
     setSelected(old => old.includes(id) ? old.filter(x => x !== id) : [...old, id]);
 
-  const updateItem = (id: number, key: "name" | "amount", value: string) =>
+  const updateItem = (id: number, key: "name" | "amount", value: string) => {
     setItems(old => old.map(item => item.id === id
       ? { ...item, [key]: key === "amount" ? value.replace(/[^0-9.]/g, "") : value }
       : item));
+  };
 
   const total = useMemo(
     () => items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
     [items]
   );
+
+  const paymentLink = useMemo(() => {
+    if (!profile) return "";
+    const note = items.filter(i => i.name.trim()).map(i => i.name.trim()).join(", ").slice(0, 60) || "UPI Circle bill";
+    return "upi://pay?pa=" + encodeURIComponent(profile.upi)
+      + "&pn=" + encodeURIComponent(profile.name)
+      + "&am=" + total.toFixed(2)
+      + "&cu=INR"
+      + "&tn=" + encodeURIComponent(note);
+  }, [profile, items, total]);
 
   const generateBill = async () => {
     if (!profile) return;
@@ -146,12 +198,51 @@ export default function Home() {
   };
 
   const shareBill = async (member: User) => {
-    const text = "UPI Circle bill: ₹" + money(total) + " · Pay to " + profile?.name + " (" + profile?.upi + ")";
+    const itemLines = items
+      .filter(i => i.name.trim())
+      .map(i => "• " + i.name.trim() + " — ₹" + money(Number(i.amount) || 0))
+      .join("\n");
+
+    const text = [
+      "UPI Circle Bill",
+      "",
+      "Bill for: " + member.name,
+      "Items:",
+      itemLines,
+      "",
+      "Total amount: ₹" + money(total),
+      "Pay to: " + profile?.name,
+      "UPI ID: " + profile?.upi,
+      "",
+      "Direct payment link:",
+      paymentLink
+    ].join("\n");
+
     if (navigator.share) {
-      try { await navigator.share({ title: "UPI Circle Bill", text }); } catch {}
-    } else {
+      try {
+        await navigator.share({
+          title: "UPI Circle Bill — ₹" + money(total),
+          text,
+          url: paymentLink
+        });
+        return;
+      } catch {}
+    }
+
+    try {
       await navigator.clipboard?.writeText(text);
-      pop("Bill details copied");
+      pop("Bill details and payment link copied");
+    } catch {
+      pop("Unable to share bill");
+    }
+  };
+
+  const copyPaymentLink = async () => {
+    try {
+      await navigator.clipboard.writeText(paymentLink);
+      pop("Payment link copied");
+    } catch {
+      pop("Unable to copy payment link");
     }
   };
 
@@ -204,7 +295,7 @@ export default function Home() {
             <div className="accountBadge">CREATE ACCOUNT</div>
             <label>UPI CIRCLE REGISTRATION</label>
             <h1>Create your account</h1>
-            <p>Enter your details once to create your UPI Circle profile.</p>
+            <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
             <div className="formStack">
               <label>1. Enter your name<input value={register.name} placeholder="Your full name" onChange={e => setRegister({ ...register, name: e.target.value })} /></label>
               <label>2. Enter your UPI ID<input value={register.upi} placeholder="yourname@upi" onChange={e => setRegister({ ...register, upi: e.target.value })} /></label>
@@ -223,7 +314,7 @@ export default function Home() {
           <div className="card accountCard">
             <div className="accountBadge">WELCOME BACK</div>
             <label>UPI CIRCLE LOGIN</label><h1>Login</h1>
-            <p>Use the email and password from your UPI Circle account.</p>
+            <p>Your login form also stays on this page after an accidental refresh.</p>
             <label>Email address<input value={login.email} type="email" placeholder="you@example.com" onChange={e => setLogin({ ...login, email: e.target.value })} /></label>
             <label>Password<input value={login.password} type="password" placeholder="Your password" onChange={e => setLogin({ ...login, password: e.target.value })} /></label>
             <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
@@ -237,7 +328,7 @@ export default function Home() {
           <div className="card accountCard">
             <div className="accountBadge">YOUR PROFILE</div>
             <label>UPI CIRCLE ACCOUNT</label><h1>Edit profile</h1>
-            <p>Update the details connected to your account.</p>
+            <p>Changes you type here remain in the current browser session until you save them.</p>
             <div className="formStack">
               <label>Name<input value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} /></label>
               <label>UPI ID<input value={profile.upi} onChange={e => setProfile({ ...profile, upi: e.target.value })} /></label>
@@ -300,16 +391,34 @@ export default function Home() {
           </div>
 
           {generated && <div className="generatedBills">
-            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill.</p></div><button onClick={() => setGenerated(false)}>Edit bill</button></div>
-            <div className="qrBillGrid">{selectedMembers.map(member => {
-              const uri = "upi://pay?pa=" + encodeURIComponent(profile.upi) + "&pn=" + encodeURIComponent(profile.name) + "&am=" + total.toFixed(2) + "&cu=INR";
-              return <div className="card qrBill" key={member.id}>
+            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><button onClick={() => setGenerated(false)}>Edit bill</button></div>
+            <div className="qrBillGrid">{selectedMembers.map(member => (
+              <div className="card qrBill" key={member.id}>
                 <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(total)}</strong></div>
-                <div className="qrBillContent"><div className="qr"><QRCodeSVG value={uri} size={180} level="M" /></div>
-                  <div className="billDetails"><h3>Billing details</h3>{items.filter(i => i.name.trim()).map(i => <div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount) || 0)}</b></div>)}<div className="detailTotal"><span>Total amount</span><b>₹{money(total)}</b></div><small>Payer: {member.name}<br />Registered UPI: {member.upi}</small><button className="primary shareBill" onClick={() => shareBill(member)}>Share this bill ↗</button></div>
+                <div className="qrBillContent">
+                  <div className="qr"><QRCodeSVG value={paymentLink} size={180} level="M" /></div>
+                  <div className="billDetails">
+                    <h3>Billing details</h3>
+                    {items.filter(i => i.name.trim()).map(i => <div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount) || 0)}</b></div>)}
+                    <div className="detailTotal"><span>Total amount</span><b>₹{money(total)}</b></div>
+                    <small>
+                      Bill for: {member.name}<br />
+                      Pay to: {profile.name}<br />
+                      UPI ID: {profile.upi}
+                    </small>
+                    <div className="paymentLinkBox">
+                      <span>DIRECT PAYMENT LINK</span>
+                      <code>{paymentLink}</code>
+                      <div className="paymentActions">
+                        <a className="payNow" href={paymentLink}>Pay now ↗</a>
+                        <button onClick={copyPaymentLink}>Copy link</button>
+                      </div>
+                    </div>
+                    <button className="primary shareBill" onClick={() => shareBill(member)}>Share this bill ↗</button>
+                  </div>
                 </div>
-              </div>;
-            })}</div>
+              </div>
+            ))}</div>
           </div>}
         </section>
       )}
