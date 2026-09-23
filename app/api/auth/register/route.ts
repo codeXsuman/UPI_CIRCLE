@@ -8,20 +8,20 @@ export async function POST(req: Request) {
   try {
     const { name, upi, mobile, email, password } = await req.json();
 
-    if (!name?.trim() || !upi?.trim() || !mobile?.trim() || !email?.trim() || !password) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    if (!name?.trim() || !upi?.trim() || !email?.trim() || !password) {
+      return NextResponse.json({ error: "Please complete all required fields" }, { status: 400 });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedUpi = upi.trim().toLowerCase();
-    const normalizedMobile = mobile.replace(/\D/g, "");
+    const normalizedMobile = (mobile || "").replace(/\D/g, "");
 
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
       return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
     }
 
-    if (!/^[6-9]\d{9}$/.test(normalizedMobile)) {
-      return NextResponse.json({ error: "Enter a valid 10-digit mobile number" }, { status: 400 });
+    if (normalizedMobile && !/^[6-9]\d{9}$/.test(normalizedMobile)) {
+      return NextResponse.json({ error: "Enter a valid 10-digit Indian mobile number" }, { status: 400 });
     }
 
     if (password.length < 6) {
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       FROM users
       WHERE email = ${normalizedEmail}
          OR upi_id = ${normalizedUpi}
-         OR mobile = ${normalizedMobile}
+         OR (${normalizedMobile} <> '' AND mobile = ${normalizedMobile})
       LIMIT 1
     `;
 
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         ${id},
         ${name.trim()},
         ${normalizedUpi},
-        ${normalizedMobile},
+        ${normalizedMobile || null},
         ${normalizedEmail},
         ${passwordHash}
       )
