@@ -161,7 +161,7 @@ export default function Home() {
           alertBill
         }));
       } catch {}
-    }, 180);
+    }, 750);
     return () => window.clearTimeout(timer);
   }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill]);
 
