@@ -415,8 +415,37 @@ input,button{touch-action:manipulation}
 .accountCard .loginFormStack + .accountSubmit{margin-top:20px}
 
 
-.passwordInputWrap{position:relative;display:flex;align-items:center}
-.passwordInputWrap input{width:100%;padding-right:72px}
-.passwordToggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#555;font-size:12px;font-weight:700;cursor:pointer;padding:6px 4px}
-.passwordToggle:hover{color:#111}
-.loginCredentialError{margin-top:8px;color:#dc2626;font-size:13px;font-weight:600;line-height:1.3}
+.passwordInputWrap{position:relative;display:block;width:100%}
+.passwordInputWrap input{display:block;width:100%;box-sizing:border-box;padding-right:86px!important}
+.passwordToggle{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:44px;
+  height:32px;
+  margin:0;
+  padding:0 8px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#555;
+  font-size:13px;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+  z-index:2;
+}
+.passwordToggle:hover{background:#f3f3f3;color:#111}
+.passwordToggle:focus-visible{outline:2px solid #111;outline-offset:2px}
+.loginCredentialError{
+  display:block;
+  margin-top:7px;
+  color:#dc2626;
+  font-size:13px;
+  font-weight:600;
+  line-height:1.3;
+}
