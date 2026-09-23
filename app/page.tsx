@@ -273,7 +273,7 @@ export default function Home() {
   const loginAccount = async () => {
     const errors: Record<string, string> = {};
     if (!login.email.trim()) errors.email = "Email is required";
-    else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(login.email.trim())) errors.email = "Enter a valid email address";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email.trim())) errors.email = "Enter a valid email address";
     if (!login.password) errors.password = "Password is required";
     if (Object.keys(errors).length) {
       setLoginErrors(errors);
