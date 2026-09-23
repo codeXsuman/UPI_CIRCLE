@@ -361,3 +361,27 @@ input,button{touch-action:manipulation}
   font-size:9px;
   vertical-align:middle;
 }
+
+
+/* Login page — new-account prompt */
+.newAccountPrompt{
+  width:100%;
+  margin-top:12px;
+  min-height:46px;
+  padding:10px 14px;
+  border:1px solid #e5e5df;
+  border-radius:13px;
+  background:#fafaf7;
+  color:#666;
+  font-size:12px;
+  font-weight:500;
+  text-align:center;
+}
+.newAccountPrompt strong{
+  color:#111;
+  font-weight:800;
+}
+.newAccountPrompt:hover{
+  border-color:#d2aa00;
+  background:#fffbea;
+}
