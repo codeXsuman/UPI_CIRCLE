@@ -1419,3 +1419,134 @@ body {
   .productCard { padding: 18px !important; }
   .billItem { grid-template-columns: 20px minmax(0,1fr) 28px; }
 }
+
+
+/* UPI BILLS — definitive Create Bill responsive layout */
+.productPage{
+  width:100%;
+  max-width:1360px;
+  margin:0 auto;
+  padding:48px 28px 80px;
+}
+.productHeader{margin-bottom:28px}
+.productHeader h1{font-size:clamp(46px,4.2vw,64px);line-height:1;letter-spacing:-3px}
+.productHeader p{font-size:15px}
+.productGrid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 360px;
+  gap:28px;
+  align-items:start;
+}
+.productMain{display:grid;gap:20px;min-width:0}
+.productSide{min-width:0}
+.productCard{
+  width:100%;
+  padding:28px;
+  min-width:0;
+  box-sizing:border-box;
+}
+.previewCard{
+  width:100%;
+  box-sizing:border-box;
+  position:sticky;
+  top:96px;
+}
+.registeredList,.billItems{width:100%;min-width:0}
+.registeredMember{box-sizing:border-box;min-width:0}
+.registeredMember>span:nth-child(2){min-width:0;overflow:hidden}
+.registeredMember small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.billItem{
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) 170px 30px;
+  gap:10px;
+  align-items:center;
+}
+.billItem>input,
+.itemAmount,
+.itemAmount input{min-width:0;width:100%;box-sizing:border-box}
+.billItem>input{height:52px}
+.itemAmount{height:52px}
+.itemAmount input{height:50px}
+.generateBtn{min-height:52px}
+
+@media (max-width:1100px) and (min-width:769px){
+  .productPage{max-width:1100px;padding-inline:24px}
+  .productGrid{grid-template-columns:minmax(0,1fr) 310px;gap:20px}
+  .productCard{padding:24px}
+  .billItem{grid-template-columns:24px minmax(0,1fr) 140px 28px}
+}
+
+@media (max-width:768px){
+  .productPage{
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding:28px 16px 56px;
+    box-sizing:border-box;
+  }
+  .productHeader{margin-bottom:22px}
+  .productHeader h1{
+    font-size:clamp(38px,11vw,50px)!important;
+    line-height:.98;
+    letter-spacing:-2.5px;
+  }
+  .productHeader p{font-size:14px;line-height:1.5}
+  .productGrid{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .productMain,.productSide,.productCard,.previewCard{
+    width:100%;
+    max-width:none;
+  }
+  .productCard{padding:20px!important}
+  .previewCard{position:static;top:auto}
+  .sectionTitle{gap:12px}
+  .sectionTitle h2{font-size:18px}
+  .sectionTitle small{font-size:10px}
+  .registeredMember{padding:13px}
+  .registeredMember strong{font-size:13px}
+  .registeredMember small{font-size:10px}
+  .billItem{
+    display:grid;
+    grid-template-columns:22px minmax(0,1fr) 28px;
+    grid-template-rows:auto auto;
+    gap:9px;
+    width:100%;
+  }
+  .billItem>span{grid-column:1;grid-row:1;padding-top:14px}
+  .billItem>input[data-field="name"]{
+    grid-column:2;
+    grid-row:1;
+    width:100%;
+    min-width:0;
+    height:50px;
+  }
+  .billItem .itemAmount{
+    grid-column:2;
+    grid-row:2;
+    width:100%;
+    height:50px;
+  }
+  .billItem .itemAmount input{height:48px}
+  .billItem>button{
+    grid-column:3;
+    grid-row:1;
+    margin-top:6px;
+  }
+  .totalBar{margin-top:20px}
+  .generateBtn{min-height:52px}
+}
+
+@media (max-width:420px){
+  .productPage{padding-inline:12px}
+  .productCard{padding:16px!important}
+  .sectionTitle>div:first-child{gap:9px}
+  .sectionTitle>div:first-child>b{width:27px;height:27px}
+  .billItem{grid-template-columns:20px minmax(0,1fr) 24px}
+  .billItem>input[data-field="name"],.billItem .itemAmount{height:48px}
+}
