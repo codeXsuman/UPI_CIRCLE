@@ -37,6 +37,9 @@ export default function Home() {
   const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [register, setRegister] = useState({ name: "", upi: "", mobile: "", email: "", password: "" });
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
+  const [existingAccount, setExistingAccount] = useState(false);
   const [login, setLogin] = useState({ email: "", password: "" });
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
   const [generated, setGenerated] = useState(false);
@@ -119,7 +122,26 @@ export default function Home() {
   }, [hydrated, page, profile, register, login, items, selected, generated, generatedBillId, savedInHistory]);
 
   const registerAccount = async () => {
-    if (Object.values(register).some(v => !v.trim())) return pop("Please complete all registration details");
+    const errors: Record<string, string> = {};
+    const email = register.email.trim();
+    const mobile = register.mobile.trim();
+
+    if (!register.name.trim()) errors.name = "Name is required";
+    if (!register.upi.trim()) errors.upi = "UPI ID is required";
+    if (!email) errors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.email = "Enter a valid email address";
+    if (mobile && !/^[6-9]\d{9}$/.test(mobile)) errors.mobile = "Enter a valid 10-digit Indian mobile number";
+    if (!register.password) errors.password = "Password is required";
+    else if (register.password.length < 6) errors.password = "Password must be at least 6 characters";
+    if (!privacyAccepted) errors.privacy = "Please accept the Privacy Policy to continue";
+
+    setRegisterErrors(errors);
+    if (Object.keys(errors).length) {
+      const first = Object.keys(errors)[0];
+      document.getElementById("register-" + first)?.focus();
+      return pop("Please fix the highlighted fields");
+    }
+
     try {
       setLoading(true);
       const res = await fetch("/api/auth/register", {
@@ -128,9 +150,20 @@ export default function Home() {
         body: JSON.stringify(register)
       });
       const data = await res.json();
-      if (!res.ok) return pop(data.error || "Unable to create account");
+      if (res.status === 409) {
+        setExistingAccount(true);
+        return;
+      }
+      if (!res.ok) {
+        if (/email/i.test(data.error || "")) setRegisterErrors({ email: data.error });
+        else if (/mobile/i.test(data.error || "")) setRegisterErrors({ mobile: data.error });
+        else setRegisterErrors({});
+        return pop(data.error || "Unable to create account");
+      }
       setProfile({ ...data.user, password: "" });
       setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
+      setPrivacyAccepted(false);
+      setRegisterErrors({});
       navigate("product");
       await loadMembers();
       pop("Account created successfully");
@@ -421,12 +454,32 @@ export default function Home() {
             <h1>Create your account</h1>
             <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
             <div className="formStack">
-              <label>Name<input value={register.name} placeholder="Your full name" onChange={e => setRegister({ ...register, name: e.target.value })} /></label>
-              <label>UPI ID<input value={register.upi} placeholder="yourname@upi" onChange={e => setRegister({ ...register, upi: e.target.value })} /></label>
-              <label>Mobile number<input value={register.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") })} /></label>
-              <label>Email<input value={register.email} type="email" placeholder="you@example.com" onChange={e => setRegister({ ...register, email: e.target.value })} /></label>
-              <label>Password<input value={register.password} type="password" placeholder="Create a password" onChange={e => setRegister({ ...register, password: e.target.value })} /></label>
+              <label className={registerErrors.name ? "fieldError" : ""}>Name
+                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); }} />
+                {registerErrors.name && <small>{registerErrors.name}</small>}
+              </label>
+              <label className={registerErrors.upi ? "fieldError" : ""}>UPI ID
+                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); }} />
+                {registerErrors.upi && <small>{registerErrors.upi}</small>}
+              </label>
+              <label className={registerErrors.mobile ? "fieldError" : ""}>Mobile number <span className="optionalTag">Optional</span>
+                <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); }} />
+                {registerErrors.mobile && <small>{registerErrors.mobile}</small>}
+              </label>
+              <label className={registerErrors.email ? "fieldError" : ""}>Email
+                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); }} />
+                {registerErrors.email && <small>{registerErrors.email}</small>}
+              </label>
+              <label className={registerErrors.password ? "fieldError" : ""}>Password
+                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type="password" placeholder="Create a password" onChange={e => { setRegister({ ...register, password: e.target.value }); setRegisterErrors(old => ({ ...old, password: "" })); }} />
+                {registerErrors.password && <small>{registerErrors.password}</small>}
+              </label>
             </div>
+            <label className={"privacyCheck " + (registerErrors.privacy ? "fieldError" : "")}>
+              <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); }} />
+              <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
+              {registerErrors.privacy && <small>{registerErrors.privacy}</small>}
+            </label>
             <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
             <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
           </div>
@@ -612,6 +665,22 @@ export default function Home() {
               </button>
             </div>
             <small className="shareHint">WhatsApp opens WhatsApp Web on desktop or the WhatsApp app when supported on your device.</small>
+          </div>
+        </div>
+      )}
+
+      {existingAccount && (
+        <div className="accountModalOverlay" onClick={() => setExistingAccount(false)}>
+          <div className="accountModal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+            <button className="accountModalClose" onClick={() => setExistingAccount(false)} aria-label="Close">×</button>
+            <div className="accountModalIcon">!</div>
+            <span className="live">ACCOUNT EXISTS</span>
+            <h2>Existing account found</h2>
+            <p>An account already exists with the email, UPI ID or mobile number you entered.</p>
+            <div className="accountModalActions">
+              <button className="primary" onClick={() => { setExistingAccount(false); navigate("login"); }}>Go to Login →</button>
+              <button className="wideBtn" onClick={() => setExistingAccount(false)}>Stay here</button>
+            </div>
           </div>
         </div>
       )}
