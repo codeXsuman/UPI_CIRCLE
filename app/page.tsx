@@ -12,7 +12,7 @@ const GENERAL_DRAFT_TTL_MS = 30 * 1000;
 const BILL_DRAFT_TTL_MS = 10 * 60 * 1000;
 
 export default function Home() {
-  type AppPage = "home" | "account" | "login" | "product" | "profile" | "history";
+  type AppPage = "home" | "account" | "login" | "product" | "profile" | "history" | "alerts";
   const [page, setPage] = useState<AppPage>("home");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -24,7 +24,7 @@ export default function Home() {
 
   const getPageFromUrl = (): AppPage | null => {
     const value = new URLSearchParams(window.location.search).get("view");
-    return ["home", "account", "login", "product", "profile", "history"].includes(value || "")
+    return ["home", "account", "login", "product", "profile", "history", "alerts"].includes(value || "")
       ? value as AppPage
       : null;
   };
@@ -50,6 +50,8 @@ export default function Home() {
   const [generatedBillId, setGeneratedBillId] = useState<string | null>(null);
   const [savedInHistory, setSavedInHistory] = useState(false);
   const [historyBills, setHistoryBills] = useState<any[]>([]);
+  const [alertBills, setAlertBills] = useState<any[]>([]);
+  const [alertBill, setAlertBill] = useState(false);
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -118,6 +120,7 @@ export default function Home() {
       if (typeof saved?.generated === "boolean") setGenerated(saved.generated);
       if (saved?.generatedBillId) setGeneratedBillId(saved.generatedBillId);
       if (typeof saved?.savedInHistory === "boolean") setSavedInHistory(saved.savedInHistory);
+      if (typeof saved?.alertBill === "boolean") setAlertBill(saved.alertBill);
 
       try {
         setLoading(true);
@@ -161,10 +164,11 @@ export default function Home() {
         selected,
         generated,
         generatedBillId,
-        savedInHistory
+        savedInHistory,
+        alertBill
       }));
     } catch {}
-  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory]);
+  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
   // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
@@ -328,6 +332,8 @@ export default function Home() {
       + "&tn=" + encodeURIComponent(note);
   }, [profile, items, total]);
 
+  const loadAlertBills = async () => { try { const res = await fetch("/api/bills/alerts", { cache: "no-store" }); const data = await res.json(); if (res.ok) setAlertBills(data.bills || []); } catch {} };
+
   const loadHistory = async () => {
     try {
       const res = await fetch("/api/bills/history", { cache: "no-store" });
@@ -336,10 +342,8 @@ export default function Home() {
     } catch {}
   };
 
-  const openHistory = async () => {
-    navigate("history");
-    await withLoading(loadHistory);
-  };
+  const openHistory = async () => { navigate("history"); await withLoading(loadHistory); };
+  const openAlerts = async () => { navigate("alerts"); await withLoading(loadAlertBills); };
 
   const saveInHistory = async () => {
     if (!generatedBillId) return pop("Generate the bill first");
@@ -374,6 +378,7 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) return pop(data.error || "Unable to save bill");
       setGeneratedBillId(data.billId);
+      if (alertBill) await loadAlertBills();
       setSavedInHistory(false);
       setGenerated(true);
       pop("Bill generated successfully");
@@ -471,7 +476,7 @@ export default function Home() {
         </div>
         {profile ? (
           <div className="headerActions">
-            <button className="historyNav" onClick={openHistory}>History</button>
+            <button className="historyNav" onClick={openHistory}>History</button><button className="historyNav alertNav" onClick={openAlerts}>Alert Bills</button>
             <div className="profileMenuWrap">
               <button
                 className="profileButton"
@@ -486,7 +491,7 @@ export default function Home() {
               </button>
               {profileMenuOpen && (
                 <div className="mobileProfileMenu">
-                  <button onClick={() => { setProfileMenuOpen(false); openHistory(); }}>History</button>
+                  <button onClick={() => { setProfileMenuOpen(false); openHistory(); }}>History</button><button onClick={() => { setProfileMenuOpen(false); openAlerts(); }}>Alert Bills</button>
                   <button onClick={() => { setProfileMenuOpen(false); navigate("profile"); }}>Profile</button>
                 </div>
               )}
@@ -645,6 +650,7 @@ export default function Home() {
                 ))}</div>
                 <button className="addItem" onClick={() => setItems(old => [...old, { id: Date.now(), name: "", amount: "" }])}>＋ Add another item</button>
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
+                <label className={"alertBillToggle " + (alertBill ? "on" : "")}><span className="alertBillCopy"><strong>Alert bill</strong><small>Track this bill in Alert Bills and monitor payment status.</small></span><input type="checkbox" checked={alertBill} onChange={e => setAlertBill(e.target.checked)} /><span className="alertSwitch"><i /></span></label>
                 <button className="primary generateBtn" onClick={generateBill}>Generate UPI QR bill →</button>
               </div>
             </div>
@@ -684,6 +690,8 @@ export default function Home() {
           </div>}
         </section>
       )}
+
+      {page === "alerts" && profile && (<section className="historyPage"><div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>PAYMENT MONITOR</b></div><h1>Alert Bills</h1><p>Bills with alerts enabled stay here so you can monitor payment status.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openAlerts}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create a bill</button></div></div>{!alertBills.length ? (<div className="card historyEmpty"><h2>No alert bills yet</h2><p>Turn on “Alert bill” before generating a bill to start tracking it.</p><button className="primary" onClick={() => navigate("product")}>Create an alert bill →</button></div>) : (<div className="historyList">{alertBills.map((bill) => (<div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus " + (bill.paymentStatus === "paid" ? "paid" : "pending")}>● {bill.paymentStatus === "paid" ? "PAYMENT SUCCESS" : "PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any) => r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any) => <div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div></div>))}</div>)}</section>)}
 
       {page === "history" && profile && (
         <section className="historyPage">
