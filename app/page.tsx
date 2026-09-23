@@ -616,6 +616,15 @@ export default function Home() {
         </div>
       )}
 
+      {loading && (
+        <div className="loadingOverlay" role="status" aria-live="polite" aria-label="Loading">
+          <div className="loadingCard">
+            <span className="loadingSpinner" aria-hidden="true" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      )}
+
       <footer>© 2026 UPI Bills · Split. Scan. Done.</footer>
       {toast && <div className="toast">✓ {toast}</div>}
     </main>
