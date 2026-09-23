@@ -454,6 +454,7 @@ input,button{touch-action:manipulation}
   stroke-linejoin:round;
   pointer-events:none;
 }
+/* Password visibility control: icon only, no hover/active/focus visual effect */
 .passwordToggle:hover,
 .passwordToggle:active,
 .passwordToggle:focus,
@@ -461,9 +462,13 @@ input,button{touch-action:manipulation}
   background:transparent !important;
   background-color:transparent !important;
   background-image:none !important;
+  border:0 !important;
   box-shadow:none !important;
-  color:#667085;
-  outline:none !important;
+  color:#667085 !important;
+  outline:0 !important;
+  transform:translateY(-50%) !important;
+  filter:none !important;
+  opacity:1 !important;
 }
 .loginCredentialError{
   display:block;
