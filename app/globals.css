@@ -1345,3 +1345,77 @@ body {
     column-gap: 8px;
   }
 }
+
+
+/* FINAL CREATE BILL LAYOUT + PERFORMANCE POLISH */
+.productPage {
+  width: min(100% - 48px, 1480px);
+  max-width: 1480px;
+  margin-inline: auto;
+  min-width: 0;
+}
+.productGrid {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+  gap: 28px;
+}
+.productMain, .productSide, .productCard, .previewCard {
+  min-width: 0;
+  max-width: 100%;
+}
+.productCard { box-sizing: border-box; }
+.billItems, .billItem { min-width: 0; max-width: 100%; }
+.billItem input, .itemAmount, .itemAmount input { min-width: 0; max-width: 100%; box-sizing: border-box; }
+
+@media (min-width: 1200px) {
+  .productGrid { grid-template-columns: minmax(0, 1fr) 390px; }
+  .productCard { padding: 28px; }
+  .sectionTitle h2 { font-size: 20px; }
+  .billItem { grid-template-columns: 28px minmax(0,1fr) 170px 30px; gap: 10px; }
+  .billItem input { height: 52px; font-size: 14px; }
+  .itemAmount { height: 52px; }
+  .itemAmount input { height: 50px; font-size: 14px; }
+  .generateBtn { min-height: 52px; font-size: 14px; }
+}
+
+@media (max-width: 1199px) and (min-width: 851px) {
+  .productPage { width: min(100% - 40px, 1180px); }
+  .productGrid { grid-template-columns: minmax(0,1fr) 330px; gap: 20px; }
+}
+
+@media (max-width: 850px) {
+  .productPage {
+    width: 100%;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .productGrid {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 18px;
+  }
+  .previewCard { position: static; }
+  .billItem {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 22px minmax(0,1fr) 28px;
+    grid-template-rows: auto auto;
+    column-gap: 9px;
+    row-gap: 9px;
+  }
+  .billItem > span { grid-column: 1; grid-row: 1; padding-top: 13px; }
+  .billItem > input[data-field="name"] { grid-column: 2; grid-row: 1; width: 100%; }
+  .billItem .itemAmount { grid-column: 2; grid-row: 2; width: 100%; }
+  .billItem .itemAmount input { width: 100%; }
+  .billItem > button { grid-column: 3; grid-row: 1; margin-top: 7px; }
+}
+
+@media (max-width: 600px) {
+  .productPage {
+    width: 100%;
+    padding: 24px 14px 56px !important;
+  }
+  .productHeader h1 { font-size: clamp(34px, 10vw, 42px) !important; }
+  .productCard { padding: 18px !important; }
+  .billItem { grid-template-columns: 20px minmax(0,1fr) 28px; }
+}
