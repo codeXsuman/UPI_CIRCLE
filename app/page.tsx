@@ -378,8 +378,24 @@ export default function Home() {
 
   const generateBill = async () => {
     if (!profile) return;
-    if (!selected.length) return pop("Select at least one registered member");
-    if (items.some(item => !item.name.trim() || Number(item.amount) <= 0)) return pop("Complete every bill item first");
+
+    if (!selected.length) {
+      const memberSection = document.querySelector(".registeredList, .emptyMembers") as HTMLElement | null;
+      memberSection?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return pop("Select at least one registered member");
+    }
+
+    const invalidItem = items.find(item => !item.name.trim() || !item.amount.trim() || Number(item.amount) <= 0);
+    if (invalidItem) {
+      const itemRow = document.querySelector(`.billItem[data-item-id="${invalidItem.id}"]`) as HTMLElement | null;
+      const input = itemRow?.querySelector(!invalidItem.name.trim() ? 'input[data-field="name"]' : 'input[data-field="amount"]') as HTMLInputElement | null;
+      if (input) {
+        input.setCustomValidity(!invalidItem.name.trim() ? "Item name is required" : !invalidItem.amount.trim() ? "Amount is required" : "Enter an amount greater than 0");
+        input.reportValidity();
+        input.focus();
+      }
+      return;
+    }
     try {
       setLoading(true);
       const res = await fetch("/api/bills", {
@@ -653,10 +669,21 @@ export default function Home() {
               <div className="card productCard">
                 <div className="sectionTitle"><div><b>2</b><div><h2>Bill details</h2><small>Add every item and its exact amount.</small></div></div></div>
                 <div className="billItems">{items.map((item, index) => (
-                  <div className="billItem" key={item.id}>
+                  <div className="billItem" data-item-id={item.id} key={item.id}>
                     <span>{index + 1}</span>
-                    <input value={item.name} placeholder="e.g. Tea" onChange={e => updateItem(item.id, "name", e.target.value)} />
-                    <div className="itemAmount"><span>₹</span><input value={item.amount} inputMode="decimal" placeholder="0.00" onChange={e => updateItem(item.id, "amount", e.target.value)} /></div>
+                    <input
+                      data-field="name"
+                      value={item.name}
+                      placeholder="e.g. Tea"
+                      onChange={e => { e.currentTarget.setCustomValidity(""); updateItem(item.id, "name", e.target.value); }}
+                    />
+                    <div className="itemAmount"><span>₹</span><input
+                      data-field="amount"
+                      value={item.amount}
+                      inputMode="decimal"
+                      placeholder="0.00"
+                      onChange={e => { e.currentTarget.setCustomValidity(""); updateItem(item.id, "amount", e.target.value); }}
+                    /></div>
                     <button onClick={() => setItems(old => old.length === 1 ? old : old.filter(x => x.id !== item.id))} disabled={items.length === 1}>×</button>
                   </div>
                 ))}</div>
