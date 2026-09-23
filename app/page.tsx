@@ -421,11 +421,11 @@ export default function Home() {
             <h1>Create your account</h1>
             <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
             <div className="formStack">
-              <label>1. Enter your name<input value={register.name} placeholder="Your full name" onChange={e => setRegister({ ...register, name: e.target.value })} /></label>
-              <label>2. Enter your UPI ID<input value={register.upi} placeholder="yourname@upi" onChange={e => setRegister({ ...register, upi: e.target.value })} /></label>
-              <label>3. Enter your mobile number<input value={register.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") })} /></label>
-              <label>4. Enter email<input value={register.email} type="email" placeholder="you@example.com" onChange={e => setRegister({ ...register, email: e.target.value })} /></label>
-              <label>5. Enter password<input value={register.password} type="password" placeholder="Create a password" onChange={e => setRegister({ ...register, password: e.target.value })} /></label>
+              <label>Name<input value={register.name} placeholder="Your full name" onChange={e => setRegister({ ...register, name: e.target.value })} /></label>
+              <label>UPI ID<input value={register.upi} placeholder="yourname@upi" onChange={e => setRegister({ ...register, upi: e.target.value })} /></label>
+              <label>Mobile number<input value={register.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") })} /></label>
+              <label>Email<input value={register.email} type="email" placeholder="you@example.com" onChange={e => setRegister({ ...register, email: e.target.value })} /></label>
+              <label>Password<input value={register.password} type="password" placeholder="Create a password" onChange={e => setRegister({ ...register, password: e.target.value })} /></label>
             </div>
             <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
             <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
