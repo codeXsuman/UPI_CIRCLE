@@ -1102,3 +1102,47 @@ html,body{overflow-x:hidden}
   .privacyCard{padding:28px 22px}
   .privacyCard h1{font-size:38px}
 }
+
+
+/* Password strength + privacy alignment */
+.privacyCheckWrap{margin:8px 0 20px}
+.privacyCheckWrap .privacyCheck{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start;
+  gap:10px!important;
+  width:100%;
+  margin:0!important;
+  padding:0!important;
+}
+.privacyCheckWrap .privacyCheck input{
+  flex:0 0 18px!important;
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  min-height:18px!important;
+  margin:0!important;
+}
+.privacyCheckWrap .privacyCheck span{
+  display:block;
+  flex:0 1 auto;
+  line-height:1.4;
+  white-space:normal;
+}
+.privacyError{
+  display:block;
+  margin:7px 0 0 28px;
+  color:#d92d20;
+  font-size:11px;
+  font-weight:600;
+}
+.passwordStrength{
+  display:block;
+  margin-top:7px!important;
+  font-size:12px!important;
+  font-weight:600;
+}
+.passwordStrength.weak{color:#d92d20}
+.passwordStrength.medium{color:#b54708}
+.passwordStrength.strong{color:#15803d}
