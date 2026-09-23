@@ -289,20 +289,12 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) {
-        const nextErrors: Record<string, string> = {};
-        const serverMessage = String(data.error || "").toLowerCase();
-
-        // Credentials are filled but do not match an existing account.
-        if (serverMessage.includes("email") && !serverMessage.includes("password")) {
-          nextErrors.email = "Invalid email address";
-        } else if (serverMessage.includes("password") || serverMessage.includes("credential")) {
-          nextErrors.password = "Invalid password";
-        } else {
-          nextErrors.email = "Invalid email address";
-          nextErrors.password = "Invalid password";
-        }
-
-        setLoginErrors(nextErrors);
+        // Keep credential errors visible on both fields without exposing
+        // whether a particular email exists in the database.
+        setLoginErrors({
+          email: "Invalid email address or password",
+          password: "Invalid email address or password"
+        });
         return;
       }
       setProfile({ ...data.user, password: "" });
@@ -655,9 +647,11 @@ export default function Home() {
             <div className="formStack loginFormStack">
               <label className={loginErrors.email ? "fieldError" : ""}>Email address
                 <input value={login.email} aria-invalid={!!loginErrors.email} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); }} />
+                {loginErrors.email && <span className="fieldErrorMessage">{loginErrors.email}</span>}
               </label>
               <label className={loginErrors.password ? "fieldError" : ""}>Password
                 <input value={login.password} aria-invalid={!!loginErrors.password} type="password" placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); }} />
+                {loginErrors.password && <span className="fieldErrorMessage">{loginErrors.password}</span>}
               </label>
             </div>
             <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
