@@ -938,23 +938,63 @@ html,body{overflow-x:hidden}
   text-transform:uppercase;
 }
 .privacyCheck{
-  display:grid;
-  grid-template-columns:20px minmax(0,1fr);
-  align-items:start;
-  gap:9px;
-  margin:4px 0 18px;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin:8px 0 20px;
   color:#475467;
-  font-size:12px!important;
-  line-height:1.5;
+  font-size:13px!important;
+  line-height:1.45;
   cursor:pointer;
+  position:relative;
+  padding:2px 0;
+}
+.privacyCheck > span{
+  flex:1;
+  min-width:0;
 }
 .privacyCheck input{
+  flex:0 0 18px;
   width:18px!important;
+  height:18px!important;
   min-height:18px!important;
   margin:1px 0 0!important;
   padding:0!important;
-  accent-color:#635bff;
+  border:1.5px solid #aab0bd!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  appearance:none;
+  -webkit-appearance:none;
   cursor:pointer;
+  position:relative;
+}
+.privacyCheck input:checked{
+  background:#635bff!important;
+  border-color:#635bff!important;
+}
+.privacyCheck input:checked::after{
+  content:"✓";
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+}
+.privacyCheck.fieldError{
+  color:#475467;
+}
+.privacyCheck.fieldError input{
+  border:2px solid #f04438!important;
+  outline:none;
+  box-shadow:0 0 0 3px rgba(240,68,56,.10);
+}
+.privacyCheck.fieldError > span{
+  color:#475467;
+}
+.privacyCheck.fieldError > small{
+  grid-column:auto;
 }
 .privacyCheck a{
   color:#554be0;
