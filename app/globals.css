@@ -332,3 +332,32 @@ input,button{touch-action:manipulation}
     scroll-behavior:auto!important;
   }
 }
+
+
+/* Account menu + login CTA refinement */
+.accountButton{
+  min-width:104px;
+  justify-content:center;
+  font-weight:700;
+}
+.accountChevron{display:none!important}
+.loginHighlight{
+  position:relative;
+  overflow:hidden;
+  border:1px solid #111!important;
+  background:#111!important;
+  color:#ffd21a!important;
+  box-shadow:0 8px 18px rgba(17,17,17,.12);
+}
+.loginHighlight:hover{
+  background:#000!important;
+  border-color:#000!important;
+  box-shadow:0 10px 22px rgba(17,17,17,.16);
+}
+.loginDot{
+  display:inline-block;
+  margin-right:7px;
+  color:#ffd21a;
+  font-size:9px;
+  vertical-align:middle;
+}
