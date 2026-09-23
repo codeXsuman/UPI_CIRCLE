@@ -8,42 +8,6 @@ async function ensurePaymentColumns() {
   await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pending'`;
   await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ`;
   await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS payment_reference TEXT`;
-  await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS razorpay_payment_link_id TEXT`;
-  await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS razorpay_payment_link_url TEXT`;
-}
-
-async function createRazorpayPaymentLink(args: {
-  billId: string;
-  total: number;
-  description: string;
-}) {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keyId || !keySecret) throw new Error("Razorpay server credentials are not configured");
-
-  const auth = Buffer.from(keyId + ":" + keySecret).toString("base64");
-  const response = await fetch("https://api.razorpay.com/v1/payment_links", {
-    method: "POST",
-    headers: { Authorization: "Basic " + auth, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      upi_link: true,
-      amount: Math.round(args.total * 100),
-      currency: "INR",
-      accept_partial: false,
-      reference_id: args.billId,
-      description: args.description.slice(0, 2048),
-      notes: { bill_id: args.billId },
-      reminder_enable: false,
-    }),
-    cache: "no-store",
-  });
-
-  const data = await response.json();
-  if (!response.ok || !data.id || !data.short_url) {
-    console.error("Razorpay Payment Link error:", data);
-    throw new Error("Unable to create Razorpay payment link");
-  }
-  return { id: String(data.id), url: String(data.short_url) };
 }
 
 export async function POST(req: Request) {
@@ -68,9 +32,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "One or more recipients are invalid" }, { status: 400 });
     }
 
-    const creatorRows = await sql`SELECT name,email,mobile FROM users WHERE id=${creatorId} LIMIT 1`;
-    if (!creatorRows.length) return NextResponse.json({ error: "Creator account not found" }, { status: 404 });
-
     const total = clean.reduce((sum: number, item: any) => sum + item.amount, 0);
     const billId = randomUUID();
     const useAlert = Boolean(alertBill);
@@ -87,35 +48,16 @@ export async function POST(req: Request) {
         await sql`INSERT INTO bill_recipients(bill_id,user_id) VALUES(${billId},${id})`;
       }
 
-      let paymentLink: { id: string; url: string } | null = null;
-      if (useAlert) {
-        paymentLink = await createRazorpayPaymentLink({
-          billId,
-          total,
-          description: "UPI Bills — " + clean.map((x: any) => x.name).join(", "),
-        });
-
-        await sql`UPDATE bills
-          SET razorpay_payment_link_id=${paymentLink.id}, razorpay_payment_link_url=${paymentLink.url}
-          WHERE id=${billId}`;
-      }
-
       return NextResponse.json({
         billId,
         total: Number(total.toFixed(2)),
         alertBill: useAlert,
         paymentStatus: useAlert ? "pending" : "not_applicable",
-        paymentLinkUrl: paymentLink?.url || null,
       }, { status: 201 });
     } catch (error) {
-      console.error("Bill/payment-link creation error:", error);
+      console.error("Bill creation error:", error);
       await sql`DELETE FROM bills WHERE id=${billId}`;
-      const message = useAlert && /Razorpay server credentials/.test(String(error))
-        ? "Alert bills need Razorpay server credentials in Vercel first."
-        : useAlert
-          ? "Unable to create the verified payment link. The bill was not saved."
-          : "Unable to save bill";
-      return NextResponse.json({ error: message }, { status: 500 });
+      return NextResponse.json({ error: "Unable to save bill" }, { status: 500 });
     }
   } catch (error) {
     console.error(error);
