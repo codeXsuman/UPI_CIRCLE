@@ -628,7 +628,9 @@ export default function Home() {
             <label>Email address<input value={login.email} type="email" placeholder="you@example.com" onChange={e => setLogin({ ...login, email: e.target.value })} /></label>
             <label>Password<input value={login.password} type="password" placeholder="Your password" onChange={e => setLogin({ ...login, password: e.target.value })} /></label>
             <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
-            <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
+            <button className="newAccountPrompt" onClick={() => navigate("account")}>
+              New here? <strong>Create an account now</strong>
+            </button>
           </div>
         </section>
       )}
