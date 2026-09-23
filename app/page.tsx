@@ -77,8 +77,8 @@ export default function Home() {
 
   useEffect(() => {
     if (!accountMenuOpen) return;
-    const closeMenu = (event: MouseEvent) => {
-      const target = event.target as Node;
+    const closeMenu = (event: Event) => {
+      const target = event.target;
       if (!(target instanceof Node)) return;
       const menu = document.querySelector(".accountMenuWrap");
       if (menu && !menu.contains(target)) setAccountMenuOpen(false);
