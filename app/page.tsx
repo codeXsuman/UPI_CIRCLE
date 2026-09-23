@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 
 type User = { id: string; name: string; upi: string; mobile: string; email: string; password?: string };
 type Item = { id: number; name: string; amount: string };
 
 const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const DRAFT_KEY = "upi-bills-draft-v4";
+const DRAFT_KEY = "upi-bills-draft-v5";
+const DRAFT_TTL_MS = 30 * 1000;
 
 export default function Home() {
   type AppPage = "home" | "account" | "login" | "product" | "profile" | "history";
@@ -49,6 +50,8 @@ export default function Home() {
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const draftActivityRef = useRef<number>(Date.now());
+  const draftResettingRef = useRef(false);
 
   const pop = (message: string) => {
     setToast(message);
@@ -77,10 +80,21 @@ export default function Home() {
     (async () => {
       let saved: any = null;
       try { saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null"); } catch {}
+
+      const draftIsFresh = saved?.savedAt && (Date.now() - Number(saved.savedAt) < DRAFT_TTL_MS);
+      if (!draftIsFresh) {
+        try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+        saved = null;
+      } else {
+        draftActivityRef.current = Number(saved.savedAt);
+      }
+
       const urlPage = getPageFromUrl();
       if (urlPage) setPage(urlPage);
       else if (saved?.page) setPage(saved.page);
+
       if (saved?.register) setRegister(saved.register);
+      if (saved?.privacyAccepted) setPrivacyAccepted(true);
       if (saved?.login) setLogin(saved.login);
       if (Array.isArray(saved?.items) && saved.items.length) setItems(saved.items);
       if (Array.isArray(saved?.selected)) setSelected(saved.selected);
@@ -97,7 +111,10 @@ export default function Home() {
           setProfile(savedProfile ? { ...data.user, ...savedProfile } : { ...data.user, password: "" });
           const targetPage = urlPage || saved?.page || "product";
           setPage(targetPage);
-          if (!urlPage) { const url = targetPage === "home" ? "/" : "/?view=" + targetPage; window.history.replaceState({ view: targetPage }, "", url); }
+          if (!urlPage) {
+            const url = targetPage === "home" ? "/" : "/?view=" + targetPage;
+            window.history.replaceState({ view: targetPage }, "", url);
+          }
           await loadMembers();
         } else if (saved?.page === "product" || saved?.page === "profile") {
           navigate("home");
@@ -112,14 +129,58 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || draftResettingRef.current) return;
+    const savedAt = Date.now();
+    draftActivityRef.current = savedAt;
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
-        page, profileDraft: profile, register, login, items, selected, generated,
-        generatedBillId, savedInHistory
+        savedAt,
+        page,
+        profileDraft: profile,
+        register,
+        privacyAccepted,
+        login,
+        items,
+        selected,
+        generated,
+        generatedBillId,
+        savedInHistory
       }));
     } catch {}
-  }, [hydrated, page, profile, register, login, items, selected, generated, generatedBillId, savedInHistory]);
+  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory]);
+
+  // Keep unsaved work only for 30 seconds after the last edit/navigation change.
+  // After that, clear the draft and refresh server-backed data so the screen starts fresh.
+  useEffect(() => {
+    if (!hydrated) return;
+    const timer = window.setInterval(async () => {
+      if (Date.now() - draftActivityRef.current < DRAFT_TTL_MS) return;
+
+      draftResettingRef.current = true;
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+
+      setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
+      setPrivacyAccepted(false);
+      setLogin({ email: "", password: "" });
+      setItems([{ id: 1, name: "", amount: "" }]);
+      setSelected([]);
+      setGenerated(false);
+      setGeneratedBillId(null);
+      setSavedInHistory(false);
+      setRegisterErrors({});
+      setExistingAccount(false);
+
+      if (profile) {
+        await loadMembers();
+        await loadHistory();
+      }
+
+      draftActivityRef.current = Date.now();
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [hydrated, profile]);
+
 
   const registerAccount = async () => {
     const errors: Record<string, string> = {};
