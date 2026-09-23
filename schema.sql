@@ -17,9 +17,7 @@ CREATE TABLE IF NOT EXISTS bills (
   alert_enabled BOOLEAN NOT NULL DEFAULT FALSE,
   payment_status TEXT NOT NULL DEFAULT 'pending',
   paid_at TIMESTAMPTZ,
-  payment_reference TEXT,
-  razorpay_payment_link_id TEXT,
-  razorpay_payment_link_url TEXT
+  payment_reference TEXT
 );
 
 CREATE TABLE IF NOT EXISTS bill_items (
