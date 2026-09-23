@@ -52,6 +52,7 @@ export default function Home() {
   const [historyBills, setHistoryBills] = useState<any[]>([]);
   const [alertBills, setAlertBills] = useState<any[]>([]);
   const [alertBill, setAlertBill] = useState(false);
+  const [providerPaymentLink, setProviderPaymentLink] = useState("");
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -121,6 +122,7 @@ export default function Home() {
       if (saved?.generatedBillId) setGeneratedBillId(saved.generatedBillId);
       if (typeof saved?.savedInHistory === "boolean") setSavedInHistory(saved.savedInHistory);
       if (typeof saved?.alertBill === "boolean") setAlertBill(saved.alertBill);
+      if (typeof saved?.providerPaymentLink === "string") setProviderPaymentLink(saved.providerPaymentLink);
 
       try {
         setLoading(true);
@@ -165,10 +167,11 @@ export default function Home() {
         generated,
         generatedBillId,
         savedInHistory,
-        alertBill
+        alertBill,
+        providerPaymentLink
       }));
     } catch {}
-  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill]);
+  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill, providerPaymentLink]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
   // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
@@ -323,6 +326,7 @@ export default function Home() {
   );
 
   const paymentLink = useMemo(() => {
+    if (alertBill && providerPaymentLink) return providerPaymentLink;
     if (!profile) return "";
     const note = items.filter(i => i.name.trim()).map(i => i.name.trim()).join(", ").slice(0, 60) || "UPI Bills bill";
     return "upi://pay?pa=" + encodeURIComponent(profile.upi)
@@ -373,11 +377,12 @@ export default function Home() {
       const res = await fetch("/api/bills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, recipientIds: selected })
+        body: JSON.stringify({ items, recipientIds: selected, alertBill })
       });
       const data = await res.json();
       if (!res.ok) return pop(data.error || "Unable to save bill");
       setGeneratedBillId(data.billId);
+      setProviderPaymentLink(data.paymentLinkUrl || "");
       if (alertBill) await loadAlertBills();
       setSavedInHistory(false);
       setGenerated(true);
@@ -460,6 +465,7 @@ export default function Home() {
     setItems([{ id: Date.now(), name: "", amount: "" }]);
     setGenerated(false);
     setGeneratedBillId(null);
+    setProviderPaymentLink("");
     setSavedInHistory(false);
     setShareTarget(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
