@@ -907,3 +907,158 @@ html,body{overflow-x:hidden}
     font-size:36px!important;
   }
 }
+
+
+/* --- Registration validation, privacy consent and account-exists modal --- */
+.formStack label{position:relative}
+.formStack label.fieldError{color:#d92d20!important}
+.formStack label.fieldError input{
+  border:1.5px solid #f04438!important;
+  background:#fffafa;
+  box-shadow:0 0 0 3px rgba(240,68,56,.08);
+}
+.formStack label>small,
+.privacyCheck>small{
+  display:block;
+  margin-top:6px;
+  color:#d92d20;
+  font-size:11px;
+  font-weight:600;
+  line-height:1.35;
+}
+.optionalTag{
+  display:inline-flex;
+  margin-left:7px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#f2f0ff;
+  color:#635bff;
+  font-size:9px;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.privacyCheck{
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr);
+  align-items:start;
+  gap:9px;
+  margin:4px 0 18px;
+  color:#475467;
+  font-size:12px!important;
+  line-height:1.5;
+  cursor:pointer;
+}
+.privacyCheck input{
+  width:18px!important;
+  min-height:18px!important;
+  margin:1px 0 0!important;
+  padding:0!important;
+  accent-color:#635bff;
+  cursor:pointer;
+}
+.privacyCheck a{
+  color:#554be0;
+  font-weight:700;
+  text-decoration:underline;
+}
+.privacyCheck.fieldError{
+  color:#d92d20;
+}
+.privacyCheck.fieldError input{
+  outline:2px solid rgba(240,68,56,.18);
+}
+.accountModalOverlay{
+  position:fixed;
+  inset:0;
+  z-index:30;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(15,18,28,.42);
+  backdrop-filter:blur(10px);
+}
+.accountModal{
+  position:relative;
+  width:min(440px,100%);
+  padding:32px;
+  border-radius:24px;
+  background:#fff;
+  border:1px solid #e7e5f5;
+  box-shadow:0 30px 90px rgba(16,24,40,.24);
+}
+.accountModalClose{
+  position:absolute;
+  top:13px;
+  right:13px;
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  background:#f4f4f8;
+  color:#475467;
+  font-size:20px;
+}
+.accountModalIcon{
+  width:42px;height:42px;
+  display:grid;place-items:center;
+  border-radius:13px;
+  background:#fff1f0;
+  color:#d92d20;
+  font:800 18px 'Space Grotesk';
+  margin-bottom:16px;
+}
+.accountModal h2{
+  margin:12px 0 8px;
+  font:700 28px/1.1 'Space Grotesk';
+  letter-spacing:-1px;
+}
+.accountModal p{
+  margin:0 0 22px;
+  color:#667085;
+  font-size:14px;
+  line-height:1.6;
+}
+.accountModalActions{
+  display:grid;
+  gap:9px;
+}
+.accountModalActions button{
+  min-height:48px;
+  border-radius:12px;
+  font-size:14px;
+}
+.privacyPage{
+  min-height:calc(100vh - 74px);
+  display:grid;
+  place-items:center;
+  padding:45px 20px 70px;
+}
+.privacyCard{
+  width:min(760px,100%);
+  padding:38px 42px;
+  border-radius:26px;
+}
+.privacyCard h1{
+  margin:12px 0 18px;
+  font:700 clamp(38px,5vw,54px)/1 'Space Grotesk';
+  letter-spacing:-2.5px;
+}
+.privacyCard h2{
+  margin:26px 0 8px;
+  font:700 19px 'Space Grotesk';
+}
+.privacyCard p{
+  color:#667085;
+  font-size:14px;
+  line-height:1.7;
+  margin:0;
+}
+.privacyCard .primary{
+  margin-top:28px;
+  padding:12px 18px;
+  border-radius:12px;
+}
+@media(max-width:800px){
+  .accountModal{padding:28px 22px}
+  .privacyCard{padding:28px 22px}
+  .privacyCard h1{font-size:38px}
+}
