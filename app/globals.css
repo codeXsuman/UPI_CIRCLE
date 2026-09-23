@@ -419,24 +419,29 @@ input,button{touch-action:manipulation}
 .passwordInputWrap input{display:block;width:100%;box-sizing:border-box;padding-right:86px!important}
 .passwordToggle{
   position:absolute;
-  right:10px;
+  right:14px;
   top:50%;
   transform:translateY(-50%);
-  width:42px;
-  height:42px;
+  width:24px;
+  height:24px;
   margin:0;
   padding:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  border:0;
-  border-radius:10px;
-  background:transparent;
+  border:0 !important;
+  border-radius:0 !important;
+  outline:none !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
   color:#667085;
   cursor:pointer;
   z-index:5;
   appearance:none;
   -webkit-appearance:none;
+  -webkit-tap-highlight-color:transparent;
 }
 .passwordToggle svg{
   display:block;
@@ -449,8 +454,17 @@ input,button{touch-action:manipulation}
   stroke-linejoin:round;
   pointer-events:none;
 }
-.passwordToggle:hover,.passwordToggle:active{background:transparent;color:#667085}
-.passwordToggle:focus-visible{outline:2px solid #111;outline-offset:2px}
+.passwordToggle:hover,
+.passwordToggle:active,
+.passwordToggle:focus,
+.passwordToggle:focus-visible{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  color:#667085;
+  outline:none !important;
+}
 .loginCredentialError{
   display:block;
   margin-top:7px;
