@@ -7,7 +7,7 @@ type User = { id: string; name: string; upi: string; mobile: string; email: stri
 type Item = { id: number; name: string; amount: string };
 
 const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const DRAFT_KEY = "upi-circle-draft-v3";
+const DRAFT_KEY = "upi-bills-draft-v4";
 
 export default function Home() {
   type AppPage = "home" | "account" | "login" | "product" | "profile" | "history";
@@ -351,7 +351,7 @@ export default function Home() {
     <main>
       <header>
         <div className="brand" onClick={() => navigate(profile ? "product" : "home")}>
-          <b>U</b><strong>UPI<span>Circle</span></strong>
+          <b>U</b><strong>UPI<span>Bills</span></strong>
         </div>
         {profile ? (
           <div className="headerActions">
