@@ -377,7 +377,7 @@ export default function Home() {
             </div>
           </div>
         ) : <div className="accountMenuWrap">
-          <button className="profilePlaceholder accountButton" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen(v => !v)}>Account <span>⌄</span></button>
+          <button className="profilePlaceholder accountButton" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen(v => !v)}>Account <span className="accountChevron">↓</span></button>
           {accountMenuOpen && <div className="accountDropdown">
             <button onClick={() => { setAccountMenuOpen(false); navigate("account"); }}>Create account</button>
             <button onClick={() => { setAccountMenuOpen(false); navigate("login"); }}>Login</button>
