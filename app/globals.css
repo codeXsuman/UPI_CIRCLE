@@ -413,3 +413,10 @@ input,button{touch-action:manipulation}
   line-height:1.2;
 }
 .accountCard .loginFormStack + .accountSubmit{margin-top:20px}
+
+
+.passwordInputWrap{position:relative;display:flex;align-items:center}
+.passwordInputWrap input{width:100%;padding-right:72px}
+.passwordToggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#555;font-size:12px;font-weight:700;cursor:pointer;padding:6px 4px}
+.passwordToggle:hover{color:#111}
+.loginCredentialError{margin-top:8px;color:#dc2626;font-size:13px;font-weight:600;line-height:1.3}
