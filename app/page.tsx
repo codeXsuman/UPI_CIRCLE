@@ -46,6 +46,8 @@ export default function Home() {
   const [existingAccount, setExistingAccount] = useState(false);
   const [login, setLogin] = useState({ email: "", password: "" });
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
+  const [loginCredentialError, setLoginCredentialError] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
   const [generated, setGenerated] = useState(false);
   const [generatedBillId, setGeneratedBillId] = useState<string | null>(null);
@@ -300,6 +302,8 @@ export default function Home() {
       setProfile({ ...data.user, password: "" });
       setLogin({ email: "", password: "" });
       setLoginErrors({});
+      setLoginCredentialError("");
+      setShowLoginPassword(false);
       navigate("product");
       await loadMembers();
       pop("Logged in successfully");
@@ -646,13 +650,17 @@ export default function Home() {
             <p>Your login form also stays on this page after an accidental refresh.</p>
             <div className="formStack loginFormStack">
               <label className={loginErrors.email ? "fieldError" : ""}>Email address
-                <input value={login.email} aria-invalid={!!loginErrors.email} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); }} />
+                <input value={login.email} aria-invalid={!!loginErrors.email} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
                 {loginErrors.email && <span className="fieldErrorMessage">{loginErrors.email}</span>}
               </label>
               <label className={loginErrors.password ? "fieldError" : ""}>Password
-                <input value={login.password} aria-invalid={!!loginErrors.password} type="password" placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); }} />
+                <div className="passwordInputWrap">
+                  <input value={login.password} aria-invalid={!!loginErrors.password} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
+                  <button type="button" className="passwordToggle" onClick={() => setShowLoginPassword(old => !old)} aria-label={showLoginPassword ? "Hide password" : "Show password"}>{showLoginPassword ? "Hide" : "Show"}</button>
+                </div>
                 {loginErrors.password && <span className="fieldErrorMessage">{loginErrors.password}</span>}
               </label>
+              {loginCredentialError && <div className="loginCredentialError">{loginCredentialError}</div>}
             </div>
             <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
             <button className="newAccountPrompt" onClick={() => navigate("account")}>
