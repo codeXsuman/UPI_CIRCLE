@@ -58,16 +58,8 @@ export default function Home() {
   const draftActivityRef = useRef<number>(Date.now());
   const draftResettingRef = useRef(false);
   const getDraftTtl = (draftPage: AppPage) => draftPage === "product" ? BILL_DRAFT_TTL_MS : GENERAL_DRAFT_TTL_MS;
-  const touchDraftActivity = (draftPage = page) => {
-    const now = Date.now();
-    draftActivityRef.current = now;
-    try {
-      const raw = sessionStorage.getItem(DRAFT_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...saved, savedAt: now, page: draftPage }));
-      }
-    } catch {}
+  const touchDraftActivity = (_draftPage = page) => {
+    draftActivityRef.current = Date.now();
   };
 
   const pop = (message: string) => {
@@ -150,24 +142,27 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated || draftResettingRef.current) return;
-    const savedAt = Date.now();
-    draftActivityRef.current = savedAt;
-    try {
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
-        savedAt,
-        page,
-        profileDraft: profile,
-        register,
-        privacyAccepted,
-        login,
-        items,
-        selected,
-        generated,
-        generatedBillId,
-        savedInHistory,
-        alertBill
-      }));
-    } catch {}
+    const timer = window.setTimeout(() => {
+      const savedAt = Date.now();
+      draftActivityRef.current = savedAt;
+      try {
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+          savedAt,
+          page,
+          profileDraft: profile,
+          register,
+          privacyAccepted,
+          login,
+          items,
+          selected,
+          generated,
+          generatedBillId,
+          savedInHistory,
+          alertBill
+        }));
+      } catch {}
+    }, 180);
+    return () => window.clearTimeout(timer);
   }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
