@@ -40,6 +40,7 @@ export default function Home() {
   const [register, setRegister] = useState({ name: "", upi: "", mobile: "", email: "", password: "" });
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
+  const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
   const [existingAccount, setExistingAccount] = useState(false);
   const [login, setLogin] = useState({ email: "", password: "" });
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
@@ -503,15 +504,26 @@ export default function Home() {
                 {registerErrors.email && <small>{registerErrors.email}</small>}
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
-                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type="password" placeholder="Create a password" onChange={e => { setRegister({ ...register, password: e.target.value }); setRegisterErrors(old => ({ ...old, password: "" })); }} />
+                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type="password" placeholder="Create a password" onChange={e => {
+                  const value = e.target.value;
+                  setRegister({ ...register, password: value });
+                  setRegisterErrors(old => ({ ...old, password: "" }));
+                  if (!value) setPasswordStrength("");
+                  else if (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) setPasswordStrength("weak");
+                  else if (value.length < 10 || !/[A-Z]/.test(value) || !/[^A-Za-z0-9]/.test(value)) setPasswordStrength("medium");
+                  else setPasswordStrength("strong");
+                }} />
+                {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}
                 {registerErrors.password && <small>{registerErrors.password}</small>}
               </label>
             </div>
-            <label className={"privacyCheck " + (registerErrors.privacy ? "fieldError" : "")}>
-              <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); }} />
-              <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
-              {registerErrors.privacy && <small>{registerErrors.privacy}</small>}
-            </label>
+            <div className={"privacyCheckWrap " + (registerErrors.privacy ? "fieldError" : "")}>
+              <label className="privacyCheck">
+                <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); }} />
+                <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
+              </label>
+              {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
+            </div>
             <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
             <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
           </div>
