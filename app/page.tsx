@@ -76,6 +76,22 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (!accountMenuOpen) return;
+    const closeMenu = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (!(target instanceof Node)) return;
+      const menu = document.querySelector(".accountMenuWrap");
+      if (menu && !menu.contains(target)) setAccountMenuOpen(false);
+    };
+    document.addEventListener("mousedown", closeMenu);
+    document.addEventListener("touchstart", closeMenu);
+    return () => {
+      document.removeEventListener("mousedown", closeMenu);
+      document.removeEventListener("touchstart", closeMenu);
+    };
+  }, [accountMenuOpen]);
+
+  useEffect(() => {
     const handlePopState = () => {
       const urlPage = getPageFromUrl();
       if (urlPage) { touchDraftActivity(urlPage); setPage(urlPage); }
@@ -521,7 +537,7 @@ export default function Home() {
             </div>
           </div>
         ) : <div className="accountMenuWrap">
-          <button className="profilePlaceholder accountButton" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen(v => !v)}>Account <span className="accountChevron">↓</span></button>
+          <button className="profilePlaceholder accountButton" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen(v => !v)}>Account</button>
           {accountMenuOpen && <div className="accountDropdown">
             <button onClick={() => { setAccountMenuOpen(false); navigate("account"); }}>Create account</button>
             <button onClick={() => { setAccountMenuOpen(false); navigate("login"); }}>Login</button>
@@ -537,7 +553,7 @@ export default function Home() {
             <p>A simple way to create, share and manage bills with your friends.</p>
             <div className="authActions">
               <button className="primary authPrimary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
-              <button className="secondary authSecondary" onClick={() => navigate("login")}>Login <span>↗</span></button>
+              <button className="secondary authSecondary loginHighlight" onClick={() => navigate("login")}><span className="loginDot">●</span> Login</button>
             </div>
             <small className="authNote">Create your account once. Create bills, scan to pay, and keep your payment history in one place.</small>
           </div>
