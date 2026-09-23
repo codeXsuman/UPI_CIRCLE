@@ -449,8 +449,7 @@ input,button{touch-action:manipulation}
   stroke-linejoin:round;
   pointer-events:none;
 }
-.passwordToggle:hover{background:#f2f2f2;color:#111}
-.passwordToggle:active{background:#e9e9e9}
+.passwordToggle:hover,.passwordToggle:active{background:transparent;color:#667085}
 .passwordToggle:focus-visible{outline:2px solid #111;outline-offset:2px}
 .loginCredentialError{
   display:block;
