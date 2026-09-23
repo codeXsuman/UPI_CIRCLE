@@ -404,8 +404,7 @@ input,button{touch-action:manipulation}
   border:1.5px solid #dc2626;
   box-shadow:0 0 0 3px rgba(220,38,38,.08);
 }
-.loginFormStack .fieldError::after{
-  content:"Required";
+.loginFormStack .fieldErrorMessage{
   display:block;
   margin-top:6px;
   color:#dc2626;
