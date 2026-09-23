@@ -149,37 +149,8 @@ export default function Home() {
     } catch {}
   }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory]);
 
-  // Keep unsaved work only for 30 seconds after the last edit/navigation change.
-  // After that, clear the draft and refresh server-backed data so the screen starts fresh.
-  useEffect(() => {
-    if (!hydrated) return;
-    const timer = window.setInterval(async () => {
-      if (Date.now() - draftActivityRef.current < DRAFT_TTL_MS) return;
-
-      draftResettingRef.current = true;
-      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
-
-      setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
-      setPrivacyAccepted(false);
-      setLogin({ email: "", password: "" });
-      setItems([{ id: 1, name: "", amount: "" }]);
-      setSelected([]);
-      setGenerated(false);
-      setGeneratedBillId(null);
-      setSavedInHistory(false);
-      setRegisterErrors({});
-      setExistingAccount(false);
-
-      if (profile) {
-        await loadMembers();
-        await loadHistory();
-      }
-
-      draftActivityRef.current = Date.now();
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [hydrated, profile]);
+  // Drafts expire only when the page is re-opened/refreshed after 30 seconds.
+  // Never clear an actively displayed form while the user is still on the page.
 
 
   const registerAccount = async () => {
