@@ -567,19 +567,15 @@ export default function Home() {
             <div className="formStack">
               <label className={registerErrors.name ? "fieldError" : ""}>Name
                 <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); }} />
-                {registerErrors.name && <small>{registerErrors.name}</small>}
               </label>
               <label className={registerErrors.upi ? "fieldError" : ""}>UPI ID
                 <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); }} />
-                {registerErrors.upi && <small>{registerErrors.upi}</small>}
               </label>
               <label className={registerErrors.mobile ? "fieldError" : ""}>Mobile number <span className="optionalTag">Optional</span>
                 <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); }} />
-                {registerErrors.mobile && <small>{registerErrors.mobile}</small>}
               </label>
               <label className={registerErrors.email ? "fieldError" : ""}>Email
                 <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); }} />
-                {registerErrors.email && <small>{registerErrors.email}</small>}
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
                 <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type="password" placeholder="Create a password" onChange={e => {
@@ -592,7 +588,6 @@ export default function Home() {
                   else setPasswordStrength("strong");
                 }} />
                 {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}
-                {registerErrors.password && <small>{registerErrors.password}</small>}
               </label>
             </div>
             <div className={"privacyCheckWrap " + (registerErrors.privacy ? "fieldError" : "")}>
