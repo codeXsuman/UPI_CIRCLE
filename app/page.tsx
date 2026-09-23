@@ -45,6 +45,7 @@ export default function Home() {
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
   const [existingAccount, setExistingAccount] = useState(false);
   const [login, setLogin] = useState({ email: "", password: "" });
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
   const [generated, setGenerated] = useState(false);
   const [generatedBillId, setGeneratedBillId] = useState<string | null>(null);
@@ -270,6 +271,15 @@ export default function Home() {
   };
 
   const loginAccount = async () => {
+    const errors: Record<string, string> = {};
+    if (!login.email.trim()) errors.email = "Email is required";
+    else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(login.email.trim())) errors.email = "Enter a valid email address";
+    if (!login.password) errors.password = "Password is required";
+    if (Object.keys(errors).length) {
+      setLoginErrors(errors);
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await fetch("/api/auth/login", {
@@ -278,9 +288,16 @@ export default function Home() {
         body: JSON.stringify(login)
       });
       const data = await res.json();
-      if (!res.ok) return pop(data.error || "Unable to login");
+      if (!res.ok) {
+        const nextErrors: Record<string, string> = {};
+        if (/email/i.test(data.error || "")) nextErrors.email = data.error;
+        if (/password|credential/i.test(data.error || "")) nextErrors.password = data.error;
+        setLoginErrors(nextErrors);
+        return pop(data.error || "Unable to login");
+      }
       setProfile({ ...data.user, password: "" });
       setLogin({ email: "", password: "" });
+      setLoginErrors({});
       navigate("product");
       await loadMembers();
       pop("Logged in successfully");
@@ -625,8 +642,14 @@ export default function Home() {
             <div className="accountBadge">WELCOME BACK</div>
             <label>UPI BILLS LOGIN</label><h1>Login</h1>
             <p>Your login form also stays on this page after an accidental refresh.</p>
-            <label>Email address<input value={login.email} type="email" placeholder="you@example.com" onChange={e => setLogin({ ...login, email: e.target.value })} /></label>
-            <label>Password<input value={login.password} type="password" placeholder="Your password" onChange={e => setLogin({ ...login, password: e.target.value })} /></label>
+            <div className="formStack loginFormStack">
+              <label className={loginErrors.email ? "fieldError" : ""}>Email address
+                <input value={login.email} aria-invalid={!!loginErrors.email} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); }} />
+              </label>
+              <label className={loginErrors.password ? "fieldError" : ""}>Password
+                <input value={login.password} aria-invalid={!!loginErrors.password} type="password" placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); }} />
+              </label>
+            </div>
             <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
             <button className="newAccountPrompt" onClick={() => navigate("account")}>
               New here? <strong>Create an account now</strong>
