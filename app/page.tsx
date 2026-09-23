@@ -13,6 +13,12 @@ export default function Home() {
   type AppPage = "home" | "account" | "login" | "product" | "profile" | "history";
   const [page, setPage] = useState<AppPage>("home");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const withLoading = async <T,>(task: () => Promise<T>) => {
+    setLoading(true);
+    try { return await task(); } finally { setLoading(false); }
+  };
 
   const getPageFromUrl = (): AppPage | null => {
     const value = new URLSearchParams(window.location.search).get("view");
@@ -80,6 +86,7 @@ export default function Home() {
       if (typeof saved?.savedInHistory === "boolean") setSavedInHistory(saved.savedInHistory);
 
       try {
+        setLoading(true);
         const res = await fetch("/api/auth/me", { cache: "no-store" });
         const data = await res.json();
         if (data.user) {
@@ -95,6 +102,7 @@ export default function Home() {
       } catch {
         if (saved?.page === "product" || saved?.page === "profile") navigate("home");
       } finally {
+        setLoading(false);
         setHydrated(true);
       }
     })();
@@ -113,6 +121,7 @@ export default function Home() {
   const registerAccount = async () => {
     if (Object.values(register).some(v => !v.trim())) return pop("Please complete all registration details");
     try {
+      setLoading(true);
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,10 +135,12 @@ export default function Home() {
       await loadMembers();
       pop("Account created successfully");
     } catch { pop("Unable to create account"); }
+    finally { setLoading(false); }
   };
 
   const loginAccount = async () => {
     try {
+      setLoading(true);
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -143,10 +154,12 @@ export default function Home() {
       await loadMembers();
       pop("Logged in successfully");
     } catch { pop("Unable to login"); }
+    finally { setLoading(false); }
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    setLoading(true);
+    try { await fetch("/api/auth/logout", { method: "POST" });
     setProfile(null);
     setMembers([]);
     setSelected([]);
@@ -154,11 +167,13 @@ export default function Home() {
     navigate("home");
     try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
     pop("Logged out");
+    } finally { setLoading(false); }
   };
 
   const updateProfile = async () => {
     if (!profile) return;
     try {
+      setLoading(true);
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -170,6 +185,7 @@ export default function Home() {
       await loadMembers();
       pop("Profile updated successfully");
     } catch { pop("Unable to update profile"); }
+    finally { setLoading(false); }
   };
 
   const toggleMember = (id: string) =>
@@ -188,7 +204,7 @@ export default function Home() {
 
   const paymentLink = useMemo(() => {
     if (!profile) return "";
-    const note = items.filter(i => i.name.trim()).map(i => i.name.trim()).join(", ").slice(0, 60) || "UPI Circle bill";
+    const note = items.filter(i => i.name.trim()).map(i => i.name.trim()).join(", ").slice(0, 60) || "UPI Bills bill";
     return "upi://pay?pa=" + encodeURIComponent(profile.upi)
       + "&pn=" + encodeURIComponent(profile.name)
       + "&am=" + total.toFixed(2)
@@ -206,12 +222,13 @@ export default function Home() {
 
   const openHistory = async () => {
     navigate("history");
-    await loadHistory();
+    await withLoading(loadHistory);
   };
 
   const saveInHistory = async () => {
     if (!generatedBillId) return pop("Generate the bill first");
     try {
+      setLoading(true);
       const res = await fetch("/api/bills/history", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -224,7 +241,7 @@ export default function Home() {
       pop("Bill saved in history");
     } catch {
       pop("Unable to save in history");
-    }
+    } finally { setLoading(false); }
   };
 
   const generateBill = async () => {
@@ -232,6 +249,7 @@ export default function Home() {
     if (!selected.length) return pop("Select at least one registered member");
     if (items.some(item => !item.name.trim() || Number(item.amount) <= 0)) return pop("Complete every bill item first");
     try {
+      setLoading(true);
       const res = await fetch("/api/bills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -244,6 +262,7 @@ export default function Home() {
       setGenerated(true);
       pop("Bill generated successfully");
     } catch { pop("Unable to save bill"); }
+    finally { setLoading(false); }
   };
 
   const shareText = (member: User) => {
@@ -253,7 +272,7 @@ export default function Home() {
       .join("\n");
 
     return [
-      "UPI Circle Bill",
+      "UPI Bills Bill",
       "",
       "Hi " + member.name + ",",
       "Here is your bill:",
@@ -278,7 +297,7 @@ export default function Home() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "UPI Circle Bill — ₹" + money(total),
+          title: "UPI Bills Bill — ₹" + money(total),
           text,
           url: paymentLink
         });
@@ -357,31 +376,37 @@ export default function Home() {
               )}
             </div>
           </div>
-        ) : <div className="profilePlaceholder">Account</div>}
+        ) : <div className="accountMenuWrap">
+          <button className="profilePlaceholder accountButton" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen(v => !v)}>Account <span>⌄</span></button>
+          {accountMenuOpen && <div className="accountDropdown">
+            <button onClick={() => { setAccountMenuOpen(false); navigate("account"); }}>Create account</button>
+            <button onClick={() => { setAccountMenuOpen(false); navigate("login"); }}>Login</button>
+          </div>}
+        </div>}
       </header>
 
       {page === "home" && (
         <section className="authLanding">
           <div className="authHero">
-            <div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR MONEY, TOGETHER</b></div>
-            <h1>Split money.<br /><i>Together.</i></h1>
-            <p>A simple space for friends to manage shared expenses, payments and circles.</p>
+            <div className="eyebrow"><span>●</span> UPI BILLS <b>SIMPLE BILLING</b></div>
+            <h1>Split bills.<br /><i>Together.</i></h1>
+            <p>A simple way to create, share and manage bills with your friends.</p>
             <div className="authActions">
               <button className="primary authPrimary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
               <button className="secondary authSecondary" onClick={() => navigate("login")}>Login <span>↗</span></button>
             </div>
-            <small className="authNote">Create your account once. Your circles and expenses stay connected.</small>
+            <small className="authNote">Create your account once. Create bills, scan to pay, and keep your payment history in one place.</small>
           </div>
           <div className="authVisual">
             <div className="authOrb orbOne" /><div className="authOrb orbTwo" />
             <div className="authPanel">
-              <div className="authPanelTop"><span>UPI CIRCLE</span><b>●</b></div>
+              <div className="authPanelTop"><span>UPI BILLS</span><b>●</b></div>
               <div className="authPanelLine" />
-              <div className="authPanelBalance"><small>SHARED EXPENSES</small><strong>₹ 2,450.00</strong></div>
+              <div className="authPanelBalance"><small>TOTAL BILLS</small><strong>₹ 2,450.00</strong></div>
               <div className="authRows">
-                <div><b>SC</b><span><strong>Shared coffee</strong><small>4 members</small></span><em>₹ 320</em></div>
-                <div><b>TR</b><span><strong>Trip expenses</strong><small>6 members</small></span><em>₹ 1,840</em></div>
-                <div><b>FD</b><span><strong>Food & dinner</strong><small>3 members</small></span><em>₹ 290</em></div>
+                <div><b>SC</b><span><strong>Coffee bill</strong><small>4 members</small></span><em>₹ 320</em></div>
+                <div><b>TR</b><span><strong>Trip bill</strong><small>6 members</small></span><em>₹ 1,840</em></div>
+                <div><b>FD</b><span><strong>Dinner bill</strong><small>3 members</small></span><em>₹ 290</em></div>
               </div>
             </div>
           </div>
@@ -392,7 +417,7 @@ export default function Home() {
         <section className="account">
           <div className="card accountCard">
             <div className="accountBadge">CREATE ACCOUNT</div>
-            <label>UPI CIRCLE REGISTRATION</label>
+            <label>UPI BILLS REGISTRATION</label>
             <h1>Create your account</h1>
             <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
             <div className="formStack">
@@ -412,7 +437,7 @@ export default function Home() {
         <section className="account">
           <div className="card accountCard">
             <div className="accountBadge">WELCOME BACK</div>
-            <label>UPI CIRCLE LOGIN</label><h1>Login</h1>
+            <label>UPI BILLS LOGIN</label><h1>Login</h1>
             <p>Your login form also stays on this page after an accidental refresh.</p>
             <label>Email address<input value={login.email} type="email" placeholder="you@example.com" onChange={e => setLogin({ ...login, email: e.target.value })} /></label>
             <label>Password<input value={login.password} type="password" placeholder="Your password" onChange={e => setLogin({ ...login, password: e.target.value })} /></label>
@@ -426,7 +451,7 @@ export default function Home() {
         <section className="account profilePage">
           <div className="card accountCard">
             <div className="accountBadge">YOUR PROFILE</div>
-            <label>UPI CIRCLE ACCOUNT</label><h1>Edit profile</h1>
+            <label>UPI BILLS ACCOUNT</label><h1>Edit profile</h1>
             <p>Changes you type here remain in the current browser session until you save them.</p>
             <div className="formStack">
               <label>Name<input value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} /></label>
@@ -445,7 +470,7 @@ export default function Home() {
       {page === "product" && profile && (
         <section className="productPage">
           <div className="productHeader">
-            <div><div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR SPACE</b></div><h1>Create a bill</h1><p>Create a UPI bill for people who are registered on UPI Circle.</p></div>
+            <div><div className="eyebrow"><span>●</span> UPI BILLS <b>YOUR SPACE</b></div><h1>Create a bill</h1><p>Create a bill for people who are registered on UPI Bills.</p></div>
 
           </div>
           <div className="productGrid">
@@ -518,7 +543,7 @@ export default function Home() {
         <section className="historyPage">
           <div className="historyHeader">
             <div>
-              <div className="eyebrow"><span>●</span> UPI CIRCLE <b>YOUR HISTORY</b></div>
+              <div className="eyebrow"><span>●</span> UPI BILLS <b>YOUR HISTORY</b></div>
               <h1>Bill history</h1>
               <p>Saved bills are stored with your account so you can revisit their items, amount and payment details.</p>
             </div>
@@ -591,7 +616,7 @@ export default function Home() {
         </div>
       )}
 
-      <footer>© 2026 UPI Circle · Split. Scan. Done.</footer>
+      <footer>© 2026 UPI Bills · Split. Scan. Done.</footer>
       {toast && <div className="toast">✓ {toast}</div>}
     </main>
   );
