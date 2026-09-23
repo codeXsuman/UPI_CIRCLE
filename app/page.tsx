@@ -52,7 +52,6 @@ export default function Home() {
   const [historyBills, setHistoryBills] = useState<any[]>([]);
   const [alertBills, setAlertBills] = useState<any[]>([]);
   const [alertBill, setAlertBill] = useState(false);
-  const [providerPaymentLink, setProviderPaymentLink] = useState("");
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -122,7 +121,6 @@ export default function Home() {
       if (saved?.generatedBillId) setGeneratedBillId(saved.generatedBillId);
       if (typeof saved?.savedInHistory === "boolean") setSavedInHistory(saved.savedInHistory);
       if (typeof saved?.alertBill === "boolean") setAlertBill(saved.alertBill);
-      if (typeof saved?.providerPaymentLink === "string") setProviderPaymentLink(saved.providerPaymentLink);
 
       try {
         setLoading(true);
@@ -167,11 +165,10 @@ export default function Home() {
         generated,
         generatedBillId,
         savedInHistory,
-        alertBill,
-        providerPaymentLink
+        alertBill
       }));
     } catch {}
-  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill, providerPaymentLink]);
+  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
   // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
@@ -326,7 +323,6 @@ export default function Home() {
   );
 
   const paymentLink = useMemo(() => {
-    if (alertBill && providerPaymentLink) return providerPaymentLink;
     if (!profile) return "";
     const note = items.filter(i => i.name.trim()).map(i => i.name.trim()).join(", ").slice(0, 60) || "UPI Bills bill";
     return "upi://pay?pa=" + encodeURIComponent(profile.upi)
@@ -334,7 +330,7 @@ export default function Home() {
       + "&am=" + total.toFixed(2)
       + "&cu=INR"
       + "&tn=" + encodeURIComponent(note);
-  }, [profile, items, total, alertBill, providerPaymentLink]);
+  }, [profile, items, total, alertBill]);
 
   const loadAlertBills = async () => { try { const res = await fetch("/api/bills/alerts", { cache: "no-store" }); const data = await res.json(); if (res.ok) setAlertBills(data.bills || []); } catch {} };
 
@@ -382,7 +378,6 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) return pop(data.error || "Unable to save bill");
       setGeneratedBillId(data.billId);
-      setProviderPaymentLink(data.paymentLinkUrl || "");
       if (alertBill) await loadAlertBills();
       setSavedInHistory(false);
       setGenerated(true);
