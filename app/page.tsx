@@ -290,10 +290,20 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) {
         const nextErrors: Record<string, string> = {};
-        if (/email/i.test(data.error || "")) nextErrors.email = data.error;
-        if (/password|credential/i.test(data.error || "")) nextErrors.password = data.error;
+        const serverMessage = String(data.error || "").toLowerCase();
+
+        // Credentials are filled but do not match an existing account.
+        if (serverMessage.includes("email") && !serverMessage.includes("password")) {
+          nextErrors.email = "Invalid email address";
+        } else if (serverMessage.includes("password") || serverMessage.includes("credential")) {
+          nextErrors.password = "Invalid password";
+        } else {
+          nextErrors.email = "Invalid email address";
+          nextErrors.password = "Invalid password";
+        }
+
         setLoginErrors(nextErrors);
-        return pop(data.error || "Unable to login");
+        return;
       }
       setProfile({ ...data.user, password: "" });
       setLogin({ email: "", password: "" });
