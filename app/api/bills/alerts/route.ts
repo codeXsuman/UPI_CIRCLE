@@ -14,7 +14,7 @@ export async function GET() {
   if (!userId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   try {
     await ensureAlertColumns();
-    const bills = await sql`SELECT b.id,b.created_at AS "createdAt",b.total_amount AS "totalAmount",b.payment_status AS "paymentStatus",b.paid_at AS "paidAt",u.name AS "creatorName",u.upi_id AS "creatorUpi" FROM bills b JOIN users u ON u.id=b.creator_id WHERE b.creator_id=${userId} AND b.alert_enabled=TRUE ORDER BY b.created_at DESC`;
+    const bills = await sql`SELECT b.id,b.created_at AS "createdAt",b.total_amount AS "totalAmount",b.payment_status AS "paymentStatus",b.paid_at AS "paidAt",b.razorpay_payment_link_url AS "paymentLinkUrl",u.name AS "creatorName",u.upi_id AS "creatorUpi" FROM bills b JOIN users u ON u.id=b.creator_id WHERE b.creator_id=${userId} AND b.alert_enabled=TRUE ORDER BY b.created_at DESC`;
     const result = [];
     for (const bill of bills) {
       const items = await sql`SELECT id,item_name AS name,amount FROM bill_items WHERE bill_id=${bill.id} ORDER BY id`;
