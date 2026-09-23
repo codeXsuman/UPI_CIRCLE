@@ -13,7 +13,11 @@ CREATE TABLE IF NOT EXISTS bills (
   id TEXT PRIMARY KEY,
   creator_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   total_amount NUMERIC(12,2) NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  alert_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  payment_status TEXT NOT NULL DEFAULT 'pending',
+  paid_at TIMESTAMPTZ,
+  payment_reference TEXT
 );
 
 CREATE TABLE IF NOT EXISTS bill_items (
