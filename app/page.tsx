@@ -653,7 +653,19 @@ export default function Home() {
               <label className={loginErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
                   <input value={login.password} aria-invalid={!!loginErrors.password} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
-                  <button type="button" className="passwordToggle" onClick={() => setShowLoginPassword(old => !old)} aria-label={showLoginPassword ? "Hide password" : "Show password"}>{showLoginPassword ? "Hide" : "Show"}</button>
+                  <button
+                    type="button"
+                    className="passwordToggle"
+                    onClick={() => setShowLoginPassword(old => !old)}
+                    aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                    title={showLoginPassword ? "Hide password" : "Show password"}
+                  >
+                    {showLoginPassword ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 4.4A10.9 10.9 0 0 1 12 4.2c5.2 0 9.2 3.3 10.5 7.8a11.7 11.7 0 0 1-3 5.1M6.2 6.2C4.4 7.5 2.8 9.5 1.5 12 2.8 16.5 6.8 19.8 12 19.8c1.2 0 2.3-.2 3.3-.5" /></svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                    )}
+                  </button>
                 </div>
                 {loginErrors.password && <span className="fieldErrorMessage">{loginErrors.password}</span>}
                 {loginCredentialError && <span className="loginCredentialError">{loginCredentialError}</span>}
