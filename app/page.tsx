@@ -334,7 +334,7 @@ export default function Home() {
       + "&am=" + total.toFixed(2)
       + "&cu=INR"
       + "&tn=" + encodeURIComponent(note);
-  }, [profile, items, total]);
+  }, [profile, items, total, alertBill, providerPaymentLink]);
 
   const loadAlertBills = async () => { try { const res = await fetch("/api/bills/alerts", { cache: "no-store" }); const data = await res.json(); if (res.ok) setAlertBills(data.bills || []); } catch {} };
 
