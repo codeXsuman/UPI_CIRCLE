@@ -334,6 +334,18 @@ export default function Home() {
 
   const loadAlertBills = async () => { try { const res = await fetch("/api/bills/alerts", { cache: "no-store" }); const data = await res.json(); if (res.ok) setAlertBills(data.bills || []); } catch {} };
 
+  const updateAlertStatus = async (billId: string, paymentStatus: "pending" | "received") => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/bills/alerts", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ billId, paymentStatus }) });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to update payment status");
+      await loadAlertBills();
+      pop(paymentStatus === "received" ? "Payment marked as received" : "Payment marked as pending");
+    } catch { pop("Unable to update payment status"); }
+    finally { setLoading(false); }
+  };
+
   const loadHistory = async () => {
     try {
       const res = await fetch("/api/bills/history", { cache: "no-store" });
@@ -692,7 +704,7 @@ export default function Home() {
         </section>
       )}
 
-      {page === "alerts" && profile && (<section className="historyPage"><div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>PAYMENT MONITOR</b></div><h1>Alert Bills</h1><p>Bills with alerts enabled stay here so you can monitor payment status.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openAlerts}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create a bill</button></div></div>{!alertBills.length ? (<div className="card historyEmpty"><h2>No alert bills yet</h2><p>Turn on “Alert bill” before generating a bill to start tracking it.</p><button className="primary" onClick={() => navigate("product")}>Create an alert bill →</button></div>) : (<div className="historyList">{alertBills.map((bill) => (<div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus " + (bill.paymentStatus === "paid" ? "paid" : "pending")}>● {bill.paymentStatus === "paid" ? "PAYMENT SUCCESS" : "PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any) => r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any) => <div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div></div>))}</div>)}</section>)}
+      {page === "alerts" && profile && (<section className="historyPage"><div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>PAYMENT MONITOR</b></div><h1>Alert Bills</h1><p>Bills with alerts enabled stay here so you can monitor payment status.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openAlerts}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create a bill</button></div></div>{!alertBills.length ? (<div className="card historyEmpty"><h2>No alert bills yet</h2><p>Turn on “Alert bill” before generating a bill to start tracking it.</p><button className="primary" onClick={() => navigate("product")}>Create an alert bill →</button></div>) : (<div className="historyList">{alertBills.map((bill) => (<div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus " + (bill.paymentStatus === "received" ? "paid" : "pending")}>● {bill.paymentStatus === "received" ? "PAYMENT RECEIVED" : "PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any) => r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any) => <div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="secondary" onClick={() => updateAlertStatus(bill.id, "pending")} disabled={bill.paymentStatus === "pending"}>Mark Pending</button><button className="primary" onClick={() => updateAlertStatus(bill.id, "received")} disabled={bill.paymentStatus === "received"}>✓ Mark Received</button></div></div>))}</div>)}</section>)}
 
       {page === "history" && profile && (
         <section className="historyPage">
