@@ -569,7 +569,7 @@ export default function Home() {
         <section className="authLanding">
           <div className="authHero">
             <div className="eyebrow"><span>●</span> UPI BILLS <b>SIMPLE BILLING</b></div>
-            <h1>Split bills.<br /><i>Together.</i></h1>
+            <h1>Share bills.<br /><i>Together.</i></h1>
             <p>A simple way to create, share and manage bills with your friends.</p>
             <div className="authActions">
               <button className="primary authPrimary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
