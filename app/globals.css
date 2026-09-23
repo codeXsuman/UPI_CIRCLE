@@ -1550,3 +1550,45 @@ body {
   .billItem{grid-template-columns:20px minmax(0,1fr) 24px}
   .billItem>input[data-field="name"],.billItem .itemAmount{height:48px}
 }
+
+
+/* Keep the Create Bill desktop/tablet UI at a usable size while resizing.
+   It switches to the compact mobile layout only at the mobile breakpoint. */
+@media (min-width:769px){
+  .productPage{
+    width:100%;
+    min-width:980px;
+    max-width:1360px;
+    overflow:visible;
+  }
+  .productGrid{
+    min-width:920px;
+    grid-template-columns:minmax(620px,1fr) 360px;
+  }
+  .productMain{min-width:620px}
+  .productSide{min-width:360px}
+  .productHeader h1{
+    font-size:56px!important;
+    letter-spacing:-3px;
+  }
+  .productHeader p{font-size:15px}
+  .productCard{min-width:620px}
+  .billItem{
+    grid-template-columns:28px minmax(320px,1fr) 170px 30px;
+  }
+}
+
+/* Do not let the mobile version continuously scale down with the viewport. */
+@media (max-width:768px){
+  .productPage{
+    min-width:0;
+    overflow:hidden;
+  }
+  .productGrid,
+  .productMain,
+  .productSide,
+  .productCard,
+  .previewCard{
+    min-width:0;
+  }
+}
