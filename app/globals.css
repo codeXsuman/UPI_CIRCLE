@@ -834,3 +834,76 @@ html,body{overflow-x:hidden}
     padding:21px;
   }
 }
+
+
+/* --- Desktop account/auth form refinement --- */
+.accountPage{
+  padding-top:52px!important;
+}
+.accountCard{
+  width:min(680px,calc(100vw - 48px))!important;
+  max-width:680px!important;
+  padding:38px 42px!important;
+  border-radius:26px!important;
+  box-shadow:0 24px 70px rgba(31,35,60,.10)!important;
+}
+.accountCard h1{
+  font-size:clamp(36px,3.4vw,48px)!important;
+  line-height:1.05!important;
+  letter-spacing:-2.2px!important;
+  margin:14px 0 12px!important;
+}
+.accountCard>p{
+  font-size:15px!important;
+  line-height:1.55!important;
+  max-width:590px;
+}
+.formStack{
+  gap:18px!important;
+  margin:28px 0!important;
+}
+.formStack>label,
+.accountCard>label{
+  font-size:12px!important;
+  letter-spacing:.35px;
+  line-height:1.35;
+}
+.formStack input,
+.accountCard input{
+  margin-top:8px!important;
+  min-height:48px!important;
+  padding:13px 15px!important;
+  font-size:14px!important;
+  border-radius:12px!important;
+}
+.accountSubmit{
+  min-height:48px!important;
+  font-size:14px!important;
+  border-radius:12px!important;
+}
+.accountCard .wideBtn{
+  min-height:48px!important;
+  font-size:14px!important;
+  border-radius:12px!important;
+}
+.accountCard .eyebrow,
+.accountCard .accountLabel{
+  font-size:11px!important;
+  letter-spacing:1.25px!important;
+}
+
+@media(min-width:801px){
+  .accountCard{
+    width:680px!important;
+  }
+}
+@media(max-width:800px){
+  .accountCard{
+    width:100%!important;
+    max-width:100%!important;
+    padding:28px 20px!important;
+  }
+  .accountCard h1{
+    font-size:36px!important;
+  }
+}
