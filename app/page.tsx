@@ -674,10 +674,9 @@ export default function Home() {
                     <div className="detailTotal"><span>Total amount</span><b>₹{money(total)}</b></div>
                     <small>Bill for: {member.name}<br />Pay to: {profile.name}<br />UPI ID: {profile.upi}</small>
                     <div className="paymentActions">
-                      <a className="payNow" href={paymentLink}>Pay now ↗</a>
+                      <button onClick={() => shareBill(member)}>Share link ↗</button>
                       <button onClick={copyPaymentLink}>Copy link</button>
                     </div>
-                    <button className="primary shareBill" onClick={() => shareBill(member)}>Share this bill ↗</button>
                   </div>
                 </div>
               </div>
