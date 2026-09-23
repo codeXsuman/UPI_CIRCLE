@@ -15,15 +15,11 @@ async function ensurePaymentColumns() {
 async function createRazorpayPaymentLink(args: {
   billId: string;
   total: number;
-  creator: { name: string; email: string; mobile?: string | null };
   description: string;
 }) {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
   if (!keyId || !keySecret) throw new Error("Razorpay server credentials are not configured");
-
-  const customer: Record<string, string> = { name: args.creator.name, email: args.creator.email };
-  if (args.creator.mobile) customer.contact = args.creator.mobile.startsWith("+") ? args.creator.mobile : "+91" + args.creator.mobile;
 
   const auth = Buffer.from(keyId + ":" + keySecret).toString("base64");
   const response = await fetch("https://api.razorpay.com/v1/payment_links", {
@@ -36,7 +32,6 @@ async function createRazorpayPaymentLink(args: {
       accept_partial: false,
       reference_id: args.billId,
       description: args.description.slice(0, 2048),
-      customer,
       notes: { bill_id: args.billId },
       reminder_enable: false,
     }),
@@ -97,7 +92,6 @@ export async function POST(req: Request) {
         paymentLink = await createRazorpayPaymentLink({
           billId,
           total,
-          creator: creatorRows[0],
           description: "UPI Bills — " + clean.map((x: any) => x.name).join(", "),
         });
 
