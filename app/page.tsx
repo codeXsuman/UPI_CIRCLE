@@ -472,7 +472,6 @@ export default function Home() {
     setItems([{ id: Date.now(), name: "", amount: "" }]);
     setGenerated(false);
     setGeneratedBillId(null);
-    setProviderPaymentLink("");
     setSavedInHistory(false);
     setShareTarget(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
