@@ -291,12 +291,9 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) {
-        // Keep credential errors visible on both fields without exposing
-        // whether a particular email exists in the database.
-        setLoginErrors({
-          email: "Invalid email address or password",
-          password: "Invalid email address or password"
-        });
+        // Show one generic credential error only; do not reveal which credential failed.
+        setLoginErrors({});
+        setLoginCredentialError("Invalid email address or password");
         return;
       }
       setProfile({ ...data.user, password: "" });
@@ -659,8 +656,8 @@ export default function Home() {
                   <button type="button" className="passwordToggle" onClick={() => setShowLoginPassword(old => !old)} aria-label={showLoginPassword ? "Hide password" : "Show password"}>{showLoginPassword ? "Hide" : "Show"}</button>
                 </div>
                 {loginErrors.password && <span className="fieldErrorMessage">{loginErrors.password}</span>}
+                {loginCredentialError && <span className="loginCredentialError">{loginCredentialError}</span>}
               </label>
-              {loginCredentialError && <div className="loginCredentialError">{loginCredentialError}</div>}
             </div>
             <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
             <button className="newAccountPrompt" onClick={() => navigate("account")}>
