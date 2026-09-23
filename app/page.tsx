@@ -8,7 +8,8 @@ type Item = { id: number; name: string; amount: string };
 
 const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const DRAFT_KEY = "upi-bills-draft-v5";
-const DRAFT_TTL_MS = 30 * 1000;
+const GENERAL_DRAFT_TTL_MS = 30 * 1000;
+const BILL_DRAFT_TTL_MS = 10 * 60 * 1000;
 
 export default function Home() {
   type AppPage = "home" | "account" | "login" | "product" | "profile" | "history";
@@ -32,6 +33,7 @@ export default function Home() {
     const url = nextPage === "home" ? "/" : "/?view=" + nextPage;
     if (replace) window.history.replaceState({ view: nextPage }, "", url);
     else window.history.pushState({ view: nextPage }, "", url);
+    touchDraftActivity(nextPage);
     setPage(nextPage);
   };
   const [profile, setProfile] = useState<User | null>(null);
@@ -53,6 +55,18 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
   const draftResettingRef = useRef(false);
+  const getDraftTtl = (draftPage: AppPage) => draftPage === "product" ? BILL_DRAFT_TTL_MS : GENERAL_DRAFT_TTL_MS;
+  const touchDraftActivity = (draftPage = page) => {
+    const now = Date.now();
+    draftActivityRef.current = now;
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...saved, savedAt: now, page: draftPage }));
+      }
+    } catch {}
+  };
 
   const pop = (message: string) => {
     setToast(message);
@@ -70,8 +84,8 @@ export default function Home() {
   useEffect(() => {
     const handlePopState = () => {
       const urlPage = getPageFromUrl();
-      if (urlPage) setPage(urlPage);
-      else setPage(profile ? "product" : "home");
+      if (urlPage) { touchDraftActivity(urlPage); setPage(urlPage); }
+      else { const next = profile ? "product" : "home"; touchDraftActivity(next); setPage(next); }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -82,12 +96,14 @@ export default function Home() {
       let saved: any = null;
       try { saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null"); } catch {}
 
-      const draftIsFresh = saved?.savedAt && (Date.now() - Number(saved.savedAt) < DRAFT_TTL_MS);
+      const draftPage = saved?.page || getPageFromUrl() || "home";
+      const draftIsFresh = saved?.savedAt && (Date.now() - Number(saved.savedAt) < getDraftTtl(draftPage));
       if (!draftIsFresh) {
         try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
         saved = null;
       } else {
-        draftActivityRef.current = Number(saved.savedAt);
+        // A refresh/re-open restarts the inactivity countdown.
+        touchDraftActivity(draftPage);
       }
 
       const urlPage = getPageFromUrl();
@@ -150,8 +166,42 @@ export default function Home() {
     } catch {}
   }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory]);
 
-  // Drafts expire only when the page is re-opened/refreshed after 30 seconds.
-  // Never clear an actively displayed form while the user is still on the page.
+  // Reset the inactivity timer whenever the user is actively operating the app.
+  // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
+  useEffect(() => {
+    if (!hydrated) return;
+    const events = ["pointerdown", "keydown", "input", "change", "touchstart"];
+    const onActivity = () => touchDraftActivity();
+    events.forEach(event => window.addEventListener(event, onActivity, { passive: true }));
+    return () => events.forEach(event => window.removeEventListener(event, onActivity));
+  }, [hydrated, page]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const timer = window.setInterval(() => {
+      const ttl = getDraftTtl(page);
+      if (Date.now() - draftActivityRef.current <= ttl) return;
+
+      draftResettingRef.current = true;
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+
+      setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
+      setPrivacyAccepted(false);
+      setLogin({ email: "", password: "" });
+      setItems([{ id: 1, name: "", amount: "" }]);
+      setSelected([]);
+      setGenerated(false);
+      setGeneratedBillId(null);
+      setSavedInHistory(false);
+      setRegisterErrors({});
+      setExistingAccount(false);
+      setShareTarget(null);
+      setToast("");
+      draftActivityRef.current = Date.now();
+      draftResettingRef.current = false;
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [hydrated, page]);
 
 
   const registerAccount = async () => {
