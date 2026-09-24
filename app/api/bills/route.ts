@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const total = clean.reduce((sum: number, item: any) => sum + item.amount, 0);
     const billId = randomUUID();
     await sql`INSERT INTO bills(id,creator_id,total_amount,payment_status)
-      VALUES(${billId},${creatorId},${total.toFixed(2)},"pending")`;
+      VALUES(${billId},${creatorId},${total.toFixed(2)},${"pending"})`;
 
     try {
       for (const item of clean) {
