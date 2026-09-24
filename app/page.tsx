@@ -549,7 +549,7 @@ export default function Home() {
   return (
     <main key={page} className="pageMotion">
       <header>
-        <div className="brand" onClick={() => navigate(profile ? "product" : "home")}>
+        <div className="brand" role="button" tabIndex={0} aria-label="Go to home" onClick={() => navigate(profile ? "dashboard" : "home")} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate(profile ? "dashboard" : "home"); }}>
           <b>U</b><strong>UPI<span>Bills</span></strong>
         </div>
         {profile ? (
