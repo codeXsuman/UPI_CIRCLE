@@ -698,3 +698,48 @@ input,button{touch-action:manipulation}
 .toast-success .toastProgress{background:#7cf2ad}.toast-error .toastProgress{background:#ff8b8b}.toast-info .toastProgress{background:#8bb7ff}
 @keyframes toastBottomIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
 @media(max-width:700px){.toastPortal{padding-left:12px;padding-right:12px;padding-bottom:calc(env(safe-area-inset-bottom) + 12px)}.toastPortal .toast{width:100%;max-width:460px}}
+
+/* Point 4: mobile responsiveness refinement */
+@media (max-width: 700px){
+  header{height:64px;padding:0 12px}
+  .brand{font-size:18px;gap:7px}.brand>b{width:32px;height:32px;border-radius:9px}
+  .headerActions{gap:5px}.historyNav,.accountButton,.profileButton{min-height:38px;padding:0 10px;font-size:11px}
+  .profileButton{padding:3px 8px 3px 4px}.profileButton span{width:30px;height:30px}
+  .authLanding{width:calc(100% - 24px);padding:34px 0 50px}
+  .authHero h1{font-size:clamp(42px,14vw,62px);letter-spacing:-3px;margin:18px 0}
+  .authHero p{font-size:15px;line-height:1.55}
+  .authActions{display:grid;grid-template-columns:1fr;width:100%;margin-top:24px}
+  .authActions button{width:100%}
+  .account,.profilePage{width:calc(100% - 24px);padding:30px 0 50px}
+  .accountCard{padding:24px 18px;border-radius:20px}
+  .accountCard h1{font-size:38px;letter-spacing:-2px}
+  .productPage,.historyPage{width:calc(100% - 24px);padding:28px 0 55px}
+  .productHeader h1,.historyHeader h1{font-size:clamp(38px,11vw,52px);letter-spacing:-2.5px}
+  .productCard,.previewCard,.historyCard,.qrBill{padding:18px;border-radius:18px}
+  .sectionTitle{align-items:flex-start;gap:10px}.sectionTitle>span{font-size:9px}
+  .billItem{grid-template-columns:20px minmax(0,1fr) 88px 26px;gap:6px}
+  .billItem>input,.itemAmount{height:46px}.billItem>input{padding:0 10px}.itemAmount{padding-left:8px}.itemAmount input{padding:0 6px}
+  .totalBar{align-items:center}.totalBar strong{font-size:22px}
+  .generatedHead,.historyHeader{align-items:flex-start;flex-direction:column;gap:14px}
+  .generatedActions,.historyHeaderActions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .generatedActions button,.historyHeaderActions button{width:100%;min-width:0}
+  .qrBillContent{grid-template-columns:1fr;gap:18px}
+  .qr{justify-self:center}.paymentActions{display:grid;grid-template-columns:1fr}
+  .historyCardTop{flex-direction:column;gap:8px}.historyCardTop>strong{font-size:22px}
+  .historyItems>div{gap:8px}.historyMeta{gap:12px}
+  .historyCardActions{display:grid;grid-template-columns:1fr 1fr}.historyCardActions button{width:100%}
+  .billToolbar{gap:8px}.billToolbar>input{width:100%}.filterPills{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;scrollbar-width:none}.filterPills::-webkit-scrollbar{display:none}.filterPills button{white-space:nowrap}
+  .splitBox label>div{min-width:0}.splitBox label input{width:100%}
+  .dashboardPage{padding:24px 12px 50px}.dashboardHero{margin-bottom:24px}.dashboardOptions{gap:12px}.dashboardOption{min-height:190px;padding:20px;border-radius:20px}.dashboardOption .dashboardIcon{margin-bottom:22px;width:46px;height:46px}.dashboardOption strong{font-size:20px}
+  .dashboardStats{gap:8px}.dashboardStats>div{padding:13px;border-radius:14px}.dashboardStats strong{font-size:18px}
+  .shareOverlay,.accountModalOverlay,.loadingOverlay{padding:12px}
+  .shareModal,.accountModal{padding:22px 18px;border-radius:20px}
+}
+@media (max-width: 380px){
+  .brand span{display:none}
+  .headerActions .historyNav{padding:0 8px}
+  .billItem{grid-template-columns:18px minmax(0,1fr) 76px 24px}
+  .productCard,.previewCard,.historyCard,.qrBill{padding:15px}
+  .generatedActions,.historyHeaderActions,.historyCardActions{grid-template-columns:1fr}
+  .dashboardStats>div{padding:11px}.dashboardStats strong{font-size:16px}
+}
