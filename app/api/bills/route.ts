@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   try {
     await ensurePaymentColumns();
-    const { items, recipientIds } = await req.json();
+    const { items, recipientIds, recipientAmounts = {} } = await req.json();
 
     if (!Array.isArray(items) || !items.length || !Array.isArray(recipientIds) || !recipientIds.length) {
       return NextResponse.json({ error: "Bill items and recipients are required" }, { status: 400 });
@@ -41,7 +41,9 @@ export async function POST(req: Request) {
           VALUES(${randomUUID()},${billId},${item.name},${item.amount.toFixed(2)})`;
       }
       for (const id of recipientIds) {
-        await sql`INSERT INTO bill_recipients(bill_id,user_id) VALUES(${billId},${id})`;
+        const share = Number(recipientAmounts[id]);
+        const amount = Number.isFinite(share) && share > 0 ? share : total / recipientIds.length;
+        await sql`INSERT INTO bill_recipients(bill_id,user_id,amount) VALUES(${billId},${id},${amount.toFixed(2)})`;
       }
 
       return NextResponse.json({
