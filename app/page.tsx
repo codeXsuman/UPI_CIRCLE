@@ -17,6 +17,8 @@ export default function Home() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState({ mine: false, others: false, dashboard: false });
+  const [dataLoaded, setDataLoaded] = useState({ mine: false, others: false, dashboard: false });
   const withLoading = async <T,>(task: () => Promise<T>) => {
     setLoading(true);
     try { return await task(); } finally { setLoading(false); }
@@ -447,9 +449,34 @@ export default function Home() {
     } catch { pop("Unable to update payment status"); } finally { setLoading(false); }
   };
 
-  const loadMyBills = async () => { try { const res = await fetch("/api/bills/mine", { cache: "no-store" }); const data = await res.json(); if (res.ok) setMyBills(data.bills || []); } catch {} };
-  const loadOtherBills = async () => { try { const res = await fetch("/api/bills/others", { cache: "no-store" }); const data = await res.json(); if (res.ok) setOtherBills(data.bills || []); } catch {} };
+  const loadMyBills = async () => {
+    setDataLoading(prev => ({ ...prev, mine: true }));
+    try {
+      const res = await fetch("/api/bills/mine", { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok) setMyBills(data.bills || []);
+    } catch {}
+    finally {
+      setDataLoading(prev => ({ ...prev, mine: false }));
+      setDataLoaded(prev => ({ ...prev, mine: true }));
+    }
+  };
+
+  const loadOtherBills = async () => {
+    setDataLoading(prev => ({ ...prev, others: true }));
+    try {
+      const res = await fetch("/api/bills/others", { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok) setOtherBills(data.bills || []);
+    } catch {}
+    finally {
+      setDataLoading(prev => ({ ...prev, others: false }));
+      setDataLoaded(prev => ({ ...prev, others: true }));
+    }
+  };
+
   const refreshDashboardStats = async () => {
+    setDataLoading(prev => ({ ...prev, dashboard: true }));
     try {
       const [mineRes, otherRes] = await Promise.all([
         fetch("/api/bills/mine", { cache: "no-store" }),
@@ -468,24 +495,18 @@ export default function Home() {
         owing: otherBillsData.filter((b:any)=>b.paymentStatus!=="received").reduce((s:number,b:any)=>s+(Number(b.recipientAmount)||Number(b.totalAmount)||0),0)
       });
     } catch {}
+    finally {
+      setDataLoading(prev => ({ ...prev, dashboard: false }));
+      setDataLoaded(prev => ({ ...prev, dashboard: true }));
+    }
   };
 
   // Navigation and refresh are intentionally separate: refreshing data must not
   // create another browser-history entry for the same URL.
-  const openMyBills = async () => {
-    navigate("mine");
-    await withLoading(loadMyBills);
-  };
-  const openOtherBills = async () => {
-    navigate("others");
-    await withLoading(loadOtherBills);
-  };
-  const refreshMyBills = async () => {
-    await withLoading(loadMyBills);
-  };
-  const refreshOtherBills = async () => {
-    await withLoading(loadOtherBills);
-  };
+  const openMyBills = () => navigate("mine");
+  const openOtherBills = () => navigate("others");
+  const refreshMyBills = async () => { await loadMyBills(); };
+  const refreshOtherBills = async () => { await loadOtherBills(); };
 
   useEffect(() => {
     if (!hydrated || !profile) return;
@@ -812,13 +833,20 @@ export default function Home() {
         <section className="historyPage">
           <div className="historyHeader">
             <div><div className="eyebrow"><span>●</span> UPI BILLS <b>MY BILLS</b></div><h1>My bills</h1><p>Bills you created. Track every payment manually.</p></div>
-            <div className="historyHeaderActions"><button className="secondary" onClick={refreshMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div>
+            <div className="historyHeaderActions">
+              <button className="secondary" onClick={refreshMyBills} disabled={dataLoading.mine} aria-busy={dataLoading.mine}>
+                <span className={dataLoading.mine ? "buttonSpinner" : ""} aria-hidden="true">{dataLoading.mine ? "" : "↻"}</span>
+                {dataLoading.mine ? "Refreshing..." : "Refresh"}
+              </button>
+              <button className="primary" onClick={() => navigate("product")}>Create bill</button>
+            </div>
           </div>
           <div className="billToolbar">
             <input placeholder="Search bills, people or items..." value={billSearch} onChange={e=>setBillSearch(e.target.value)} />
             <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(myBillFilter||"all")===f?"active":""} onClick={()=>setMyBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
           </div>
-          {!myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={()=>navigate("product")}>Create a bill →</button></div> :
+          {!dataLoaded.mine ? <div className="historyList historySkeletonList" aria-label="Loading bills" aria-busy="true">{[1,2,3].map(i=><div className="card historyCardSkeleton" key={i}><div className="skeletonLine skeletonStatus"/><div className="skeletonLine skeletonTitle"/><div className="skeletonLine skeletonMeta"/><div className="skeletonDivider"/><div className="skeletonLine skeletonItem"/><div className="skeletonLine skeletonItem short"/></div>)}</div> :
+          !myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={()=>navigate("product")}>Create a bill →</button></div> :
           <div className="historyList">{myBills.filter((bill:any)=>{
             const q=billSearch.toLowerCase().trim();
             const text=[bill.id,...(bill.recipients||[]).map((r:any)=>r.name),...(bill.items||[]).map((x:any)=>x.name)].join(" ").toLowerCase();
@@ -835,12 +863,18 @@ export default function Home() {
 
       {page === "others" && profile && (
         <section className="historyPage">
-          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS' BILLS</b></div><h1>Others' bills</h1><p>Bills created by other members for you.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={refreshOtherBills}>↻ Refresh</button></div></div>
+          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS' BILLS</b></div><h1>Others' bills</h1><p>Bills created by other members for you.</p></div><div className="historyHeaderActions">
+              <button className="secondary" onClick={refreshOtherBills} disabled={dataLoading.others} aria-busy={dataLoading.others}>
+                <span className={dataLoading.others ? "buttonSpinner" : ""} aria-hidden="true">{dataLoading.others ? "" : "↻"}</span>
+                {dataLoading.others ? "Refreshing..." : "Refresh"}
+              </button>
+            </div></div>
           <div className="billToolbar">
             <input placeholder="Search bills, creators or items..." value={billSearch} onChange={e=>setBillSearch(e.target.value)} />
             <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(otherBillFilter||"all")===f?"active":""} onClick={()=>setOtherBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
           </div>
-          {!otherBills.length?<div className="card historyEmpty"><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div>:
+          {!dataLoaded.others ? <div className="historyList historySkeletonList" aria-label="Loading bills" aria-busy="true">{[1,2,3].map(i=><div className="card historyCardSkeleton" key={i}><div className="skeletonLine skeletonStatus"/><div className="skeletonLine skeletonTitle"/><div className="skeletonLine skeletonMeta"/><div className="skeletonDivider"/><div className="skeletonLine skeletonItem"/><div className="skeletonLine skeletonItem short"/></div>)}</div> :
+          !otherBills.length?<div className="card historyEmpty"><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div>:
           <div className="historyList">{otherBills.filter((bill:any)=>{
             const q=billSearch.toLowerCase().trim();
             const text=[bill.id,bill.creatorName,...(bill.items||[]).map((x:any)=>x.name)].join(" ").toLowerCase();
