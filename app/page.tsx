@@ -267,7 +267,7 @@ export default function Home() {
       setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
       setPrivacyAccepted(false);
       setRegisterErrors({});
-      navigate("product");
+      navigate("dashboard");
       await loadMembers();
       pop("Account created successfully");
     } catch { pop("Unable to create account"); }
@@ -303,7 +303,7 @@ export default function Home() {
       setLoginErrors({});
       setLoginCredentialError("");
       setShowLoginPassword(false);
-      navigate("product");
+      navigate("dashboard");
       await loadMembers();
       pop("Logged in successfully");
     } catch { pop("Unable to login"); }
