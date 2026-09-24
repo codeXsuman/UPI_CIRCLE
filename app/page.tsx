@@ -100,6 +100,7 @@ export default function Home() {
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
   const [existingAccount, setExistingAccount] = useState(false);
+  const [existingAccountMessage, setExistingAccountMessage] = useState("An account already exists with one or more of these details.");
   const [login, setLogin] = useState({ email: "", password: "" });
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [loginCredentialError, setLoginCredentialError] = useState("");
@@ -343,6 +344,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (res.status === 409) {
+        setExistingAccountMessage(data.error || "An account already exists with one or more of these details.");
         setExistingAccount(true);
         return;
       }
@@ -1075,10 +1077,10 @@ export default function Home() {
             <div className="accountModalIcon">!</div>
             <span className="live">ACCOUNT EXISTS</span>
             <h2>Existing account found</h2>
-            <p>An account already exists with the email, UPI ID or mobile number you entered.</p>
+            <p>{existingAccountMessage}</p>
             <div className="accountModalActions">
               <button className="primary" onClick={() => { setExistingAccount(false); navigate("login"); }}>Go to Login →</button>
-              <button className="wideBtn" onClick={() => setExistingAccount(false)}>Stay here</button>
+              <button className="wideBtn" onClick={() => { setExistingAccount(false); setExistingAccountMessage("An account already exists with one or more of these details."); }}>Stay here</button>
             </div>
           </div>
         </div>
