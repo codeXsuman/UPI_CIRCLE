@@ -19,7 +19,7 @@ export async function GET() {
     const result = [];
     for (const bill of bills) {
       const items = await sql`SELECT id,item_name AS name,amount FROM bill_items WHERE bill_id=${bill.id} ORDER BY id`;
-      const recipients = await sql`SELECT u.id,u.name,u.upi_id AS upi FROM bill_recipients br JOIN users u ON u.id=br.user_id WHERE br.bill_id=${bill.id} ORDER BY u.name`;
+      const recipients = await sql`SELECT u.id,u.name,u.upi_id AS upi,br.amount FROM bill_recipients br JOIN users u ON u.id=br.user_id WHERE br.bill_id=${bill.id} ORDER BY u.name`;
       result.push({ ...bill, items, recipients });
     }
     return NextResponse.json({ bills: result });
