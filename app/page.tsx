@@ -12,7 +12,7 @@ const GENERAL_DRAFT_TTL_MS = 30 * 1000;
 const BILL_DRAFT_TTL_MS = 10 * 60 * 1000;
 
 export default function Home() {
-  type AppPage = "home" | "account" | "login" | "product" | "profile" | "history" | "alerts";
+  type AppPage = "home" | "account" | "login" | "dashboard" | "product" | "mine" | "others" | "profile" | "history" | "alerts";
   const [page, setPage] = useState<AppPage>("home");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -24,7 +24,7 @@ export default function Home() {
 
   const getPageFromUrl = (): AppPage | null => {
     const value = new URLSearchParams(window.location.search).get("view");
-    return ["home", "account", "login", "product", "profile", "history", "alerts"].includes(value || "")
+    return ["home", "account", "login", "dashboard", "product", "mine", "others", "profile", "history", "alerts"].includes(value || "")
       ? value as AppPage
       : null;
   };
@@ -54,6 +54,8 @@ export default function Home() {
   const [savedInHistory, setSavedInHistory] = useState(false);
   const [historyBills, setHistoryBills] = useState<any[]>([]);
   const [alertBills, setAlertBills] = useState<any[]>([]);
+  const [myBills, setMyBills] = useState<any[]>([]);
+  const [otherBills, setOtherBills] = useState<any[]>([]);
   const [alertBill, setAlertBill] = useState(false);
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
@@ -365,6 +367,17 @@ export default function Home() {
 
   const loadAlertBills = async () => { try { const res = await fetch("/api/bills/alerts", { cache: "no-store" }); const data = await res.json(); if (res.ok) setAlertBills(data.bills || []); } catch {} };
 
+  const updateMyBillStatus = async (billId: string, paymentStatus: "pending" | "received") => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/bills/mine", { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({billId,paymentStatus}) });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to update payment status");
+      await loadMyBills();
+      pop(paymentStatus === "received" ? "Payment marked as received" : "Payment marked as pending");
+    } catch { pop("Unable to update payment status"); } finally { setLoading(false); }
+  };
+
   const updateAlertStatus = async (billId: string, paymentStatus: "pending" | "received") => {
     try {
       setLoading(true);
@@ -385,6 +398,10 @@ export default function Home() {
     } catch {}
   };
 
+  const loadMyBills = async () => { try { const res = await fetch("/api/bills/mine", { cache: "no-store" }); const data = await res.json(); if (res.ok) setMyBills(data.bills || []); } catch {} };
+  const loadOtherBills = async () => { try { const res = await fetch("/api/bills/others", { cache: "no-store" }); const data = await res.json(); if (res.ok) setOtherBills(data.bills || []); } catch {} };
+  const openMyBills = async () => { navigate("mine"); await withLoading(loadMyBills); };
+  const openOtherBills = async () => { navigate("others"); await withLoading(loadOtherBills); };
   const openHistory = async () => { navigate("history"); await withLoading(loadHistory); };
   const openAlerts = async () => { navigate("alerts"); await withLoading(loadAlertBills); };
 
@@ -695,6 +712,35 @@ export default function Home() {
             <button className="wideBtn" onClick={() => navigate("product")}>Back to product</button>
             <button className="wideBtn" onClick={logout}>Logout</button>
           </div>
+        </section>
+      )}
+
+      {page === "dashboard" && profile && (
+        <section className="dashboardPage">
+          <div className="dashboardHero">
+            <div><div className="eyebrow"><span>●</span> UPI BILLS <b>DASHBOARD</b></div><h1>Welcome back, {profile.name.split(" ")[0]}.</h1><p>Manage your bills, track payments, and pay bills shared with you.</p></div>
+          </div>
+          <div className="dashboardOptions">
+            <button className="dashboardOption create" onClick={() => navigate("product")}><span className="dashboardIcon">＋</span><strong>Create Bill</strong><small>Create a bill against other registered members.</small><b>Open →</b></button>
+            <button className="dashboardOption" onClick={openMyBills}><span className="dashboardIcon">↗</span><strong>My Bills</strong><small>View bills you created and mark them pending or received.</small><b>View bills →</b></button>
+            <button className="dashboardOption" onClick={openOtherBills}><span className="dashboardIcon">↓</span><strong>Others Bills</strong><small>View bills created by others for you and pay them.</small><b>View bills →</b></button>
+          </div>
+        </section>
+      )}
+
+      {page === "mine" && profile && (
+        <section className="historyPage">
+          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>MY BILLS</b></div><h1>My bills</h1><p>Bills created by you. Mark each bill as pending or received.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div></div>
+          {!myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={() => navigate("product")}>Create a bill →</button></div> :
+          <div className="historyList">{myBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus "+(bill.paymentStatus==="received"?"paid":"pending")}>● {bill.paymentStatus==="received"?"PAYMENT RECEIVED":"PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any)=>r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Created by <b>You</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="secondary" onClick={()=>updateMyBillStatus(bill.id,"pending")} disabled={bill.paymentStatus==="pending"}>Mark Pending</button><button className="primary" onClick={()=>updateMyBillStatus(bill.id,"received")} disabled={bill.paymentStatus==="received"}>✓ Mark Received</button></div></div>)}</div>}
+        </section>
+      )}
+
+      {page === "others" && profile && (
+        <section className="historyPage">
+          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS BILLS</b></div><h1>Others Bills</h1><p>Bills created by other registered members for you.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openOtherBills}>↻ Refresh</button></div></div>
+          {!otherBills.length ? <div className="card historyEmpty"><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div> :
+          <div className="historyList">{otherBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className="live">● BILL RECEIVED</span><h2>From {bill.creatorName}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="primary" onClick={()=>window.open("upi://pay?pa="+encodeURIComponent(bill.creatorUpi)+"&pn="+encodeURIComponent(bill.creatorName)+"&am="+Number(bill.totalAmount).toFixed(2)+"&cu=INR","_blank")}>Pay now ↗</button></div></div>)}</div>}
         </section>
       )}
 
