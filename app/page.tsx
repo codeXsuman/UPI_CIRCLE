@@ -478,7 +478,7 @@ export default function Home() {
     } catch { pop("Unable to copy bill"); }
   };
 
-  const copyPaymentLink = async () => {
+  const copyPaymentLink = async (member?: User) => {
     try {
       await navigator.clipboard.writeText(paymentLink);
       pop("Payment link copied");
@@ -767,7 +767,7 @@ export default function Home() {
                     <small>Bill for: {member.name}<br />Pay to: {profile.name}<br />UPI ID: {profile.upi}</small>
                     <div className="paymentActions">
                       <button onClick={() => shareBill(member)}>Share link ↗</button>
-                      <button onClick={copyPaymentLink}>Copy link</button>
+                      <button onClick={() => copyPaymentLink(member)}>Copy link</button>
                     </div>
                   </div>
                 </div>
