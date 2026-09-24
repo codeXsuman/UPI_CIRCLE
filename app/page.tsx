@@ -45,6 +45,7 @@ export default function Home() {
   const [selected, setSelected] = useState<string[]>([]);
   const [recipientAmounts, setRecipientAmounts] = useState<Record<string, string>>({});
   const [openBillId, setOpenBillId] = useState<string | null>(null);
+  const selectedShareTotal = selected.reduce((sum, id) => sum + (Number(recipientAmounts[id]) || 0), 0);
   const [register, setRegister] = useState({ name: "", upi: "", mobile: "", email: "", password: "" });
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
@@ -60,6 +61,9 @@ export default function Home() {
   const [myBills, setMyBills] = useState<any[]>([]);
   const [otherBills, setOtherBills] = useState<any[]>([]);
   const [dashboardStats, setDashboardStats] = useState({ created: 0, pending: 0, received: 0, owing: 0 });
+  const [myBillFilter, setMyBillFilter] = useState<"all"|"pending"|"received">("all");
+  const [otherBillFilter, setOtherBillFilter] = useState<"all"|"pending"|"received">("all");
+  const [billSearch, setBillSearch] = useState("");
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -421,6 +425,19 @@ export default function Home() {
     if (hydrated && profile && page === "dashboard") refreshDashboardStats();
   }, [hydrated, profile?.id, page]);
 
+  const splitEvenly = () => {
+    if (!selected.length || total <= 0) return;
+    const base = Math.floor((total / selected.length) * 100) / 100;
+    const remainder = Math.round((total - base * selected.length) * 100) / 100;
+    const next: Record<string, string> = {};
+    selected.forEach((id, index) => { next[id] = (base + (index === 0 ? remainder : 0)).toFixed(2); });
+    setRecipientAmounts(next);
+  };
+
+  const setRecipientAmount = (id: string, value: string) => {
+    setRecipientAmounts(prev => ({ ...prev, [id]: value.replace(/[^0-9.]/g, "") }));
+  };
+
   const generateBill = async () => {
     if (!profile) return;
 
@@ -726,17 +743,52 @@ export default function Home() {
 
       {page === "mine" && profile && (
         <section className="historyPage">
-          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>MY BILLS</b></div><h1>My bills</h1><p>Bills created by you. Mark each bill as pending or received.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div></div>
-          {!myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={() => navigate("product")}>Create a bill →</button></div> :
-          <div className="historyList">{myBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus "+(bill.paymentStatus==="received"?"paid":"pending")}>● {bill.paymentStatus==="received"?"PAYMENT RECEIVED":"PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any)=>r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Created by <b>You</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="secondary" onClick={()=>updateMyBillStatus(bill.id,"pending")} disabled={bill.paymentStatus==="pending"}>Mark Pending</button><button className="primary" onClick={()=>updateMyBillStatus(bill.id,"received")} disabled={bill.paymentStatus==="received"}>✓ Mark Received</button><button className="secondary dangerAction" onClick={()=>deleteMyBill(bill.id)}>Delete</button></div></div>)}</div>}
+          <div className="historyHeader">
+            <div><div className="eyebrow"><span>●</span> UPI BILLS <b>MY BILLS</b></div><h1>My bills</h1><p>Bills you created. Track every payment manually.</p></div>
+            <div className="historyHeaderActions"><button className="secondary" onClick={openMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div>
+          </div>
+          <div className="billToolbar">
+            <input placeholder="Search bills, people or items..." value={(c.match(/const \[billSearch/)||[])[0] ? billSearch : ""} onChange={e=>setBillSearch(e.target.value)} />
+            <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(myBillFilter||"all")===f?"active":""} onClick={()=>setMyBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
+          </div>
+          {!myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={()=>navigate("product")}>Create a bill →</button></div> :
+          <div className="historyList">{myBills.filter((bill:any)=>{
+            const q=billSearch.toLowerCase().trim();
+            const text=[bill.id,...(bill.recipients||[]).map((r:any)=>r.name),...(bill.items||[]).map((x:any)=>x.name)].join(" ").toLowerCase();
+            return (myBillFilter==="all"||bill.paymentStatus===myBillFilter)&&(!q||text.includes(q));
+          }).map((bill:any)=><div className="card historyCard" key={bill.id}>
+            <div className="historyCardTop"><div><span className={"alertStatus "+(bill.paymentStatus==="received"?"paid":"pending")}>● {bill.paymentStatus==="received"?"PAYMENT RECEIVED":"PAYMENT PENDING"}</span><h2>Bill to {(bill.recipients||[]).map((r:any)=>r.name).join(", ")}</h2><small>UPB-{bill.id.replace(/-/g,"").slice(0,6).toUpperCase()} · {new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div>
+            <div className="historyItems">{(bill.items||[]).map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div>
+            <div className="historyMeta"><span>{bill.recipients?.length||0} recipient(s)</span><span>UPI ID <b>{bill.creatorUpi}</b></span></div>
+            <div className="historyCardActions"><button className="secondary" onClick={()=>setOpenBillId(openBillId===bill.id?null:bill.id)}>{openBillId===bill.id?"Hide details":"View details"}</button><button className="secondary" onClick={()=>updateMyBillStatus(bill.id,"pending")} disabled={bill.paymentStatus==="pending"}>Mark Pending</button><button className="primary" onClick={()=>updateMyBillStatus(bill.id,"received")} disabled={bill.paymentStatus==="received"}>✓ Mark Received</button><button className="secondary dangerAction" onClick={()=>deleteMyBill(bill.id)}>Delete</button></div>
+            {openBillId===bill.id&&<div className="billDetailPanel"><b>Recipient shares</b>{(bill.recipients||[]).map((r:any)=><div key={r.id}><span>{r.name}</span><strong>₹{money(Number(r.amount)||Number(bill.totalAmount)/(bill.recipients?.length||1))}</strong></div>)}</div>}
+          </div>)}</div>}
         </section>
       )}
 
       {page === "others" && profile && (
         <section className="historyPage">
-          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS BILLS</b></div><h1>Others Bills</h1><p>Bills created by other registered members for you.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openOtherBills}>↻ Refresh</button></div></div>
-          {!otherBills.length ? <div className="card historyEmpty"><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div> :
-          <div className="historyList">{otherBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className="live">● BILL RECEIVED</span><h2>From {bill.creatorName}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="othersPaymentArea"><div className="othersQr"><QRCodeSVG value={makePaymentLink(bill.creatorUpi,bill.creatorName,Number(bill.totalAmount))} size={170} level="M" /><small>Scan with any UPI app</small></div><div className="historyCardActions"><button className="primary" onClick={()=>window.location.href=makePaymentLink(bill.creatorUpi,bill.creatorName,Number(bill.totalAmount))}>Pay now ↗</button></div></div></div>)}</div>}
+          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS' BILLS</b></div><h1>Others' bills</h1><p>Bills created by other members for you.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openOtherBills}>↻ Refresh</button></div></div>
+          <div className="billToolbar">
+            <input placeholder="Search bills, creators or items..." value={billSearch} onChange={e=>setBillSearch(e.target.value)} />
+            <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(otherBillFilter||"all")===f?"active":""} onClick={()=>setOtherBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
+          </div>
+          {!otherBills.length?<div className="card historyEmpty"><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div>:
+          <div className="historyList">{otherBills.filter((bill:any)=>{
+            const q=billSearch.toLowerCase().trim();
+            const text=[bill.id,bill.creatorName,...(bill.items||[]).map((x:any)=>x.name)].join(" ").toLowerCase();
+            return (otherBillFilter==="all"||bill.paymentStatus===otherBillFilter)&&(!q||text.includes(q));
+          }).map((bill:any)=>{
+            const amount=Number(bill.recipientAmount)||Number(bill.totalAmount)/(bill.recipientCount||1);
+            const link=makePaymentLink(bill.creatorUpi,bill.creatorName,amount);
+            return <div className="card historyCard" key={bill.id}>
+              <div className="historyCardTop"><div><span className={"alertStatus "+(bill.paymentStatus==="received"?"paid":"pending")}>● {bill.paymentStatus==="received"?"PAYMENT RECEIVED":"PAYMENT PENDING"}</span><h2>From {bill.creatorName}</h2><small>UPB-{bill.id.replace(/-/g,"").slice(0,6).toUpperCase()} · {new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(amount)}</strong></div>
+              <div className="historyItems">{(bill.items||[]).map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div>
+              <div className="historyMeta"><span>Created by <b>{bill.creatorName}</b></span><span>Pay to <b>{bill.creatorUpi}</b></span></div>
+              <div className="othersPaymentArea"><div className="othersQr"><QRCodeSVG value={link} size={170} level="M"/><small>Scan with any UPI app<br/>Your share: ₹{money(amount)}</small></div><div className="historyCardActions"><button className="secondary" onClick={()=>setOpenBillId(openBillId===bill.id?null:bill.id)}>{openBillId===bill.id?"Hide details":"View details"}</button><button className="primary" onClick={()=>window.location.href=link}>Pay now ↗</button></div></div>
+              {openBillId===bill.id&&<div className="billDetailPanel"><b>Bill details</b>{(bill.items||[]).map((item:any)=><div key={item.id}><span>{item.name}</span><strong>₹{money(Number(item.amount))}</strong></div>)}<div><span>Your share</span><strong>₹{money(amount)}</strong></div></div>}
+            </div>
+          })}</div>}
         </section>
       )}
 
@@ -781,6 +833,7 @@ export default function Home() {
                   </div>
                 ))}</div>
                 <button className="addItem" onClick={() => setItems(old => [...old, { id: Date.now(), name: "", amount: "" }])}>＋ Add another item</button>
+                {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>Split between members</strong><small>Set custom shares or split equally.</small></div><button className="secondary" onClick={splitEvenly}>Split equally</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={(total/selected.length).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)}/></div></label>)}<small className={Math.abs(selectedShareTotal-total)<0.01?"splitGood":"splitWarning"}>Allocated ₹{money(selectedShareTotal)} of ₹{money(total)}</small></div>}
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
                 <button className="primary generateBtn" onClick={generateBill}>Generate UPI QR bill →</button>
               </div>
@@ -792,7 +845,7 @@ export default function Home() {
                 <h2>{items.filter(i => i.name.trim()).map(i => i.name).join(" + ") || "Your bill items"}</h2>
                 <div className="previewTotal">₹{money(total)}</div>
                 <small>Paid to</small><strong>{profile.name}</strong><span>{profile.upi}</span>
-                {selectedMembers.length > 0 && <div className="selectedPayers"><small>Bill for</small>{selectedMembers.map(m => <div key={m.id}><span>{m.name}</span><b>₹{money(total)}</b></div>)}</div>}
+                {selectedMembers.length > 0 && <div className="selectedPayers"><small>Bill for</small>{selectedMembers.map(m => <div key={m.id}><span>{m.name}</span><b>₹{money(Number(recipientAmounts[m.id])||total/Math.max(selected.length,1))}</b></div>)}</div>}
                 <div className="secureNote">✓ QR bill uses the registered UPI ID of the person who will receive payment.</div>
               </div>
             </aside>
