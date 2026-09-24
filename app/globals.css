@@ -482,39 +482,35 @@ input,button{touch-action:manipulation}
 
 /* Smooth authentication page and button interactions */
 .authPageTransition{
-  animation:authPageEnter .38s cubic-bezier(.22,1,.36,1) both;
+  animation:authPageEnter .55s cubic-bezier(.16,1,.3,1) both !important;
+  will-change:opacity,transform;
 }
 .authPageTransition .accountCard{
-  animation:authCardEnter .45s cubic-bezier(.22,1,.36,1) both;
+  animation:authCardEnter .6s cubic-bezier(.16,1,.3,1) both !important;
+  will-change:opacity,transform;
 }
 .authPageTransition .accountSubmit,
 .authPageTransition .newAccountPrompt,
 .authPageTransition .wideBtn{
-  transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+  transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s ease,background-color .22s ease,border-color .22s ease !important;
   will-change:transform;
 }
 .authPageTransition .accountSubmit:hover,
 .authPageTransition .newAccountPrompt:hover,
 .authPageTransition .wideBtn:hover{
-  transform:translateY(-2px);
+  transform:translateY(-3px) !important;
 }
 .authPageTransition .accountSubmit:active,
 .authPageTransition .newAccountPrompt:active,
 .authPageTransition .wideBtn:active{
-  transform:translateY(0) scale(.985);
-  transition-duration:.08s;
+  transform:translateY(0) scale(.97) !important;
 }
 @keyframes authPageEnter{
-  from{opacity:0}
-  to{opacity:1}
+  0%{opacity:0;transform:translateY(18px)}
+  100%{opacity:1;transform:translateY(0)}
 }
 @keyframes authCardEnter{
-  from{opacity:0;transform:translateY(12px) scale(.99)}
-  to{opacity:1;transform:translateY(0) scale(1)}
-}
-@media (prefers-reduced-motion:reduce){
-  .authPageTransition,.authPageTransition .accountCard{animation:none!important}
-  .authPageTransition .accountSubmit,
-  .authPageTransition .newAccountPrompt,
-  .authPageTransition .wideBtn{transition:none!important}
+  0%{opacity:0;transform:translateY(28px) scale(.97)}
+  60%{opacity:1}
+  100%{opacity:1;transform:translateY(0) scale(1)}
 }
