@@ -43,6 +43,8 @@ export default function Home() {
   const [profile, setProfile] = useState<User | null>(null);
   const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [recipientAmounts, setRecipientAmounts] = useState<Record<string, string>>({});
+  const [openBillId, setOpenBillId] = useState<string | null>(null);
   const [register, setRegister] = useState({ name: "", upi: "", mobile: "", email: "", password: "" });
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
@@ -536,6 +538,7 @@ export default function Home() {
     pop("Ready to create a new bill");
   };
 
+  const selectedShareTotal = selected.reduce((sum, id) => sum + (Number(recipientAmounts[id]) || 0), 0);
   const selectedMembers = members.filter(m => selected.includes(m.id));
 
   return (
