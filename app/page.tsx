@@ -18,7 +18,11 @@ function ToastNotification({ message, type }: { message: string; type: "success"
     <div className="toastPortal" aria-live="polite">
       <div className={"toast toast-" + type} role="status">
         <span className="toastIcon" aria-hidden="true">{type === "success" ? "✓" : type === "error" ? "!" : "i"}</span>
-        <span className="toastText">{message}</span>
+        <div className="toastCopy">
+          <strong>{message}</strong>
+          {type === "success" && <small>{message.includes("Bill") ? "Your bill is ready to share" : "Done successfully"}</small>}
+        </div>
+        <span className="toastClose" aria-hidden="true">×</span>
         <span className="toastProgress" aria-hidden="true" />
       </div>
     </div>,
