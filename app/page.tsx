@@ -23,7 +23,7 @@ export default function Home() {
   };
 
   const getPageFromUrl = (): AppPage | null => {
-    const path = window.location.pathname.replace(/\\/+$/, "") || "/";
+    const path = window.location.pathname.replace(/\/+$/, "") || "/";
     const routes: Record<string, AppPage> = {
       "/": "home",
       "/dashboard": "dashboard",
