@@ -29,7 +29,11 @@ export async function POST(req: Request) {
     }
 
     const existing = await sql`
-      SELECT id
+      SELECT
+        id,
+        (email = ${normalizedEmail}) AS email_match,
+        (upi_id = ${normalizedUpi}) AS upi_match,
+        (${normalizedMobile} <> '' AND mobile = ${normalizedMobile}) AS mobile_match
       FROM users
       WHERE email = ${normalizedEmail}
          OR upi_id = ${normalizedUpi}
@@ -38,8 +42,20 @@ export async function POST(req: Request) {
     `;
 
     if (existing.length) {
+      const match = existing[0] as { email_match?: boolean; upi_match?: boolean; mobile_match?: boolean };
+      const conflicts = [
+        match.email_match ? "email" : null,
+        match.upi_match ? "UPI ID" : null,
+        match.mobile_match ? "mobile number" : null,
+      ].filter(Boolean) as string[];
+
       return NextResponse.json(
-        { error: "An account with this email, UPI ID or mobile number already exists" },
+        {
+          error: conflicts.length === 1
+            ? `An account with this ${conflicts[0]} already exists`
+            : "An account already exists with one or more of these details",
+          conflict: conflicts.length === 1 ? conflicts[0] : "multiple",
+        },
         { status: 409 }
       );
     }
