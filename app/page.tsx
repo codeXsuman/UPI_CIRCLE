@@ -441,11 +441,28 @@ export default function Home() {
     } catch {}
   };
 
-  const openMyBills = async () => { navigate("mine"); await withLoading(loadMyBills); };
-  const openOtherBills = async () => { navigate("others"); await withLoading(loadOtherBills); };
+  // Navigation and refresh are intentionally separate: refreshing data must not
+  // create another browser-history entry for the same URL.
+  const openMyBills = async () => {
+    navigate("mine");
+    await withLoading(loadMyBills);
+  };
+  const openOtherBills = async () => {
+    navigate("others");
+    await withLoading(loadOtherBills);
+  };
+  const refreshMyBills = async () => {
+    await withLoading(loadMyBills);
+  };
+  const refreshOtherBills = async () => {
+    await withLoading(loadOtherBills);
+  };
 
   useEffect(() => {
-    if (hydrated && profile && page === "dashboard") refreshDashboardStats();
+    if (!hydrated || !profile) return;
+    if (page === "dashboard") refreshDashboardStats();
+    else if (page === "mine") loadMyBills();
+    else if (page === "others") loadOtherBills();
   }, [hydrated, profile?.id, page]);
 
   const splitEvenly = () => {
@@ -766,7 +783,7 @@ export default function Home() {
         <section className="historyPage">
           <div className="historyHeader">
             <div><div className="eyebrow"><span>●</span> UPI BILLS <b>MY BILLS</b></div><h1>My bills</h1><p>Bills you created. Track every payment manually.</p></div>
-            <div className="historyHeaderActions"><button className="secondary" onClick={openMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div>
+            <div className="historyHeaderActions"><button className="secondary" onClick={refreshMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div>
           </div>
           <div className="billToolbar">
             <input placeholder="Search bills, people or items..." value={billSearch} onChange={e=>setBillSearch(e.target.value)} />
@@ -789,7 +806,7 @@ export default function Home() {
 
       {page === "others" && profile && (
         <section className="historyPage">
-          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS' BILLS</b></div><h1>Others' bills</h1><p>Bills created by other members for you.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openOtherBills}>↻ Refresh</button></div></div>
+          <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS' BILLS</b></div><h1>Others' bills</h1><p>Bills created by other members for you.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={refreshOtherBills}>↻ Refresh</button></div></div>
           <div className="billToolbar">
             <input placeholder="Search bills, creators or items..." value={billSearch} onChange={e=>setBillSearch(e.target.value)} />
             <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(otherBillFilter||"all")===f?"active":""} onClick={()=>setOtherBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
