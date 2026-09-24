@@ -415,6 +415,10 @@ export default function Home() {
   const openMyBills = async () => { navigate("mine"); await withLoading(loadMyBills); };
   const openOtherBills = async () => { navigate("others"); await withLoading(loadOtherBills); };
 
+  useEffect(() => {
+    if (hydrated && profile && page === "dashboard") refreshDashboardStats();
+  }, [hydrated, profile?.id, page]);
+
   const generateBill = async () => {
     if (!profile) return;
 
