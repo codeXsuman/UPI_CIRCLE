@@ -355,6 +355,8 @@ export default function Home() {
     [items]
   );
 
+  const makePaymentLink = (upi: string, name: string, amount: number) => "upi://pay?pa=" + encodeURIComponent(upi) + "&pn=" + encodeURIComponent(name) + "&am=" + amount.toFixed(2) + "&cu=INR";
+
   const paymentLink = useMemo(() => {
     if (!profile) return "";
     const note = items.filter(i => i.name.trim()).map(i => i.name.trim()).join(", ").slice(0, 60) || "UPI Bills bill";
@@ -740,7 +742,7 @@ export default function Home() {
         <section className="historyPage">
           <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>OTHERS BILLS</b></div><h1>Others Bills</h1><p>Bills created by other registered members for you.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openOtherBills}>↻ Refresh</button></div></div>
           {!otherBills.length ? <div className="card historyEmpty"><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div> :
-          <div className="historyList">{otherBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className="live">● BILL RECEIVED</span><h2>From {bill.creatorName}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="primary" onClick={()=>window.open("upi://pay?pa="+encodeURIComponent(bill.creatorUpi)+"&pn="+encodeURIComponent(bill.creatorName)+"&am="+Number(bill.totalAmount).toFixed(2)+"&cu=INR","_blank")}>Pay now ↗</button></div></div>)}</div>}
+          <div className="historyList">{otherBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className="live">● BILL RECEIVED</span><h2>From {bill.creatorName}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="othersPaymentArea"><div className="othersQr"><QRCodeSVG value={makePaymentLink(bill.creatorUpi,bill.creatorName,Number(bill.totalAmount))} size={170} level="M" /><small>Scan with any UPI app</small></div><div className="historyCardActions"><button className="primary" onClick={()=>window.location.href=makePaymentLink(bill.creatorUpi,bill.creatorName,Number(bill.totalAmount))}>Pay now ↗</button></div></div></div>)}</div>}
         </section>
       )}
 
