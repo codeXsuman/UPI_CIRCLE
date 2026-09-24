@@ -639,3 +639,11 @@ input,button{touch-action:manipulation}
 .splitWarning{display:block;margin-top:8px;color:#b42318;font-weight:700}
 .splitGood{display:block;margin-top:8px;color:#16734a;font-weight:700}
 @media(max-width:700px){.billToolbar{display:grid}.filterPills{justify-content:flex-start}.splitBox>div:first-child{align-items:flex-start;flex-direction:column}.splitBox>label{align-items:flex-start;flex-direction:column}.splitBox label>div{width:100%}.splitBox label input{width:100%}}
+
+.dashboardStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 22px}
+.dashboardStats>div{padding:18px 20px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 7px 20px rgba(17,17,17,.045)}
+.dashboardStats strong{display:block;font-size:22px;letter-spacing:-.03em}
+.dashboardStats span{display:block;margin-top:5px;color:#777;font-size:11px}
+.dangerAction{color:#b42318!important;border-color:#f0caca!important;background:#fff!important}
+@media(max-width:800px){.dashboardStats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.dashboardStats{grid-template-columns:1fr 1fr}.dashboardStats>div{padding:14px}.dashboardStats strong{font-size:18px}}
