@@ -4,10 +4,8 @@ import { getSessionUserId } from "@/lib/auth";
 import { sql } from "@/lib/db";
 
 async function ensurePaymentColumns() {
-  await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS alert_enabled BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pending'`;
   await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ`;
-  await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS payment_reference TEXT`;
 }
 
 export async function POST(req: Request) {
@@ -16,7 +14,7 @@ export async function POST(req: Request) {
 
   try {
     await ensurePaymentColumns();
-    const { items, recipientIds, alertBill = false } = await req.json();
+    const { items, recipientIds } = await req.json();
 
     if (!Array.isArray(items) || !items.length || !Array.isArray(recipientIds) || !recipientIds.length) {
       return NextResponse.json({ error: "Bill items and recipients are required" }, { status: 400 });
@@ -34,10 +32,8 @@ export async function POST(req: Request) {
 
     const total = clean.reduce((sum: number, item: any) => sum + item.amount, 0);
     const billId = randomUUID();
-    const useAlert = Boolean(alertBill);
-
-    await sql`INSERT INTO bills(id,creator_id,total_amount,alert_enabled,payment_status)
-      VALUES(${billId},${creatorId},${total.toFixed(2)},${useAlert},${useAlert ? "pending" : "not_applicable"})`;
+    await sql`INSERT INTO bills(id,creator_id,total_amount,payment_status)
+      VALUES(${billId},${creatorId},${total.toFixed(2)},"pending")`;
 
     try {
       for (const item of clean) {
@@ -51,8 +47,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         billId,
         total: Number(total.toFixed(2)),
-        alertBill: useAlert,
-        paymentStatus: useAlert ? "pending" : "not_applicable",
+        paymentStatus: "pending",
       }, { status: 201 });
     } catch (error) {
       console.error("Bill creation error:", error);
