@@ -746,7 +746,7 @@ export default function Home() {
             <div className="historyHeaderActions"><button className="secondary" onClick={openMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div>
           </div>
           <div className="billToolbar">
-            <input placeholder="Search bills, people or items..." value={(c.match(/const \[billSearch/)||[])[0] ? billSearch : ""} onChange={e=>setBillSearch(e.target.value)} />
+            <input placeholder="Search bills, people or items..." value={billSearch} onChange={e=>setBillSearch(e.target.value)} />
             <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(myBillFilter||"all")===f?"active":""} onClick={()=>setMyBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
           </div>
           {!myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={()=>navigate("product")}>Create a bill →</button></div> :
