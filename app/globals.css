@@ -594,3 +594,28 @@ input,button{touch-action:manipulation}
   .pageMotion .registeredMember,.pageMotion .billItem,
   .pageMotion input,.pageMotion .alertBillToggle{transition:none!important}
 }
+
+
+.dashboardPage{max-width:1180px;margin:0 auto;padding:48px 24px 80px}
+.dashboardHero{margin-bottom:34px}
+.dashboardHero h1{margin:10px 0 8px;font-size:clamp(32px,4vw,52px);letter-spacing:-.04em}
+.dashboardHero p{margin:0;max-width:650px;color:#667085}
+.dashboardOptions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.dashboardOption{
+  min-height:270px;padding:28px;text-align:left;border:1px solid #e7e7eb;border-radius:24px;
+  background:#fff;display:flex;flex-direction:column;align-items:flex-start;cursor:pointer;
+  box-shadow:0 10px 30px rgba(16,24,40,.06);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.dashboardOption:hover{transform:translateY(-6px);box-shadow:0 18px 45px rgba(16,24,40,.12);border-color:#d5d5dc}
+.dashboardOption .dashboardIcon{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:#f4f4f6;font-size:25px;margin-bottom:32px}
+.dashboardOption strong{font-size:24px;letter-spacing:-.02em}
+.dashboardOption small{margin-top:9px;color:#667085;line-height:1.5;max-width:280px}
+.dashboardOption>b{margin-top:auto;padding-top:24px;font-size:13px}
+.dashboardOption.create{background:#111;color:#fff;border-color:#111}
+.dashboardOption.create small{color:#c9c9ce}.dashboardOption.create .dashboardIcon{background:#f4d600;color:#111}
+.othersPaymentArea{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:22px;padding-top:20px;border-top:1px solid #eee}
+.othersQr{display:flex;align-items:center;gap:14px}.othersQr svg{padding:10px;background:#fff;border-radius:12px;border:1px solid #eee}.othersQr small{color:#667085}
+@media(max-width:800px){
+ .dashboardPage{padding:30px 16px 60px}.dashboardOptions{grid-template-columns:1fr}.dashboardOption{min-height:210px}
+ .othersPaymentArea{align-items:flex-start;flex-direction:column}.othersQr{flex-direction:column;align-items:flex-start}
+}
