@@ -554,7 +554,6 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     pop("Ready to create a new bill");
   };
-
   const selectedShareTotal = selected.reduce((sum, id) => sum + (Number(recipientAmounts[id]) || 0), 0);
   const selectedMembers = members.filter(m => selected.includes(m.id));
 
