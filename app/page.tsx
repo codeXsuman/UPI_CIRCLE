@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { QRCodeSVG } from "qrcode.react";
 
 type User = { id: string; name: string; upi: string; mobile: string; email: string; password?: string };
@@ -11,47 +12,17 @@ const DRAFT_KEY = "upi-bills-draft-v5";
 const GENERAL_DRAFT_TTL_MS = 30 * 1000;
 const BILL_DRAFT_TTL_MS = 10 * 60 * 1000;
 
-function ToastNotification({ message, type, target }: { message: string; type: "success" | "error" | "info"; target: string | null }) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
-
-  useEffect(() => {
-    const place = () => {
-      const el = ref.current;
-      const targetEl = target ? document.querySelector(target) as HTMLElement | null : null;
-      if (!targetEl || type !== "error") {
-        setPosition(null);
-        return;
-      }
-      const rect = targetEl.getBoundingClientRect();
-      const width = Math.min(420, window.innerWidth - 32);
-      const left = Math.max(16, Math.min(window.innerWidth - width - 16, rect.right - width));
-      const estimatedHeight = 58;
-      const top = Math.max(12, rect.top - estimatedHeight - 12);
-      setPosition({ top, left });
-    };
-    place();
-    window.addEventListener("resize", place);
-    window.addEventListener("scroll", place, { passive: true });
-    return () => {
-      window.removeEventListener("resize", place);
-      window.removeEventListener("scroll", place);
-    };
-  }, [target, type]);
-
-  return (
-    <div className="toastViewport" aria-live="polite">
-      <div
-        ref={ref}
-        className={"toast toast-" + type + (position ? " toast-contextual" : "")}
-        role="status"
-        style={position ? { top: position.top, left: position.left, right: "auto", bottom: "auto" } : undefined}
-      >
+function ToastNotification({ message, type }: { message: string; type: "success" | "error" | "info" }) {
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="toastPortal" aria-live="polite">
+      <div className={"toast toast-" + type} role="status">
         <span className="toastIcon" aria-hidden="true">{type === "success" ? "✓" : type === "error" ? "!" : "i"}</span>
         <span className="toastText">{message}</span>
         <span className="toastProgress" aria-hidden="true" />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -141,6 +112,7 @@ export default function Home() {
   const [toast, setToast] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
   const [toastTarget, setToastTarget] = useState<string | null>(null);
+  const [billValidationError, setBillValidationError] = useState("");
   const toastTimerRef = useRef<number | null>(null);
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -609,21 +581,30 @@ export default function Home() {
   const generateBill = async () => {
     if (!profile) return;
 
+    setBillValidationError("");
     if (!selected.length) {
       const memberSection = document.querySelector(".registeredList, .emptyMembers") as HTMLElement | null;
       memberSection?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return pop("Select at least one registered member", "error", ".registeredList, .emptyMembers");
+      setBillValidationError("Select at least one registered member.");
+      return;
     }
 
-    if (total <= 0) return pop("Add at least one bill item with a valid amount", "error", ".billItem");
+    if (total <= 0) {
+      setBillValidationError("Add at least one bill item with a valid amount.");
+      document.querySelector(".billItems")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     if (selectedShareTotal > 0 && Math.abs(selectedShareTotal - total) > 0.01) {
-      return pop("Member shares must add up to the total bill", "error", ".recipientAmounts, .splitSection");
+      setBillValidationError("Member shares must add up to the total bill.");
+      document.querySelector(".splitBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
     }
 
     const invalidItem = items.find(item => !item.name.trim() || !item.amount.trim() || Number(item.amount) <= 0);
     if (invalidItem) {
       const itemRow = document.querySelector(`.billItem[data-item-id="${invalidItem.id}"]`) as HTMLElement | null;
       const input = itemRow?.querySelector(!invalidItem.name.trim() ? 'input[data-field="name"]' : 'input[data-field="amount"]') as HTMLInputElement | null;
+      setBillValidationError(!invalidItem.name.trim() ? "Enter a name for each bill item." : !invalidItem.amount.trim() ? "Enter an amount for each bill item." : "Enter an amount greater than 0 for each bill item.");
       if (input) {
         input.setCustomValidity(!invalidItem.name.trim() ? "Item name is required" : !invalidItem.amount.trim() ? "Amount is required" : "Enter an amount greater than 0");
         input.reportValidity();
@@ -981,6 +962,7 @@ export default function Home() {
             <div className="productMain">
               <div className="card productCard">
                 <div className="sectionTitle"><div><b>1</b><div><h2>Select members</h2><small>Choose registered members who need to pay.</small></div></div><span>{selected.length} selected</span></div>
+                {billValidationError && !selected.length && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check your members</strong><small>{billValidationError}</small></div></div>}
                 {members.length ? <div className="registeredList">{members.map(member => (
                   <button className={"registeredMember " + (selected.includes(member.id) ? "selected" : "")} key={member.id} onClick={() => toggleMember(member.id)}>
                     <span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span>
@@ -992,6 +974,7 @@ export default function Home() {
 
               <div className="card productCard">
                 <div className="sectionTitle"><div><b>2</b><div><h2>Bill details</h2><small>Add every item and its exact amount.</small></div></div></div>
+                {billValidationError && total <= 0 && selected.length > 0 && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check your bill items</strong><small>{billValidationError}</small></div></div>}
                 <div className="billItems">{items.map((item, index) => (
                   <div className="billItem" data-item-id={item.id} key={item.id}>
                     <span>{index + 1}</span>
@@ -1012,6 +995,7 @@ export default function Home() {
                   </div>
                 ))}</div>
                 <button className="addItem" onClick={() => setItems(old => [...old, { id: Date.now(), name: "", amount: "" }])}>＋ Add another item</button>
+                {billValidationError && selected.length > 0 && selectedShareTotal > 0 && Math.abs(selectedShareTotal-total) > 0.01 && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check the split</strong><small>{billValidationError}</small></div></div>}
                 {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>Split between members</strong><small>Set custom shares or split equally.</small></div><button className="secondary" onClick={splitEvenly}>Split equally</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={(total/selected.length).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)}/></div></label>)}<small className={Math.abs(selectedShareTotal-total)<0.01?"splitGood":"splitWarning"}>Allocated ₹{money(selectedShareTotal)} of ₹{money(total)}</small></div>}
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
                 <button className="primary generateBtn" onClick={generateBill}>Generate UPI QR bill →</button>
@@ -1106,7 +1090,7 @@ export default function Home() {
       )}
 
       <footer>© 2026 UPI Bills · Split. Scan. Done.</footer>
-      {toast && <ToastNotification message={toast} type={toastType} target={toastTarget} />}
+      {toast && <ToastNotification message={toast} type={toastType} />}
     </main>
   );
 }
