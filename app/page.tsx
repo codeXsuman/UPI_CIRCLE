@@ -594,7 +594,7 @@ export default function Home() {
       )}
 
       {page === "account" && (
-        <section className="account authPageTransition">
+        <section key="account-page" className="account authPageTransition">
           <div className="card accountCard">
             <div className="accountBadge">CREATE ACCOUNT</div>
             <label>UPI BILLS REGISTRATION</label>
@@ -640,7 +640,7 @@ export default function Home() {
       )}
 
       {page === "login" && (
-        <section className="account authPageTransition">
+        <section key="login-page" className="account authPageTransition">
           <div className="card accountCard">
             <div className="accountBadge">WELCOME BACK</div>
             <label>UPI BILLS LOGIN</label><h1>Login</h1>
