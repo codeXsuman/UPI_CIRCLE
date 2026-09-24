@@ -146,15 +146,17 @@ export default function Home() {
         if (data.user) {
           const savedProfile = saved?.profileDraft;
           setProfile(savedProfile ? { ...data.user, ...savedProfile } : { ...data.user, password: "" });
-          const targetPage = urlPage || saved?.page || "product";
-          setPage(targetPage);
-          if (!urlPage) {
-            const url = targetPage === "home" ? "/" : "/?view=" + targetPage;
-            window.history.replaceState({ view: targetPage }, "", url);
-          }
+
+          // An authenticated app always starts from Dashboard.
+          // Ignore stale deep links and saved child-page drafts on startup.
+          setPage("dashboard");
+          window.history.replaceState({ view: "dashboard" }, "", "/?view=dashboard");
+          touchDraftActivity("dashboard");
           await loadMembers();
-        } else if (saved?.page === "product" || saved?.page === "profile") {
-          navigate("home");
+        } else if (urlPage === "account" || urlPage === "login") {
+          setPage(urlPage);
+        } else {
+          navigate("home", true);
         }
       } catch {
         if (saved?.page === "product" || saved?.page === "profile") navigate("home");
