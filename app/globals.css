@@ -663,3 +663,11 @@ input,button{touch-action:manipulation}
 .skeletonItem{width:72%;height:12px;margin-top:9px}
 .skeletonItem.short{width:46%}
 @keyframes skeletonShimmer{100%{transform:translateX(100%)}}
+
+.toast{position:fixed;right:22px;bottom:22px;z-index:120;display:flex;align-items:center;gap:11px;min-width:270px;max-width:min(420px,calc(100vw - 32px));padding:13px 16px 15px 13px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(20,23,31,.94);color:#fff;box-shadow:0 18px 50px rgba(0,0,0,.28);backdrop-filter:blur(18px);overflow:hidden;animation:toastIn .28s cubic-bezier(.2,.8,.2,1);font-size:12px;font-weight:650}
+.toastIcon{width:25px;height:25px;flex:0 0 25px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:900;background:#fff;color:#111;box-shadow:0 0 0 5px rgba(255,255,255,.07)}
+.toast-success .toastIcon{background:#dfffea;color:#087443}.toast-error .toastIcon{background:#ffe4e4;color:#b42318}.toast-info .toastIcon{background:#e5edff;color:#175cd3}
+.toastText{line-height:1.35;letter-spacing:-.05px}.toastProgress{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.18);transform-origin:left;animation:toastProgress 3.2s linear forwards}
+.toast-success .toastProgress{background:#7cf2ad}.toast-error .toastProgress{background:#ff8b8b}.toast-info .toastProgress{background:#8bb7ff}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}@keyframes toastProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media(max-width:600px){.toast{right:12px;bottom:12px;min-width:0;width:calc(100vw - 24px)}}
