@@ -95,6 +95,8 @@ export default function Home() {
   const [otherBillFilter, setOtherBillFilter] = useState<"all"|"pending"|"received">("all");
   const [billSearch, setBillSearch] = useState("");
   const [toast, setToast] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
+  const toastTimerRef = useRef<number | null>(null);
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
@@ -104,9 +106,12 @@ export default function Home() {
     draftActivityRef.current = Date.now();
   };
 
-  const pop = (message: string) => {
+  const pop = (message: string, type?: "success" | "error" | "info") => {
+    const inferredType = type || (/unable|couldn't|could not|failed|error|invalid|network|connection|mismatch|fix the highlighted|must add|select at least|provide/i.test(message) ? "error" : "success");
+    setToastType(inferredType);
     setToast(message);
-    window.setTimeout(() => setToast(""), 2200);
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => setToast(""), 3200);
   };
 
   const loadMembers = async () => {
@@ -275,6 +280,7 @@ export default function Home() {
       setExistingAccount(false);
       setShareTarget(null);
       setToast("");
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       draftActivityRef.current = Date.now();
       draftResettingRef.current = false;
     }, 1000);
@@ -354,6 +360,7 @@ export default function Home() {
         // Show one generic credential error only; do not reveal which credential failed.
         setLoginErrors({});
         setLoginCredentialError("Invalid email address or password");
+        pop("Invalid email address or password", "error");
         return;
       }
       setProfile({ ...data.user, password: "" });
@@ -449,26 +456,42 @@ export default function Home() {
     } catch { pop("Unable to update payment status"); } finally { setLoading(false); }
   };
 
-  const loadMyBills = async () => {
+  const loadMyBills = async (showError = false) => {
     setDataLoading(prev => ({ ...prev, mine: true }));
     try {
       const res = await fetch("/api/bills/mine", { cache: "no-store" });
       const data = await res.json();
-      if (res.ok) setMyBills(data.bills || []);
-    } catch {}
+      if (res.ok) {
+        setMyBills(data.bills || []);
+        return true;
+      }
+      if (showError) pop(data.error || "Couldn't refresh your bills", "error");
+      return false;
+    } catch {
+      if (showError) pop("Network connection lost · Couldn't refresh your bills", "error");
+      return false;
+    }
     finally {
       setDataLoading(prev => ({ ...prev, mine: false }));
       setDataLoaded(prev => ({ ...prev, mine: true }));
     }
   };
 
-  const loadOtherBills = async () => {
+  const loadOtherBills = async (showError = false) => {
     setDataLoading(prev => ({ ...prev, others: true }));
     try {
       const res = await fetch("/api/bills/others", { cache: "no-store" });
       const data = await res.json();
-      if (res.ok) setOtherBills(data.bills || []);
-    } catch {}
+      if (res.ok) {
+        setOtherBills(data.bills || []);
+        return true;
+      }
+      if (showError) pop(data.error || "Couldn't refresh shared bills", "error");
+      return false;
+    } catch {
+      if (showError) pop("Network connection lost · Couldn't refresh shared bills", "error");
+      return false;
+    }
     finally {
       setDataLoading(prev => ({ ...prev, others: false }));
       setDataLoaded(prev => ({ ...prev, others: true }));
@@ -505,8 +528,14 @@ export default function Home() {
   // create another browser-history entry for the same URL.
   const openMyBills = () => navigate("mine");
   const openOtherBills = () => navigate("others");
-  const refreshMyBills = async () => { await loadMyBills(); };
-  const refreshOtherBills = async () => { await loadOtherBills(); };
+  const refreshMyBills = async () => {
+    const ok = await loadMyBills(true);
+    if (ok !== false) pop("Bills refreshed · You're up to date", "success");
+  };
+  const refreshOtherBills = async () => {
+    const ok = await loadOtherBills(true);
+    if (ok !== false) pop("Bills refreshed · You're up to date", "success");
+  };
 
   useEffect(() => {
     if (!hydrated || !profile) return;
@@ -564,7 +593,7 @@ export default function Home() {
       if (!res.ok) return pop(data.error || "Unable to save bill");
       setGeneratedBillId(data.billId);
       setGenerated(true);
-      pop("Bill generated successfully");
+      pop("Bill created · Ready to share", "success");
     } catch { pop("Unable to save bill"); }
     finally { setLoading(false); }
   };
@@ -1028,7 +1057,13 @@ export default function Home() {
       )}
 
       <footer>© 2026 UPI Bills · Split. Scan. Done.</footer>
-      {toast && <div className="toast">✓ {toast}</div>}
+      {toast && (
+        <div className={"toast toast-" + toastType} role="status" aria-live="polite">
+          <span className="toastIcon" aria-hidden="true">{toastType === "success" ? "✓" : toastType === "error" ? "!" : "i"}</span>
+          <span className="toastText">{toast}</span>
+          <span className="toastProgress" aria-hidden="true" />
+        </div>
+      )}
     </main>
   );
 }
