@@ -391,6 +391,27 @@ export default function Home() {
 
   const loadMyBills = async () => { try { const res = await fetch("/api/bills/mine", { cache: "no-store" }); const data = await res.json(); if (res.ok) setMyBills(data.bills || []); } catch {} };
   const loadOtherBills = async () => { try { const res = await fetch("/api/bills/others", { cache: "no-store" }); const data = await res.json(); if (res.ok) setOtherBills(data.bills || []); } catch {} };
+  const refreshDashboardStats = async () => {
+    try {
+      const [mineRes, otherRes] = await Promise.all([
+        fetch("/api/bills/mine", { cache: "no-store" }),
+        fetch("/api/bills/others", { cache: "no-store" })
+      ]);
+      const mine = await mineRes.json();
+      const other = await otherRes.json();
+      const mineBills = mine.bills || [];
+      const otherBillsData = other.bills || [];
+      setMyBills(mineBills);
+      setOtherBills(otherBillsData);
+      setDashboardStats({
+        created: mineBills.length,
+        pending: mineBills.filter((b:any)=>b.paymentStatus==="pending").length,
+        received: mineBills.filter((b:any)=>b.paymentStatus==="received").reduce((s:number,b:any)=>s+Number(b.totalAmount||0),0),
+        owing: otherBillsData.filter((b:any)=>b.paymentStatus!=="received").reduce((s:number,b:any)=>s+(Number(b.recipientAmount)||Number(b.totalAmount)||0),0)
+      });
+    } catch {}
+  };
+
   const openMyBills = async () => { navigate("mine"); await withLoading(loadMyBills); };
   const openOtherBills = async () => { navigate("others"); await withLoading(loadOtherBills); };
 
