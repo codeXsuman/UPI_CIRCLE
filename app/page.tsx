@@ -12,7 +12,7 @@ const GENERAL_DRAFT_TTL_MS = 30 * 1000;
 const BILL_DRAFT_TTL_MS = 10 * 60 * 1000;
 
 export default function Home() {
-  type AppPage = "home" | "account" | "login" | "dashboard" | "product" | "mine" | "others" | "profile" | "history" | "alerts";
+  type AppPage = "home" | "account" | "login" | "dashboard" | "product" | "mine" | "others" | "profile";
   const [page, setPage] = useState<AppPage>("home");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -24,7 +24,7 @@ export default function Home() {
 
   const getPageFromUrl = (): AppPage | null => {
     const value = new URLSearchParams(window.location.search).get("view");
-    return ["home", "account", "login", "dashboard", "product", "mine", "others", "profile", "history", "alerts"].includes(value || "")
+    return ["home", "account", "login", "dashboard", "product", "mine", "others", "profile"].includes(value || "")
       ? value as AppPage
       : null;
   };
@@ -55,12 +55,8 @@ export default function Home() {
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
   const [generated, setGenerated] = useState(false);
   const [generatedBillId, setGeneratedBillId] = useState<string | null>(null);
-  const [savedInHistory, setSavedInHistory] = useState(false);
-  const [historyBills, setHistoryBills] = useState<any[]>([]);
-  const [alertBills, setAlertBills] = useState<any[]>([]);
   const [myBills, setMyBills] = useState<any[]>([]);
   const [otherBills, setOtherBills] = useState<any[]>([]);
-  const [alertBill, setAlertBill] = useState(false);
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -184,8 +180,6 @@ export default function Home() {
           selected,
           generated,
           generatedBillId,
-          savedInHistory,
-          alertBill
         }));
       } catch {}
     }, 750);
@@ -218,7 +212,6 @@ export default function Home() {
       setSelected([]);
       setGenerated(false);
       setGeneratedBillId(null);
-      setSavedInHistory(false);
       setRegisterErrors({});
       setExistingAccount(false);
       setShareTarget(null);
@@ -373,8 +366,6 @@ export default function Home() {
       + "&tn=" + encodeURIComponent(note);
   }, [profile, items, total, alertBill]);
 
-  const loadAlertBills = async () => { try { const res = await fetch("/api/bills/alerts", { cache: "no-store" }); const data = await res.json(); if (res.ok) setAlertBills(data.bills || []); } catch {} };
-
   const updateMyBillStatus = async (billId: string, paymentStatus: "pending" | "received") => {
     try {
       setLoading(true);
@@ -398,39 +389,10 @@ export default function Home() {
     finally { setLoading(false); }
   };
 
-  const loadHistory = async () => {
-    try {
-      const res = await fetch("/api/bills/history", { cache: "no-store" });
-      const data = await res.json();
-      if (res.ok) setHistoryBills(data.bills || []);
-    } catch {}
-  };
-
   const loadMyBills = async () => { try { const res = await fetch("/api/bills/mine", { cache: "no-store" }); const data = await res.json(); if (res.ok) setMyBills(data.bills || []); } catch {} };
   const loadOtherBills = async () => { try { const res = await fetch("/api/bills/others", { cache: "no-store" }); const data = await res.json(); if (res.ok) setOtherBills(data.bills || []); } catch {} };
   const openMyBills = async () => { navigate("mine"); await withLoading(loadMyBills); };
   const openOtherBills = async () => { navigate("others"); await withLoading(loadOtherBills); };
-  const openHistory = async () => { navigate("history"); await withLoading(loadHistory); };
-  const openAlerts = async () => { navigate("alerts"); await withLoading(loadAlertBills); };
-
-  const saveInHistory = async () => {
-    if (!generatedBillId) return pop("Generate the bill first");
-    try {
-      setLoading(true);
-      const res = await fetch("/api/bills/history", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ billId: generatedBillId })
-      });
-      const data = await res.json();
-      if (!res.ok) return pop(data.error || "Unable to save in history");
-      setSavedInHistory(true);
-      await loadHistory();
-      pop("Bill saved in history");
-    } catch {
-      pop("Unable to save in history");
-    } finally { setLoading(false); }
-  };
 
   const generateBill = async () => {
     if (!profile) return;
@@ -457,13 +419,11 @@ export default function Home() {
       const res = await fetch("/api/bills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, recipientIds: selected, alertBill })
+        body: JSON.stringify({ items, recipientIds: selected })
       });
       const data = await res.json();
       if (!res.ok) return pop(data.error || "Unable to save bill");
       setGeneratedBillId(data.billId);
-      if (alertBill) await loadAlertBills();
-      setSavedInHistory(false);
       setGenerated(true);
       pop("Bill generated successfully");
     } catch { pop("Unable to save bill"); }
@@ -560,7 +520,6 @@ export default function Home() {
         </div>
         {profile ? (
           <div className="headerActions">
-            <button className="historyNav" onClick={openHistory}>History</button><button className="historyNav alertNav" onClick={openAlerts}>Alert Bills</button>
             <div className="profileMenuWrap">
               <button
                 className="profileButton"
@@ -575,7 +534,6 @@ export default function Home() {
               </button>
               {profileMenuOpen && (
                 <div className="mobileProfileMenu">
-                  <button onClick={() => { setProfileMenuOpen(false); openHistory(); }}>History</button><button onClick={() => { setProfileMenuOpen(false); openAlerts(); }}>Alert Bills</button>
                   <button onClick={() => { setProfileMenuOpen(false); navigate("profile"); }}>Profile</button>
                 </div>
               )}
@@ -794,7 +752,6 @@ export default function Home() {
                 ))}</div>
                 <button className="addItem" onClick={() => setItems(old => [...old, { id: Date.now(), name: "", amount: "" }])}>＋ Add another item</button>
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
-                <label className={"alertBillToggle " + (alertBill ? "on" : "")}><span className="alertBillCopy"><strong>Alert bill</strong><small>Track this bill in Alert Bills and monitor payment status.</small></span><input type="checkbox" checked={alertBill} onChange={e => setAlertBill(e.target.checked)} /><span className="alertSwitch"><i /></span></label>
                 <button className="primary generateBtn" onClick={generateBill}>Generate UPI QR bill →</button>
               </div>
             </div>
@@ -812,7 +769,7 @@ export default function Home() {
           </div>
 
           {generated && <div className="generatedBills">
-            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit</button><button className={"historySaveBtn " + (savedInHistory ? "saved" : "")} onClick={saveInHistory} disabled={savedInHistory}>{savedInHistory ? "✓ Saved" : "＋ Save"}</button><button className="primary newBillBtn" onClick={createNewBill}>＋ New bill</button></div></div>
+            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit</button><button className="primary newBillBtn" onClick={createNewBill}>＋ New bill</button></div></div>
             <div className="qrBillGrid">{selectedMembers.map(member => (
               <div className="card qrBill" key={member.id}>
                 <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(total)}</strong></div>
@@ -832,59 +789,6 @@ export default function Home() {
               </div>
             ))}</div>
           </div>}
-        </section>
-      )}
-
-      {page === "alerts" && profile && (<section className="historyPage"><div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>PAYMENT MONITOR</b></div><h1>Alert Bills</h1><p>Bills with alerts enabled stay here so you can monitor payment status.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openAlerts}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create a bill</button></div></div>{!alertBills.length ? (<div className="card historyEmpty"><h2>No alert bills yet</h2><p>Turn on “Alert bill” before generating a bill to start tracking it.</p><button className="primary" onClick={() => navigate("product")}>Create an alert bill →</button></div>) : (<div className="historyList">{alertBills.map((bill) => (<div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus " + (bill.paymentStatus === "received" ? "paid" : "pending")}>● {bill.paymentStatus === "received" ? "PAYMENT RECEIVED" : "PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any) => r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any) => <div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Pay to <b>{bill.creatorName}</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="secondary" onClick={() => updateAlertStatus(bill.id, "pending")} disabled={bill.paymentStatus === "pending"}>Mark Pending</button><button className="primary" onClick={() => updateAlertStatus(bill.id, "received")} disabled={bill.paymentStatus === "received"}>✓ Mark Received</button></div></div>))}</div>)}</section>)}
-
-      {page === "history" && profile && (
-        <section className="historyPage">
-          <div className="historyHeader">
-            <div>
-              <div className="eyebrow"><span>●</span> UPI BILLS <b>YOUR HISTORY</b></div>
-              <h1>Bill history</h1>
-              <p>Saved bills are stored with your account so you can revisit their items, amount and payment details.</p>
-            </div>
-            <div className="historyHeaderActions">
-              <button className="secondary" onClick={() => navigate("product")}>Create a bill</button>
-            </div>
-          </div>
-          {!historyBills.length ? (
-            <div className="card historyEmpty">
-              <div className="historyEmptyIcon">↗</div>
-              <h2>No saved bills yet</h2>
-              <p>Generate a bill and choose “Save in history” to keep it here.</p>
-              <button className="primary" onClick={() => navigate("product")}>Create your first bill →</button>
-            </div>
-          ) : (
-            <div className="historyList">
-              {historyBills.map((bill) => (
-                <div className="card historyCard" key={bill.id}>
-                  <div className="historyCardTop">
-                    <div>
-                      <span className="live">● SAVED BILL</span>
-                      <h2>Bill to {bill.recipients.map((r:any) => r.name).join(", ")}</h2>
-                      <small>{new Date(bill.savedAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small>
-                    </div>
-                    <strong>₹{money(Number(bill.totalAmount))}</strong>
-                  </div>
-                  <div className="historyItems">
-                    {bill.items.map((item:any) => (
-                      <div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>
-                    ))}
-                  </div>
-                  <div className="historyMeta">
-                    <span>Pay to <b>{bill.creatorName}</b></span>
-                    <span>UPI ID <b>{bill.creatorUpi}</b></span>
-                  </div>
-                  <div className="historyCardActions">
-                    <button className="secondary" onClick={() => navigate("product")}>Create new bill</button>
-                    <button className="primary" onClick={() => pop("Historical bill details are shown above")}>View bill details</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </section>
       )}
 
