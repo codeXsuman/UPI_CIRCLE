@@ -132,8 +132,6 @@ export default function Home() {
       if (Array.isArray(saved?.selected)) setSelected(saved.selected);
       if (typeof saved?.generated === "boolean") setGenerated(saved.generated);
       if (saved?.generatedBillId) setGeneratedBillId(saved.generatedBillId);
-      if (typeof saved?.savedInHistory === "boolean") setSavedInHistory(saved.savedInHistory);
-      if (typeof saved?.alertBill === "boolean") setAlertBill(saved.alertBill);
 
       try {
         setLoading(true);
@@ -184,7 +182,7 @@ export default function Home() {
       } catch {}
     }, 750);
     return () => window.clearTimeout(timer);
-  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId, savedInHistory, alertBill]);
+  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
   // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
@@ -364,7 +362,7 @@ export default function Home() {
       + "&am=" + total.toFixed(2)
       + "&cu=INR"
       + "&tn=" + encodeURIComponent(note);
-  }, [profile, items, total, alertBill]);
+  }, [profile, items, total]);
 
   const updateMyBillStatus = async (billId: string, paymentStatus: "pending" | "received") => {
     try {
@@ -375,18 +373,6 @@ export default function Home() {
       await loadMyBills();
       pop(paymentStatus === "received" ? "Payment marked as received" : "Payment marked as pending");
     } catch { pop("Unable to update payment status"); } finally { setLoading(false); }
-  };
-
-  const updateAlertStatus = async (billId: string, paymentStatus: "pending" | "received") => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/bills/alerts", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ billId, paymentStatus }) });
-      const data = await res.json();
-      if (!res.ok) return pop(data.error || "Unable to update payment status");
-      await loadAlertBills();
-      pop(paymentStatus === "received" ? "Payment marked as received" : "Payment marked as pending");
-    } catch { pop("Unable to update payment status"); }
-    finally { setLoading(false); }
   };
 
   const loadMyBills = async () => { try { const res = await fetch("/api/bills/mine", { cache: "no-store" }); const data = await res.json(); if (res.ok) setMyBills(data.bills || []); } catch {} };
@@ -504,7 +490,6 @@ export default function Home() {
     setItems([{ id: Date.now(), name: "", amount: "" }]);
     setGenerated(false);
     setGeneratedBillId(null);
-    setSavedInHistory(false);
     setShareTarget(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
     pop("Ready to create a new bill");
