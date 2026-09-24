@@ -821,7 +821,8 @@ export default function Home() {
                 <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type="password" placeholder="Create a password" onChange={e => {
                   const value = e.target.value;
                   setRegister({ ...register, password: value });
-                  setRegisterErrors(old => ({ ...old, password: "" }));\n                  setRegisterServerError("");
+                  setRegisterErrors(old => ({ ...old, password: "" }));
+                  setRegisterServerError("");
                   if (!value) setPasswordStrength("");
                   else if (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) setPasswordStrength("weak");
                   else if (value.length < 10 || !/[A-Z]/.test(value) || !/[^A-Za-z0-9]/.test(value)) setPasswordStrength("medium");
