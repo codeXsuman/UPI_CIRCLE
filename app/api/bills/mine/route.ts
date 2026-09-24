@@ -5,6 +5,7 @@ import { sql } from "@/lib/db";
 async function ensurePaymentColumns() {
   await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pending'`;
   await sql`ALTER TABLE bills ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE bill_recipients ADD COLUMN IF NOT EXISTS amount NUMERIC(12,2)`;
 }
 
 export async function GET() {
