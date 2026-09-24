@@ -671,3 +671,14 @@ input,button{touch-action:manipulation}
 .toast-success .toastProgress{background:#7cf2ad}.toast-error .toastProgress{background:#ff8b8b}.toast-info .toastProgress{background:#8bb7ff}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}@keyframes toastProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @media(max-width:600px){.toast{right:12px;bottom:12px;min-width:0;width:calc(100vw - 24px)}}
+
+/* Viewport-safe notification layer: never depends on page scroll position. */
+.toastViewport{position:fixed;inset:0;z-index:9999;pointer-events:none;display:flex;justify-content:flex-end;align-items:flex-start;padding:calc(env(safe-area-inset-top) + 16px) max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left))}
+.toastViewport .toast{position:relative;right:auto;top:auto;bottom:auto;pointer-events:auto;margin:0;max-width:min(420px,calc(100vw - 32px));}
+@media(max-width:700px){
+  .toastViewport{justify-content:center;padding-top:calc(env(safe-area-inset-top) + 12px);padding-left:12px;padding-right:12px}
+  .toastViewport .toast{width:min(100%,460px);max-width:none}
+}
+@media(max-height:520px) and (orientation:landscape){
+  .toastViewport{align-items:flex-end;padding-bottom:calc(env(safe-area-inset-bottom) + 12px);padding-top:12px}
+}
