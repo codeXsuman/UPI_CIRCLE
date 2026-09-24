@@ -647,3 +647,19 @@ input,button{touch-action:manipulation}
 .dangerAction{color:#b42318!important;border-color:#f0caca!important;background:#fff!important}
 @media(max-width:800px){.dashboardStats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:430px){.dashboardStats{grid-template-columns:1fr 1fr}.dashboardStats>div{padding:14px}.dashboardStats strong{font-size:18px}}
+
+/* Fast data loading states: keep the page visible while bill data revalidates. */
+.historyHeaderActions button[disabled]{opacity:.72;cursor:wait}
+.buttonSpinner{display:inline-block;width:12px;height:12px;border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:buttonSpin .65s linear infinite;margin-right:7px;vertical-align:-1px}
+@keyframes buttonSpin{to{transform:rotate(360deg)}}
+.historySkeletonList{pointer-events:none}
+.historyCardSkeleton{padding:24px;min-height:190px}
+.skeletonLine{position:relative;overflow:hidden;border-radius:8px;background:#ececf0}
+.skeletonLine::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.72),transparent);animation:skeletonShimmer 1.15s infinite}
+.skeletonStatus{width:126px;height:22px}
+.skeletonTitle{width:48%;height:24px;margin-top:14px}
+.skeletonMeta{width:30%;height:12px;margin-top:9px}
+.skeletonDivider{height:1px;background:var(--line);margin:20px 0 10px}
+.skeletonItem{width:72%;height:12px;margin-top:9px}
+.skeletonItem.short{width:46%}
+@keyframes skeletonShimmer{100%{transform:translateX(100%)}}
