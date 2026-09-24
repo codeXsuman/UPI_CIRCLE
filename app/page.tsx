@@ -364,6 +364,19 @@ export default function Home() {
       + "&tn=" + encodeURIComponent(note);
   }, [profile, items, total]);
 
+  const deleteMyBill = async (billId: string) => {
+    if (!window.confirm("Delete this bill? This cannot be undone.")) return;
+    try {
+      setLoading(true);
+      const res = await fetch("/api/bills/mine", { method:"DELETE", headers:{"Content-Type":"application/json"}, body:JSON.stringify({billId}) });
+      const data = await res.json();
+      if (!res.ok) return pop(data.error || "Unable to delete bill");
+      setMyBills(old => old.filter(b => b.id !== billId));
+      setOpenBillId(null);
+      pop("Bill deleted");
+    } catch { pop("Unable to delete bill"); } finally { setLoading(false); }
+  };
+
   const updateMyBillStatus = async (billId: string, paymentStatus: "pending" | "received") => {
     try {
       setLoading(true);
@@ -685,7 +698,7 @@ export default function Home() {
         <section className="historyPage">
           <div className="historyHeader"><div><div className="eyebrow"><span>●</span> UPI BILLS <b>MY BILLS</b></div><h1>My bills</h1><p>Bills created by you. Mark each bill as pending or received.</p></div><div className="historyHeaderActions"><button className="secondary" onClick={openMyBills}>↻ Refresh</button><button className="primary" onClick={() => navigate("product")}>Create bill</button></div></div>
           {!myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={() => navigate("product")}>Create a bill →</button></div> :
-          <div className="historyList">{myBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus "+(bill.paymentStatus==="received"?"paid":"pending")}>● {bill.paymentStatus==="received"?"PAYMENT RECEIVED":"PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any)=>r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Created by <b>You</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="secondary" onClick={()=>updateMyBillStatus(bill.id,"pending")} disabled={bill.paymentStatus==="pending"}>Mark Pending</button><button className="primary" onClick={()=>updateMyBillStatus(bill.id,"received")} disabled={bill.paymentStatus==="received"}>✓ Mark Received</button></div></div>)}</div>}
+          <div className="historyList">{myBills.map((bill:any) => <div className="card historyCard" key={bill.id}><div className="historyCardTop"><div><span className={"alertStatus "+(bill.paymentStatus==="received"?"paid":"pending")}>● {bill.paymentStatus==="received"?"PAYMENT RECEIVED":"PAYMENT PENDING"}</span><h2>Bill to {bill.recipients.map((r:any)=>r.name).join(", ")}</h2><small>{new Date(bill.createdAt).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}</small></div><strong>₹{money(Number(bill.totalAmount))}</strong></div><div className="historyItems">{bill.items.map((item:any)=><div key={item.id}><span>{item.name}</span><b>₹{money(Number(item.amount))}</b></div>)}</div><div className="historyMeta"><span>Created by <b>You</b></span><span>UPI ID <b>{bill.creatorUpi}</b></span></div><div className="historyCardActions"><button className="secondary" onClick={()=>updateMyBillStatus(bill.id,"pending")} disabled={bill.paymentStatus==="pending"}>Mark Pending</button><button className="primary" onClick={()=>updateMyBillStatus(bill.id,"received")} disabled={bill.paymentStatus==="received"}>✓ Mark Received</button><button className="secondary dangerAction" onClick={()=>deleteMyBill(bill.id)}>Delete</button></div></div>)}</div>}
         </section>
       )}
 
