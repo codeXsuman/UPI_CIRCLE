@@ -682,3 +682,8 @@ input,button{touch-action:manipulation}
 @media(max-height:520px) and (orientation:landscape){
   .toastViewport{align-items:flex-end;padding-bottom:calc(env(safe-area-inset-bottom) + 12px);padding-top:12px}
 }
+
+.toastViewport{position:fixed;inset:0;z-index:9999;pointer-events:none;padding:14px 12px}
+.toastViewport .toast{position:relative;pointer-events:auto;margin-left:auto;max-width:min(420px,calc(100vw - 24px))}
+.toastViewport .toast-contextual{position:fixed;margin:0}
+@media(max-width:700px){.toastViewport{display:flex;justify-content:center}.toastViewport .toast{width:min(100%,460px);max-width:none}.toastViewport .toast-contextual{left:12px!important;right:12px!important;width:auto}}
