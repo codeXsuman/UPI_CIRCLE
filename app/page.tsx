@@ -1058,10 +1058,12 @@ export default function Home() {
 
       <footer>© 2026 UPI Bills · Split. Scan. Done.</footer>
       {toast && (
-        <div className={"toast toast-" + toastType} role="status" aria-live="polite">
-          <span className="toastIcon" aria-hidden="true">{toastType === "success" ? "✓" : toastType === "error" ? "!" : "i"}</span>
-          <span className="toastText">{toast}</span>
-          <span className="toastProgress" aria-hidden="true" />
+        <div className="toastViewport" aria-live="polite">
+          <div className={"toast toast-" + toastType} role="status">
+            <span className="toastIcon" aria-hidden="true">{toastType === "success" ? "✓" : toastType === "error" ? "!" : "i"}</span>
+            <span className="toastText">{toast}</span>
+            <span className="toastProgress" aria-hidden="true" />
+          </div>
         </div>
       )}
     </main>
