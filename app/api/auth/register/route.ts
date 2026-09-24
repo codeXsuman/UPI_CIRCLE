@@ -79,8 +79,32 @@ export async function POST(req: Request) {
     await setSession(id);
 
     return NextResponse.json({ user: rows[0] }, { status: 201 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Unable to create account" }, { status: 500 });
+  } catch (error: any) {
+    console.error("Registration error:", error);
+
+    // PostgreSQL unique-constraint errors can still happen after the
+    // pre-check (for example, if two registrations arrive at the same time).
+    // Treat them as a duplicate-account response instead of the vague
+    // "Unable to create account" message.
+    if (error?.code === "23505") {
+      const constraint = String(error?.constraint || "").toLowerCase();
+      const conflict = constraint.includes("email")
+        ? "email"
+        : constraint.includes("upi")
+          ? "UPI ID"
+          : constraint.includes("mobile")
+            ? "mobile number"
+            : "email, UPI ID or mobile number";
+
+      return NextResponse.json(
+        { error: `An account with this ${conflict} already exists`, conflict },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "We couldn't create your account right now. Please try again." },
+      { status: 500 }
+    );
   }
 }
