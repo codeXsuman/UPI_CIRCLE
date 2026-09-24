@@ -619,3 +619,23 @@ input,button{touch-action:manipulation}
  .dashboardPage{padding:30px 16px 60px}.dashboardOptions{grid-template-columns:1fr}.dashboardOption{min-height:210px}
  .othersPaymentArea{align-items:flex-start;flex-direction:column}.othersQr{flex-direction:column;align-items:flex-start}
 }
+
+
+/* Bill management controls */
+.billToolbar{display:flex;gap:12px;align-items:center;margin:20px 0}
+.billToolbar>input{flex:1;min-width:0;height:46px;padding:0 15px;border:1px solid var(--line);border-radius:13px;background:#fff;font:inherit;color:var(--ink)}
+.filterPills{display:flex;gap:6px;flex-wrap:wrap}
+.filterPills button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-size:11px;font-weight:700;color:#666;cursor:pointer}
+.filterPills button.active{background:#111;color:#ffd21a;border-color:#111}
+.billDetailPanel{margin-top:14px;padding:14px;border:1px solid #eee8c8;border-radius:14px;background:#fffdf0}
+.billDetailPanel>div{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid #eee}
+.billDetailPanel>div:last-child{border-bottom:0}
+.splitBox{margin:18px 0;padding:16px;border:1px solid #eee8c8;border-radius:16px;background:#fffdf0}
+.splitBox>div:first-child{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.splitBox>div:first-child small{display:block;color:#777;font-size:11px;margin-top:3px}
+.splitBox>label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0}
+.splitBox label>div{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:#fff;padding-left:8px}
+.splitBox label input{width:95px;border:0!important;box-shadow:none!important;padding:9px}
+.splitWarning{display:block;margin-top:8px;color:#b42318;font-weight:700}
+.splitGood{display:block;margin-top:8px;color:#16734a;font-weight:700}
+@media(max-width:700px){.billToolbar{display:grid}.filterPills{justify-content:flex-start}.splitBox>div:first-child{align-items:flex-start;flex-direction:column}.splitBox>label{align-items:flex-start;flex-direction:column}.splitBox label>div{width:100%}.splitBox label input{width:100%}}
