@@ -478,3 +478,43 @@ input,button{touch-action:manipulation}
   font-weight:600;
   line-height:1.3;
 }
+
+
+/* Smooth authentication page and button interactions */
+.authPageTransition{
+  animation:authPageEnter .38s cubic-bezier(.22,1,.36,1) both;
+}
+.authPageTransition .accountCard{
+  animation:authCardEnter .45s cubic-bezier(.22,1,.36,1) both;
+}
+.authPageTransition .accountSubmit,
+.authPageTransition .newAccountPrompt,
+.authPageTransition .wideBtn{
+  transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+  will-change:transform;
+}
+.authPageTransition .accountSubmit:hover,
+.authPageTransition .newAccountPrompt:hover,
+.authPageTransition .wideBtn:hover{
+  transform:translateY(-2px);
+}
+.authPageTransition .accountSubmit:active,
+.authPageTransition .newAccountPrompt:active,
+.authPageTransition .wideBtn:active{
+  transform:translateY(0) scale(.985);
+  transition-duration:.08s;
+}
+@keyframes authPageEnter{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes authCardEnter{
+  from{opacity:0;transform:translateY(12px) scale(.99)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  .authPageTransition,.authPageTransition .accountCard{animation:none!important}
+  .authPageTransition .accountSubmit,
+  .authPageTransition .newAccountPrompt,
+  .authPageTransition .wideBtn{transition:none!important}
+}
