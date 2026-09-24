@@ -57,6 +57,7 @@ export default function Home() {
   const [generatedBillId, setGeneratedBillId] = useState<string | null>(null);
   const [myBills, setMyBills] = useState<any[]>([]);
   const [otherBills, setOtherBills] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState({ created: 0, pending: 0, received: 0, owing: 0 });
   const [toast, setToast] = useState("");
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -686,6 +687,7 @@ export default function Home() {
           <div className="dashboardHero">
             <div><div className="eyebrow"><span>●</span> UPI BILLS <b>DASHBOARD</b></div><h1>Welcome back, {profile.name.split(" ")[0]}.</h1><p>Manage your bills, track payments, and pay bills shared with you.</p></div>
           </div>
+          <div className="dashboardStats"><div><strong>{dashboardStats.created}</strong><span>Bills created</span></div><div><strong>{dashboardStats.pending}</strong><span>Pending</span></div><div><strong>₹{money(dashboardStats.received)}</strong><span>Received</span></div><div><strong>₹{money(dashboardStats.owing)}</strong><span>To pay</span></div></div>
           <div className="dashboardOptions">
             <button className="dashboardOption create" onClick={() => navigate("product")}><span className="dashboardIcon">＋</span><strong>Create Bill</strong><small>Create a bill against other registered members.</small><b>Open →</b></button>
             <button className="dashboardOption" onClick={openMyBills}><span className="dashboardIcon">↗</span><strong>My Bills</strong><small>View bills you created and mark them pending or received.</small><b>View bills →</b></button>
