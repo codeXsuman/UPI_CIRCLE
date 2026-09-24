@@ -6,6 +6,7 @@ export async function GET() {
   const userId = await getSessionUserId();
   if (!userId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   try {
+    await sql`ALTER TABLE bill_recipients ADD COLUMN IF NOT EXISTS amount NUMERIC(12,2)`;
     const bills = await sql`SELECT b.id,b.created_at AS "createdAt",b.total_amount AS "totalAmount",
       b.payment_status AS "paymentStatus",br.amount AS "recipientAmount",u.id AS "creatorId",u.name AS "creatorName",u.upi_id AS "creatorUpi"
       FROM bills b JOIN bill_recipients br ON br.bill_id=b.id
