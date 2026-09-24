@@ -7,7 +7,7 @@ export async function GET() {
   if (!userId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   try {
     const bills = await sql`SELECT b.id,b.created_at AS "createdAt",b.total_amount AS "totalAmount",
-      b.payment_status AS "paymentStatus",u.id AS "creatorId",u.name AS "creatorName",u.upi_id AS "creatorUpi"
+      b.payment_status AS "paymentStatus",br.amount AS "recipientAmount",u.id AS "creatorId",u.name AS "creatorName",u.upi_id AS "creatorUpi"
       FROM bills b JOIN bill_recipients br ON br.bill_id=b.id
       JOIN users u ON u.id=b.creator_id
       WHERE br.user_id=${userId} ORDER BY b.created_at DESC`;
