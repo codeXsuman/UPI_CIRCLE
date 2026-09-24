@@ -50,3 +50,20 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Unable to update payment status" }, { status: 500 });
   }
 }
+
+
+export async function DELETE(req: Request) {
+  const userId = await getSessionUserId();
+  if (!userId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  try {
+    const { billId } = await req.json();
+    if (!billId) return NextResponse.json({ error: "Bill ID is required" }, { status: 400 });
+    const found = await sql`SELECT id FROM bills WHERE id=${billId} AND creator_id=${userId} LIMIT 1`;
+    if (!found.length) return NextResponse.json({ error: "Bill not found" }, { status: 404 });
+    await sql`DELETE FROM bills WHERE id=${billId} AND creator_id=${userId}`;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("My bill delete error:", error);
+    return NextResponse.json({ error: "Unable to delete bill" }, { status: 500 });
+  }
+}
