@@ -528,7 +528,7 @@ export default function Home() {
   const selectedMembers = members.filter(m => selected.includes(m.id));
 
   return (
-    <main>
+    <main key={page} className="pageMotion">
       <header>
         <div className="brand" onClick={() => navigate(profile ? "product" : "home")}>
           <b>U</b><strong>UPI<span>Bills</span></strong>
