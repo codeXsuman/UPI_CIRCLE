@@ -11,6 +11,50 @@ const DRAFT_KEY = "upi-bills-draft-v5";
 const GENERAL_DRAFT_TTL_MS = 30 * 1000;
 const BILL_DRAFT_TTL_MS = 10 * 60 * 1000;
 
+function ToastNotification({ message, type, target }: { message: string; type: "success" | "error" | "info"; target: string | null }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    const place = () => {
+      const el = ref.current;
+      const targetEl = target ? document.querySelector(target) as HTMLElement | null : null;
+      if (!targetEl || type !== "error") {
+        setPosition(null);
+        return;
+      }
+      const rect = targetEl.getBoundingClientRect();
+      const width = Math.min(420, window.innerWidth - 32);
+      const left = Math.max(16, Math.min(window.innerWidth - width - 16, rect.right - width));
+      const estimatedHeight = 58;
+      const top = Math.max(12, rect.top - estimatedHeight - 12);
+      setPosition({ top, left });
+    };
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, { passive: true });
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place);
+    };
+  }, [target, type]);
+
+  return (
+    <div className="toastViewport" aria-live="polite">
+      <div
+        ref={ref}
+        className={"toast toast-" + type + (position ? " toast-contextual" : "")}
+        role="status"
+        style={position ? { top: position.top, left: position.left, right: "auto", bottom: "auto" } : undefined}
+      >
+        <span className="toastIcon" aria-hidden="true">{type === "success" ? "✓" : type === "error" ? "!" : "i"}</span>
+        <span className="toastText">{message}</span>
+        <span className="toastProgress" aria-hidden="true" />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   type AppPage = "home" | "account" | "login" | "dashboard" | "product" | "mine" | "others" | "profile";
   const [page, setPage] = useState<AppPage>("home");
@@ -96,6 +140,7 @@ export default function Home() {
   const [billSearch, setBillSearch] = useState("");
   const [toast, setToast] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
+  const [toastTarget, setToastTarget] = useState<string | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -106,12 +151,16 @@ export default function Home() {
     draftActivityRef.current = Date.now();
   };
 
-  const pop = (message: string, type?: "success" | "error" | "info") => {
+  const pop = (message: string, type?: "success" | "error" | "info", target?: string) => {
     const inferredType = type || (/unable|couldn't|could not|failed|error|invalid|network|connection|mismatch|fix the highlighted|must add|select at least|provide/i.test(message) ? "error" : "success");
     setToastType(inferredType);
+    setToastTarget(target || null);
     setToast(message);
     if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setToast(""), 3200);
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast("");
+      setToastTarget(null);
+    }, 3200);
   };
 
   const loadMembers = async () => {
@@ -563,12 +612,12 @@ export default function Home() {
     if (!selected.length) {
       const memberSection = document.querySelector(".registeredList, .emptyMembers") as HTMLElement | null;
       memberSection?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return pop("Select at least one registered member");
+      return pop("Select at least one registered member", "error", ".registeredList, .emptyMembers");
     }
 
-    if (total <= 0) return pop("Add at least one bill item with a valid amount");
+    if (total <= 0) return pop("Add at least one bill item with a valid amount", "error", ".billItem");
     if (selectedShareTotal > 0 && Math.abs(selectedShareTotal - total) > 0.01) {
-      return pop("Member shares must add up to the total bill");
+      return pop("Member shares must add up to the total bill", "error", ".recipientAmounts, .splitSection");
     }
 
     const invalidItem = items.find(item => !item.name.trim() || !item.amount.trim() || Number(item.amount) <= 0);
@@ -1058,8 +1107,8 @@ export default function Home() {
 
       <footer>© 2026 UPI Bills · Split. Scan. Done.</footer>
       {toast && (
-        <div className="toastViewport" aria-live="polite">
-          <div className={"toast toast-" + toastType} role="status">
+        <ToastNotification message={toast} type={toastType} target={toastTarget} />
+      )}
             <span className="toastIcon" aria-hidden="true">{toastType === "success" ? "✓" : toastType === "error" ? "!" : "i"}</span>
             <span className="toastText">{toast}</span>
             <span className="toastProgress" aria-hidden="true" />
