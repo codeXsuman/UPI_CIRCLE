@@ -31,7 +31,11 @@ export default function Home() {
 
   const navigate = (nextPage: AppPage, replace = false) => {
     const url = nextPage === "home" ? "/" : "/?view=" + nextPage;
-    if (replace) window.history.replaceState({ view: nextPage }, "", url);
+    // Dashboard is the authenticated app root. Replace the current child
+    // route when returning to it so browser Back never walks through
+    // Dashboard -> child -> Dashboard -> child history chains.
+    const shouldReplace = replace || (profile && nextPage === "dashboard");
+    if (shouldReplace) window.history.replaceState({ view: nextPage }, "", url);
     else window.history.pushState({ view: nextPage }, "", url);
     touchDraftActivity(nextPage);
     setPage(nextPage);
