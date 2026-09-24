@@ -267,7 +267,7 @@ export default function Home() {
       setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
       setPrivacyAccepted(false);
       setRegisterErrors({});
-      navigate("dashboard");
+      navigate("dashboard", true);
       await loadMembers();
       pop("Account created successfully");
     } catch { pop("Unable to create account"); }
@@ -303,7 +303,7 @@ export default function Home() {
       setLoginErrors({});
       setLoginCredentialError("");
       setShowLoginPassword(false);
-      navigate("dashboard");
+      navigate("dashboard", true);
       await loadMembers();
       pop("Logged in successfully");
     } catch { pop("Unable to login"); }
@@ -711,7 +711,7 @@ export default function Home() {
               <label>Password<input value={profile.password || ""} type="password" placeholder="Leave blank to keep current" onChange={e => setProfile({ ...profile, password: e.target.value })} /></label>
             </div>
             <button className="primary accountSubmit" onClick={updateProfile}>Save changes</button>
-            <button className="wideBtn" onClick={() => navigate("product")}>Back to product</button>
+            <button className="wideBtn" onClick={() => navigate("dashboard", true)}>Back to dashboard</button>
             <button className="wideBtn" onClick={logout}>Logout</button>
           </div>
         </section>
