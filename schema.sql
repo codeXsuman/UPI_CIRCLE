@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS bill_items (
 CREATE TABLE IF NOT EXISTS bill_recipients (
   bill_id TEXT NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount NUMERIC(12,2),
   PRIMARY KEY (bill_id, user_id)
 );
 
