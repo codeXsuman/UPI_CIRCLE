@@ -51,6 +51,17 @@ export default function Home() {
 
   const navigate = (nextPage: AppPage, replace = false) => {
     const url = pagePath(nextPage);
+    const currentPage = getPageFromUrl();
+    
+    // Never create a duplicate browser-history entry for the page that is
+    // already open. This keeps Back/Forward predictable.
+    if (currentPage === nextPage) {
+      if (replace) window.history.replaceState({ page: nextPage }, "", url);
+      touchDraftActivity(nextPage);
+      setPage(nextPage);
+      return;
+    }
+
     if (replace) window.history.replaceState({ page: nextPage }, "", url);
     else window.history.pushState({ page: nextPage }, "", url);
     touchDraftActivity(nextPage);
@@ -123,12 +134,30 @@ export default function Home() {
   useEffect(() => {
     const handlePopState = () => {
       const urlPage = getPageFromUrl();
-      if (urlPage) { touchDraftActivity(urlPage); setPage(urlPage); }
-      else { const next = profile ? "dashboard" : "home"; touchDraftActivity(next); setPage(next); }
+
+      if (urlPage) {
+        // Older sessions can contain duplicate entries for the same route.
+        // When Back lands on an identical route, skip that duplicate so the
+        // user reaches the previous actual page with a single Back action.
+        if (urlPage === page) {
+          window.history.go(-1);
+          return;
+        }
+        touchDraftActivity(urlPage);
+        setPage(urlPage);
+      } else {
+        const next = profile ? "dashboard" : "home";
+        if (next === page) {
+          window.history.go(-1);
+          return;
+        }
+        touchDraftActivity(next);
+        setPage(next);
+      }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [profile]);
+  }, [profile, page]);
 
   useEffect(() => {
     (async () => {
