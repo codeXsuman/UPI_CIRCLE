@@ -443,12 +443,14 @@ export default function Home() {
   const shareWithApps = async () => {
     if (!shareTarget) return;
     const text = shareText(shareTarget);
+    const shareAmount = Number(recipientAmounts[shareTarget.id]) || total / Math.max(selected.length, 1);
+    const shareLink = makePaymentLink(profile?.upi || "", profile?.name || "", shareAmount);
     if (navigator.share) {
       try {
         await navigator.share({
           title: "UPI Bills Bill — ₹" + money(total),
           text,
-          url: paymentLink
+          url: shareLink
         });
         setShareTarget(null);
         return;
