@@ -389,6 +389,11 @@ export default function Home() {
       return pop("Select at least one registered member");
     }
 
+    if (total <= 0) return pop("Add at least one bill item with a valid amount");
+    if (selectedShareTotal > 0 && Math.abs(selectedShareTotal - total) > 0.01) {
+      return pop("Member shares must add up to the total bill");
+    }
+
     const invalidItem = items.find(item => !item.name.trim() || !item.amount.trim() || Number(item.amount) <= 0);
     if (invalidItem) {
       const itemRow = document.querySelector(`.billItem[data-item-id="${invalidItem.id}"]`) as HTMLElement | null;
@@ -417,26 +422,19 @@ export default function Home() {
   };
 
   const shareText = (member: User) => {
-    const itemLines = items
-      .filter(i => i.name.trim())
-      .map(i => "• " + i.name.trim() + " — ₹" + money(Number(i.amount) || 0))
-      .join("\n");
-
+    const memberAmount = Number(recipientAmounts[member.id]) || total / Math.max(selected.length, 1);
+    const memberPaymentLink = makePaymentLink(profile?.upi || "", profile?.name || "", memberAmount);
+    const itemLines = items.filter(i => i.name.trim()).map(i => "• " + i.name.trim() + " — ₹" + money(Number(i.amount) || 0)).join("\n");
     return [
-      "UPI Bills Bill",
-      "",
+      "UPI Bills Bill","",
       "Hi " + member.name + ",",
-      "Here is your bill:",
-      "",
-      "Billing items:",
-      itemLines,
-      "",
-      "Total amount: ₹" + money(total),
+      "Here is your bill:","",
+      "Billing items:", itemLines,"",
+      "Your amount: ₹" + money(memberAmount),
+      "Total bill: ₹" + money(total),
       "Pay to: " + profile?.name,
-      "UPI ID: " + profile?.upi,
-      "",
-      "Direct payment link:",
-      paymentLink
+      "UPI ID: " + profile?.upi,"",
+      "Direct payment link:", memberPaymentLink
     ].join("\n");
   };
 
@@ -480,7 +478,9 @@ export default function Home() {
 
   const copyPaymentLink = async (member?: User) => {
     try {
-      await navigator.clipboard.writeText(paymentLink);
+      const target = member || shareTarget;
+      const amount = target ? (Number(recipientAmounts[target.id]) || total / Math.max(selected.length, 1)) : total;
+      await navigator.clipboard.writeText(makePaymentLink(profile?.upi || "", profile?.name || "", amount));
       pop("Payment link copied");
     } catch { pop("Unable to copy payment link"); }
   };
