@@ -98,6 +98,7 @@ export default function Home() {
   const [register, setRegister] = useState({ name: "", upi: "", mobile: "", email: "", password: "" });
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
+  const [registerServerError, setRegisterServerError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
   const [existingAccount, setExistingAccount] = useState(false);
   const [existingAccountMessage, setExistingAccountMessage] = useState("An account already exists with one or more of these details.");
@@ -319,6 +320,8 @@ export default function Home() {
     const email = register.email.trim();
     const mobile = register.mobile.trim();
 
+    setRegisterServerError("");
+
     if (!register.name.trim()) errors.name = "Name is required";
     if (!register.upi.trim()) errors.upi = "UPI ID is required";
     if (!email) errors.email = "Email is required";
@@ -332,7 +335,7 @@ export default function Home() {
     if (Object.keys(errors).length) {
       const first = Object.keys(errors)[0];
       document.getElementById("register-" + first)?.focus();
-      return pop("Please fix the highlighted fields");
+      return pop("Please fix the highlighted fields", "error");
     }
 
     try {
@@ -342,27 +345,46 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(register)
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
       if (res.status === 409) {
-        setExistingAccountMessage(data.error || "An account already exists with one or more of these details.");
-        setExistingAccount(true);
+        const conflicts = Array.isArray(data.conflicts) ? data.conflicts : [data.conflict].filter(Boolean);
+        const nextErrors: Record<string, string> = {};
+        if (conflicts.includes("email")) nextErrors.email = "An account with this email already exists.";
+        if (conflicts.includes("UPI ID")) nextErrors.upi = "An account with this UPI ID already exists.";
+        if (conflicts.includes("mobile number")) nextErrors.mobile = "An account with this mobile number already exists.";
+        if (conflicts.includes("multiple")) {
+          if (data.error) setRegisterServerError(data.error);
+        } else if (!Object.keys(nextErrors).length && data.error) {
+          setRegisterServerError(data.error);
+        }
+        setRegisterErrors(nextErrors);
+        setExistingAccount(false);
+        const first = Object.keys(nextErrors)[0];
+        if (first) document.getElementById("register-" + first)?.focus();
         return;
       }
+
       if (!res.ok) {
-        if (/email/i.test(data.error || "")) setRegisterErrors({ email: data.error });
-        else if (/mobile/i.test(data.error || "")) setRegisterErrors({ mobile: data.error });
-        else setRegisterErrors({});
-        return pop(data.error || "Unable to create account");
+        setRegisterErrors({});
+        setRegisterServerError(data.error || "We couldn't create your account right now. Please try again in a moment.");
+        return;
       }
+
       setProfile({ ...data.user, password: "" });
       setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
       setPrivacyAccepted(false);
       setRegisterErrors({});
+      setRegisterServerError("");
       navigate("dashboard", true);
       await loadMembers();
-      pop("Account created successfully");
-    } catch { pop("Unable to create account"); }
-    finally { setLoading(false); }
+      pop("Account created successfully", "success");
+    } catch {
+      setRegisterErrors({});
+      setRegisterServerError("Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loginAccount = async () => {
@@ -784,28 +806,28 @@ export default function Home() {
             <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
             <div className="formStack">
               <label className={registerErrors.name ? "fieldError" : ""}>Name
-                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); }} />
+                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />\n                {registerErrors.name && <span className="fieldErrorMessage">{registerErrors.name}</span>}
               </label>
               <label className={registerErrors.upi ? "fieldError" : ""}>UPI ID
-                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); }} />
+                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />\n                {registerErrors.upi && <span className="fieldErrorMessage">{registerErrors.upi}</span>}
               </label>
               <label className={registerErrors.mobile ? "fieldError" : ""}>Mobile number <span className="optionalTag">Optional</span>
-                <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); }} />
+                <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); setRegisterServerError(""); }} />\n                {registerErrors.mobile && <span className="fieldErrorMessage">{registerErrors.mobile}</span>}
               </label>
               <label className={registerErrors.email ? "fieldError" : ""}>Email
-                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); }} />
+                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); setRegisterServerError(""); }} />\n                {registerErrors.email && <span className="fieldErrorMessage">{registerErrors.email}</span>}
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
                 <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type="password" placeholder="Create a password" onChange={e => {
                   const value = e.target.value;
                   setRegister({ ...register, password: value });
-                  setRegisterErrors(old => ({ ...old, password: "" }));
+                  setRegisterErrors(old => ({ ...old, password: "" }));\n                  setRegisterServerError("");
                   if (!value) setPasswordStrength("");
                   else if (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) setPasswordStrength("weak");
                   else if (value.length < 10 || !/[A-Z]/.test(value) || !/[^A-Za-z0-9]/.test(value)) setPasswordStrength("medium");
                   else setPasswordStrength("strong");
                 }} />
-                {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}
+                {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}\n                {registerErrors.password && <span className="fieldErrorMessage">{registerErrors.password}</span>}
               </label>
             </div>
             <div className={"privacyCheckWrap " + (registerErrors.privacy ? "fieldError" : "")}>
@@ -815,7 +837,7 @@ export default function Home() {
               </label>
               {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
             </div>
-            <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
+            {registerServerError && <div className="registerServerError" role="alert"><span>!</span><div><strong>Registration couldn’t be completed</strong><small>{registerServerError}</small></div></div>}\n            <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
             <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
           </div>
         </section>
