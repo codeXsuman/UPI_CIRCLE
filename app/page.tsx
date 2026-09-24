@@ -23,22 +23,39 @@ export default function Home() {
   };
 
   const getPageFromUrl = (): AppPage | null => {
-    const value = new URLSearchParams(window.location.search).get("view");
-    return ["home", "account", "login", "dashboard", "product", "mine", "others", "profile"].includes(value || "")
-      ? value as AppPage
-      : null;
+    const path = window.location.pathname.replace(/\\/+$/, "") || "/";
+    const routes: Record<string, AppPage> = {
+      "/": "home",
+      "/dashboard": "dashboard",
+      "/login": "login",
+      "/register": "account",
+      "/account": "account",
+      "/profile": "profile",
+      "/bills/create": "product",
+      "/bills/mine": "mine",
+      "/bills/others": "others",
+    };
+    return routes[path] || null;
   };
 
+  const pagePath = (nextPage: AppPage) => ({
+    home: "/",
+    account: "/register",
+    login: "/login",
+    dashboard: "/dashboard",
+    product: "/bills/create",
+    mine: "/bills/mine",
+    others: "/bills/others",
+    profile: "/profile",
+  }[nextPage]);
+
   const navigate = (nextPage: AppPage, replace = false) => {
-    const url = nextPage === "home" ? "/" : "/?view=" + nextPage;
-    // Dashboard is the authenticated app root. Replace the current child
-    // route when returning to it so browser Back never walks through
-    // Dashboard -> child -> Dashboard -> child history chains.
-    const shouldReplace = replace || (profile && nextPage === "dashboard");
-    if (shouldReplace) window.history.replaceState({ view: nextPage }, "", url);
-    else window.history.pushState({ view: nextPage }, "", url);
+    const url = pagePath(nextPage);
+    if (replace) window.history.replaceState({ page: nextPage }, "", url);
+    else window.history.pushState({ page: nextPage }, "", url);
     touchDraftActivity(nextPage);
     setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const [profile, setProfile] = useState<User | null>(null);
   const [members, setMembers] = useState<User[]>([]);
@@ -107,7 +124,7 @@ export default function Home() {
     const handlePopState = () => {
       const urlPage = getPageFromUrl();
       if (urlPage) { touchDraftActivity(urlPage); setPage(urlPage); }
-      else { const next = profile ? "product" : "home"; touchDraftActivity(next); setPage(next); }
+      else { const next = profile ? "dashboard" : "home"; touchDraftActivity(next); setPage(next); }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -148,11 +165,17 @@ export default function Home() {
           const savedProfile = saved?.profileDraft;
           setProfile(savedProfile ? { ...data.user, ...savedProfile } : { ...data.user, password: "" });
 
-          // An authenticated app always starts from Dashboard.
-          // Ignore stale deep links and saved child-page drafts on startup.
-          setPage("dashboard");
-          window.history.replaceState({ view: "dashboard" }, "", "/?view=dashboard");
-          touchDraftActivity("dashboard");
+          // Keep a real deep-link page on refresh. Only the authenticated root
+          // and public auth pages resolve to Dashboard.
+          const resolvedPage = getPageFromUrl();
+          if (!resolvedPage || resolvedPage === "home" || resolvedPage === "login" || resolvedPage === "account") {
+            setPage("dashboard");
+            window.history.replaceState({ page: "dashboard" }, "", "/dashboard");
+            touchDraftActivity("dashboard");
+          } else {
+            setPage(resolvedPage);
+            touchDraftActivity(resolvedPage);
+          }
           await loadMembers();
         } else if (urlPage === "account" || urlPage === "login") {
           setPage(urlPage);
