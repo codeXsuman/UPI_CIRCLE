@@ -754,16 +754,16 @@ export default function Home() {
           </div>
 
           {generated && <div className="generatedBills">
-            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member has a personal QR bill with item details and a direct UPI payment link.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit</button><button className="primary newBillBtn" onClick={createNewBill}>＋ New bill</button></div></div>
+            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member gets a personal share with their assigned amount and payment QR.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit</button><button className="primary newBillBtn" onClick={createNewBill}>＋ New bill</button></div></div>
             <div className="qrBillGrid">{selectedMembers.map(member => (
               <div className="card qrBill" key={member.id}>
-                <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(total)}</strong></div>
+                <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(Number(recipientAmounts[member.id]) || total / Math.max(selected.length,1))}</strong></div>
                 <div className="qrBillContent">
-                  <div className="qr"><QRCodeSVG value={paymentLink} size={180} level="M" /></div>
+                  <div className="qr"><QRCodeSVG value={makePaymentLink(profile.upi,profile.name,Number(recipientAmounts[member.id]) || total / Math.max(selected.length,1))} size={180} level="M" /></div>
                   <div className="billDetails">
                     <h3>Billing details</h3>
                     {items.filter(i => i.name.trim()).map(i => <div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount) || 0)}</b></div>)}
-                    <div className="detailTotal"><span>Total amount</span><b>₹{money(total)}</b></div>
+                    <div className="detailTotal"><span>Your share</span><b>₹{money(Number(recipientAmounts[member.id]) || total / Math.max(selected.length,1))}</b></div>
                     <small>Bill for: {member.name}<br />Pay to: {profile.name}<br />UPI ID: {profile.upi}</small>
                     <div className="paymentActions">
                       <button onClick={() => shareBill(member)}>Share link ↗</button>
