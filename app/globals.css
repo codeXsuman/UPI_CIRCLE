@@ -898,3 +898,12 @@ input,button{touch-action:manipulation}
 .registeredMember:active{transform:scale(.995)}
 .registeredMember i{display:grid;place-items:center;width:25px;height:25px;border:1px solid #d8dde4;border-radius:50%;font-style:normal;font-size:13px;color:#7b8490}
 .registeredMember.selected i{border-color:#b9ddc5;background:#dff3e5;color:#1c7a49;font-weight:900}
+
+.sectionTitle h2 em{font-style:normal;font-size:10px;font-weight:700;color:#9299a4}
+.splitMode{display:flex;gap:8px;margin:12px 0}
+.splitMode button{flex:1;padding:10px 12px;border:1px solid #e3e6eb;border-radius:10px;background:#fff;color:#6d7480;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.splitMode button.active{border-color:#c9dbff;background:#f2f6ff;color:#315fc7}
+.splitBalance{display:flex;flex-direction:column;gap:4px;margin-top:9px;padding:9px 10px;border-radius:10px;background:#f8fafb;font-size:10px}
+.splitBalance span{display:flex;justify-content:space-between;color:#6d7480}.splitBalance span b{color:#39414d}
+.splitBalance strong{margin-top:2px;font-size:10px}
+.splitBalance.splitGood{background:#f3fbf6}.splitBalance.splitWarning{background:#fff8ed}
