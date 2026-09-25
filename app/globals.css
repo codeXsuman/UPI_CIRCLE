@@ -925,3 +925,8 @@ input,button{touch-action:manipulation}
   .profileInfoCard,.profileEditCard,.profileAccountActions{padding:18px;border-radius:18px}.profileInfoGrid{grid-template-columns:1fr}.profileEditCard .formStack{grid-template-columns:1fr}.profileEditCard .formStack label:last-child{grid-column:auto}.profileEditCard .accountSubmit{max-width:none}.profileAccountActions{align-items:flex-start;flex-direction:column}.profileActionButtons{width:100%;display:grid;grid-template-columns:1fr 1fr}.profileActionButtons button{width:100%}
 }
 @media(max-width:380px){.profileActionButtons{grid-template-columns:1fr}}
+
+/* Profile activity */
+.profileActivityCard{padding:24px;margin-bottom:16px}.profileActivityLoading{font-size:9px;font-weight:800;color:#98a2b3;letter-spacing:.5px}.profileActivityGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.profileActivityStat{padding:18px 14px;border:1px solid #eef0f4;border-radius:14px;background:#fbfbfc;min-width:0}.profileActivityStat strong{display:block;font:700 22px 'Space Grotesk';letter-spacing:-.7px;overflow-wrap:anywhere}.profileActivityStat span{display:block;margin-top:6px;color:#98a2b3;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.55px}
+@media(max-width:700px){.profileActivityCard{padding:18px;border-radius:18px}.profileActivityGrid{grid-template-columns:1fr 1fr}.profileActivityStat{padding:15px 12px}.profileActivityStat strong{font-size:19px}}
+@media(max-width:380px){.profileActivityGrid{grid-template-columns:1fr}}
