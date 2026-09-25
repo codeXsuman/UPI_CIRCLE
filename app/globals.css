@@ -938,3 +938,41 @@ input,button{touch-action:manipulation}
 
 /* Profile security actions */
 .profileActionButtons .dangerAction:disabled{opacity:.65;cursor:not-allowed}.profileActionButtons .dangerAction{min-width:108px}
+
+
+/* Profile navigation + focused sections */
+.profileDropdown{
+  position:absolute;right:0;top:calc(100% + 10px);width:285px;padding:8px;
+  background:#fff;border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 18px 45px rgba(16,24,40,.14);z-index:40;
+}
+.profileDropdownHead{padding:9px 10px 11px;border-bottom:1px solid #f0f1f4;margin-bottom:5px}
+.profileDropdownHead strong,.profileDropdownHead small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profileDropdownHead strong{font-size:13px}.profileDropdownHead small{font-size:9px;color:#98a2b3;margin-top:3px}
+.profileDropdown button{width:100%;display:flex;align-items:center;gap:10px;padding:11px 10px;text-align:left;background:transparent;border-radius:11px;color:var(--ink)}
+.profileDropdown button:hover,.profileDropdown button.active{background:#fffbea}
+.profileDropdown button.active{box-shadow:inset 3px 0 #d2aa00}
+.profileDropdown button>span:last-child{min-width:0}.profileDropdown button strong,.profileDropdown button small{display:block}
+.profileDropdown button strong{font-size:11px}.profileDropdown button small{font-size:9px;color:#98a2b3;margin-top:3px;font-weight:500}
+.profileMenuIcon{width:28px;height:28px;flex:none;display:grid;place-items:center;border-radius:9px;background:#f5f5f3;font-size:12px}
+.profileDropdownDivider{height:1px;background:#f0f1f4;margin:5px 4px}
+.profileDropdownLogout{color:#b42318!important}
+.profileDropdownLogout .profileMenuIcon{background:#fff1f1}
+.profileSubnav{display:flex;gap:6px;padding:6px;margin-bottom:16px}
+.profileSubnav button{flex:1;min-height:40px;border-radius:11px;background:transparent;color:#667085;font-weight:700;font-size:11px}
+.profileSubnav button:hover{background:#faf9f0}.profileSubnav button.active{background:#111;color:#ffd21a}
+.profileActivityLinks,.profileSettingsCard{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px;margin-bottom:16px}
+.profileActivityLinks strong,.profileActivityLinks small{display:block}.profileActivityLinks small{margin-top:5px;color:#98a2b3;font-size:10px}
+.profileSettingsCard>div:first-child>span{font-size:10px;font-weight:800;letter-spacing:1.2px;color:#475467}
+.profileSettingsCard h2{margin:7px 0 5px;font:700 18px 'Space Grotesk'}
+.profileSettingsCard p{margin:0;color:#98a2b3;font-size:10px;line-height:1.5}
+.profileSettingsActions{display:flex;gap:8px;flex-wrap:wrap}
+.profileSettingsActions .dangerAction{min-width:108px}
+@media(max-width:700px){
+  .profileDropdown{width:min(300px,calc(100vw - 24px));right:-2px}
+  .profileSubnav{position:sticky;top:72px;z-index:20}
+  .profileActivityLinks,.profileSettingsCard{align-items:flex-start;flex-direction:column;padding:18px}
+  .profileSettingsActions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .profileSettingsActions button{width:100%}
+}
+@media(max-width:380px){.profileSettingsActions{grid-template-columns:1fr}}
