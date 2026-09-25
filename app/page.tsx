@@ -121,6 +121,7 @@ export default function Home() {
   const [billValidationError, setBillValidationError] = useState("");
   const [billCreatedSuccess, setBillCreatedSuccess] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
+  const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
   const toastTimerRef = useRef<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
@@ -618,7 +619,7 @@ export default function Home() {
     return next;
   };
 
-  const hasCustomSplit = selected.some(id => (recipientAmounts[id] || "").trim() !== "");
+  const hasCustomSplit = splitMode === "custom";
   const displayShareAmounts = hasCustomSplit ? recipientAmounts : getEqualShareAmounts();
   const displayShareTotal = hasCustomSplit
     ? selectedShareTotal
@@ -628,12 +629,14 @@ export default function Home() {
     if (!selected.length || total <= 0) return;
     setBillValidationError("");
     setBillCreatedSuccess(false);
+    setSplitMode("equal");
     setRecipientAmounts(getEqualShareAmounts());
   };
 
   const setRecipientAmount = (id: string, value: string) => {
     setBillValidationError("");
     setBillCreatedSuccess(false);
+    setSplitMode("custom");
     setRecipientAmounts(prev => ({ ...prev, [id]: sanitizeMoneyInput(value) }));
   };
 
@@ -998,7 +1001,7 @@ export default function Home() {
               </div>
 
               <div className="card productCard">
-                <div className="sectionTitle"><div><b>2</b><div><h2>Bill details</h2><small>Add every item and its exact amount.</small></div></div></div>
+                <div className="sectionTitle"><div><b>2</b><div><h2>Bill details <em>· {items.length} {items.length === 1 ? "item" : "items"}</em></h2><small>Add every item and its exact amount.</small></div></div></div>
                 {billValidationError && total <= 0 && selected.length > 0 && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check your bill items</strong><small>{billValidationError}</small></div></div>}
                 <div className="billItems">{items.map((item, index) => (
                   <div className="billItem" data-item-id={item.id} key={item.id}>
@@ -1021,7 +1024,7 @@ export default function Home() {
                 ))}</div>
                 <button className="addItem" onClick={() => { setBillCreatedSuccess(false); setBillValidationError(""); setItems(old => [...old, { id: Date.now(), name: "", amount: "" }]); }}>＋ Add another item</button>
                 {billValidationError && hasCustomSplit && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check the split</strong><small>{billValidationError}</small></div></div>}
-                {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>Split between members</strong><small>Use equal shares or enter a custom amount for every member.</small></div><button className="secondary" onClick={splitEvenly}>Split equally</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={((Number(displayShareAmounts[m.id]) || 0)).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)}/></div></label>)}<small className={Math.abs(displayShareTotal-total)<0.001?"splitGood":"splitWarning"}>{hasCustomSplit ? `Allocated ₹${money(displayShareTotal)} of ₹${money(total)}` : `Equal split · ₹${money(displayShareTotal)} allocated`}</small></div>}
+                {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>How should the bill be split?</strong><small>Choose equal shares or enter a custom amount for each member.</small></div></div><div className="splitMode"><button type="button" className={splitMode === "equal" ? "active" : ""} onClick={splitEvenly}>● Split equally</button><button type="button" className={splitMode === "custom" ? "active" : ""} onClick={() => { setSplitMode("custom"); setRecipientAmounts({}); setBillValidationError(""); setBillCreatedSuccess(false); }}>○ Custom amounts</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={((Number(displayShareAmounts[m.id]) || 0)).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)} /></div></label>)}<small className={Math.abs(displayShareTotal-total)<0.001?"splitGood":"splitWarning"}>{hasCustomSplit ? `Assigned ₹${money(displayShareTotal)} of ₹${money(total)}` : `Equal split · ₹${money(displayShareTotal)} allocated`}</small>{hasCustomSplit && <div className={Math.abs(displayShareTotal-total)<0.001 ? "splitBalance splitGood" : "splitBalance splitWarning"}><span>Total bill <b>₹{money(total)}</b></span><span>Assigned <b>₹{money(displayShareTotal)}</b></span><strong>{Math.abs(displayShareTotal-total)<0.001 ? "✓ Balanced" : `⚠ ₹${money(Math.abs(total-displayShareTotal))} remaining`}</strong></div>}</div>}}
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
                 <button className="primary generateBtn" onClick={generateBill}>Create Bill →</button>
                 {billCreatedSuccess && <div className="billCreatedSuccess" role="status"><span>✓</span><div><strong>Bill created successfully</strong><small>The bill has been added to My Bills.</small></div><button className="secondary" onClick={() => navigate("mine")}>View My Bills →</button></div>}
