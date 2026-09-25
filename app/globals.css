@@ -976,3 +976,29 @@ input,button{touch-action:manipulation}
   .profileSettingsActions button{width:100%}
 }
 @media(max-width:380px){.profileSettingsActions{grid-template-columns:1fr}}
+
+
+/* Final profile typography tuning */
+.profileIntro p{font-size:14px;line-height:1.55}
+.profileHeroCopy>span{font-size:14px}.profileHeroCopy small{font-size:12px}
+.profileSectionHead>div>span,.profileAccountActions>div>span{font-size:12px}
+.profileSectionHead>div>small,.profileAccountActions>div>small{font-size:12px}
+.profileStatus{font-size:10px}
+.profileInfoRow>span{font-size:11px}.profileInfoRow>strong{font-size:15px}.profileCopyBtn{font-size:12px}
+.profileActivityLoading{font-size:11px}.profileActivityStat span{font-size:11px}
+.profileActivityLinks small{font-size:12px}.profileSettingsCard>div:first-child>span{font-size:12px}
+.profileSettingsCard p{font-size:12px}.profileSettingsActions button{font-size:13px}
+.profileSubnav button{font-size:13px}
+.profileDropdownHead strong{font-size:15px}.profileDropdownHead small{font-size:11px}
+.profileDropdown button strong{font-size:13px}.profileDropdown button small{font-size:11px}
+.profileMenuIcon{font-size:13px}
+@media(max-width:700px){
+  .profileIntro p{font-size:13px}.profileHeroCopy h2{font-size:20px}.profileHeroCopy>span{font-size:13px}.profileHeroCopy small{font-size:11px}
+  .profileSectionHead>div>span,.profileAccountActions>div>span{font-size:11px}
+  .profileSectionHead>div>small,.profileAccountActions>div>small{font-size:11px}
+  .profileInfoRow>span{font-size:10px}.profileInfoRow>strong{font-size:14px}
+  .profileActivityStat strong{font-size:20px}.profileActivityStat span{font-size:10px}
+  .profileActivityLinks small,.profileSettingsCard p{font-size:11px}
+  .profileDropdownHead strong{font-size:14px}.profileDropdownHead small{font-size:10px}
+  .profileDropdown button strong{font-size:12px}.profileDropdown button small{font-size:10px}
+}
