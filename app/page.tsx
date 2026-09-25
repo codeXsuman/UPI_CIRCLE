@@ -38,6 +38,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState({ mine: false, others: false, dashboard: false });
   const [dataLoaded, setDataLoaded] = useState({ mine: false, others: false, dashboard: false });
+  const [dataError, setDataError] = useState({ mine: "", others: "" });
   const withLoading = async <T,>(task: () => Promise<T>) => {
     setLoading(true);
     try { return await task(); } finally { setLoading(false); }
@@ -512,6 +513,7 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) {
         setMyBills(data.bills || []);
+        setDataError(prev => ({ ...prev, mine: "" }));
         return true;
       }
       if (showError) pop(data.error || "Couldn't refresh your bills", "error");
@@ -533,6 +535,7 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) {
         setOtherBills(data.bills || []);
+        setDataError(prev => ({ ...prev, others: "" }));
         return true;
       }
       if (showError) pop(data.error || "Couldn't refresh shared bills", "error");
@@ -940,7 +943,8 @@ export default function Home() {
             <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(myBillFilter||"all")===f?"active":""} onClick={()=>setMyBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
           </div>
           {!dataLoaded.mine ? <div className="historyList historySkeletonList" aria-label="Loading bills" aria-busy="true">{[1,2,3].map(i=><div className="card historyCardSkeleton" key={i}><div className="skeletonLine skeletonStatus"/><div className="skeletonLine skeletonTitle"/><div className="skeletonLine skeletonMeta"/><div className="skeletonDivider"/><div className="skeletonLine skeletonItem"/><div className="skeletonLine skeletonItem short"/></div>)}</div> :
-          !myBills.length ? <div className="card historyEmpty"><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={()=>navigate("product")}>Create a bill →</button></div> :
+          dataError.mine ? <div className="card historyEmpty historyErrorState"><span className="historyStateIcon">!</span><h2>We couldn’t load your bills</h2><p>{dataError.mine}</p><button className="primary" onClick={()=>refreshMyBills()}>Try again</button></div> :
+          !myBills.length ? <div className="card historyEmpty"><span className="historyStateIcon">＋</span><h2>No bills created yet</h2><p>Create your first bill and it will appear here.</p><button className="primary" onClick={()=>navigate("product")}>Create a bill →</button></div> :
           <div className="historyList">{myBills.filter((bill:any)=>{
             const q=billSearch.toLowerCase().trim();
             const text=[bill.id,...(bill.recipients||[]).map((r:any)=>r.name),...(bill.items||[]).map((x:any)=>x.name)].join(" ").toLowerCase();
@@ -968,7 +972,8 @@ export default function Home() {
             <div className="filterPills">{(["all","pending","received"] as const).map(f=><button key={f} className={(otherBillFilter||"all")===f?"active":""} onClick={()=>setOtherBillFilter(f)}>{f==="all"?"All":f==="pending"?"Pending":"Received"}</button>)}</div>
           </div>
           {!dataLoaded.others ? <div className="historyList historySkeletonList" aria-label="Loading bills" aria-busy="true">{[1,2,3].map(i=><div className="card historyCardSkeleton" key={i}><div className="skeletonLine skeletonStatus"/><div className="skeletonLine skeletonTitle"/><div className="skeletonLine skeletonMeta"/><div className="skeletonDivider"/><div className="skeletonLine skeletonItem"/><div className="skeletonLine skeletonItem short"/></div>)}</div> :
-          !otherBills.length?<div className="card historyEmpty"><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div>:
+          dataError.others ? <div className="card historyEmpty historyErrorState"><span className="historyStateIcon">!</span><h2>We couldn’t load shared bills</h2><p>{dataError.others}</p><button className="primary" onClick={()=>refreshOtherBills()}>Try again</button></div> :
+          !otherBills.length?<div className="card historyEmpty"><span className="historyStateIcon">↓</span><h2>No bills for you</h2><p>When another member creates a bill for you, it will appear here.</p></div>:
           <div className="historyList">{otherBills.filter((bill:any)=>{
             const q=billSearch.toLowerCase().trim();
             const text=[bill.id,bill.creatorName,...(bill.items||[]).map((x:any)=>x.name)].join(" ").toLowerCase();
