@@ -1312,6 +1312,7 @@ export default function Home() {
                     <button type="button" className="passwordToggle" onClick={() => setShowCurrentProfilePassword(v => !v)}>{showCurrentProfilePassword ? "Hide" : "Show"}</button>
                   </div>
                   {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
+                  {profileErrors.server && <span className="fieldErrorMessage">{profileErrors.server}</span>}
                 </label>
                 <div className="profileSaveModalActions">
                   <button className="secondary" onClick={resetProfileSaveVerification} disabled={profileSaving}>Cancel</button>
