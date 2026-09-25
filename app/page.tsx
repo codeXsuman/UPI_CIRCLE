@@ -129,6 +129,8 @@ export default function Home() {
   const [currentProfilePassword, setCurrentProfilePassword] = useState("");
   const [showCurrentProfilePassword, setShowCurrentProfilePassword] = useState(false);
   const [showNewProfilePassword, setShowNewProfilePassword] = useState(false);
+  const [profileEditing, setProfileEditing] = useState(false);
+  const [profileSaveConfirmOpen, setProfileSaveConfirmOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const profileEditOriginalRef = useRef<User | null>(null);
@@ -512,6 +514,7 @@ export default function Home() {
 
   const updateProfile = async () => {
     if (!profile || profileSaving) return;
+    if (!profileEditing) return;
     const errors: Record<string, string> = {};
     const name = profile.name.trim();
     const upi = profile.upi.trim();
@@ -552,6 +555,15 @@ export default function Home() {
       pop("Profile updated successfully", "success");
     } catch { pop("Unable to update profile", "error"); }
     finally { setProfileSaving(false); }
+  };
+
+  const requestProfileSave = () => {
+    if (!profileEditing || profileSaving) return;
+    const original = profileEditOriginalRef.current;
+    if (original && JSON.stringify({ ...profile, password: "" }) === JSON.stringify({ ...original, password: "" })) {
+      return pop("No changes to save", "info");
+    }
+    setProfileSaveConfirmOpen(true);
   };
 
   const cancelProfileEdit = () => {
@@ -1085,29 +1097,47 @@ export default function Home() {
               </div>
               <div className="formStack">
                 <label className={profileErrors.name ? "fieldError" : ""}>Name
-                  <input id="profile-name" value={profile.name} aria-invalid={!!profileErrors.name} onChange={e => { setProfile({ ...profile, name: e.target.value }); setProfileErrors(old => ({ ...old, name: "" })); }} />
+                  <input id="profile-name" disabled={!profileEditing} value={profile.name} aria-invalid={!!profileErrors.name} onChange={e => { setProfile({ ...profile, name: e.target.value }); setProfileErrors(old => ({ ...old, name: "" })); }} />
                   {profileErrors.name && <span className="fieldErrorMessage">{profileErrors.name}</span>}
                 </label>
                 <label className={profileErrors.upi ? "fieldError" : ""}>UPI ID
-                  <input id="profile-upi" value={profile.upi} aria-invalid={!!profileErrors.upi} onChange={e => { setProfile({ ...profile, upi: e.target.value }); setProfileErrors(old => ({ ...old, upi: "" })); }} />
+                  <input id="profile-upi" disabled={!profileEditing} value={profile.upi} aria-invalid={!!profileErrors.upi} onChange={e => { setProfile({ ...profile, upi: e.target.value }); setProfileErrors(old => ({ ...old, upi: "" })); }} />
                   {profileErrors.upi && <span className="fieldErrorMessage">{profileErrors.upi}</span>}
                 </label>
                 <label className={profileErrors.mobile ? "fieldError" : ""}>Mobile number
-                  <input id="profile-mobile" value={profile.mobile} maxLength={10} inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
+                  <input id="profile-mobile" disabled={!profileEditing} value={profile.mobile} maxLength={10} inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
                   {profileErrors.mobile && <span className="fieldErrorMessage">{profileErrors.mobile}</span>}
                 </label>
                 <label className={profileErrors.email ? "fieldError" : ""}>Email
-                  <input id="profile-email" value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
+                  <input id="profile-email" disabled={!profileEditing} value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
                   {profileErrors.email && <span className="fieldErrorMessage">{profileErrors.email}</span>}
                 </label>
 
               </div>
-              <div className="profileEditActions">
-                <button className="primary accountSubmit" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
+              {profileEditing && <div className="profileEditActions">
+                <button className="primary accountSubmit" onClick={requestProfileSave} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
                 <button className="secondary" onClick={cancelProfileEdit} disabled={profileSaving}>Cancel</button>
-              </div>
+              </div>}
             </div>
 
+            {profileSaveConfirmOpen && <div className="profileSaveModalBackdrop" onClick={() => !profileSaving && setProfileSaveConfirmOpen(false)}>
+              <div className="profileSaveModal" onClick={e => e.stopPropagation()}>
+                <div className="profileSaveModalIcon">🔐</div>
+                <h3>Verify your password</h3>
+                <p>Enter your current password to confirm these profile changes.</p>
+                <label className={profileErrors.currentPassword ? "fieldError" : ""}>Current password
+                  <div className="passwordInputWrap">
+                    <input id="profile-save-password" value={currentProfilePassword} type={showCurrentProfilePassword ? "text" : "password"} autoFocus placeholder="Enter current password" autoComplete="current-password" onChange={e => { setCurrentProfilePassword(e.target.value); setProfileErrors(old => ({ ...old, currentPassword: "" })); }} />
+                    <button type="button" className="passwordToggle" onClick={() => setShowCurrentProfilePassword(v => !v)}>{showCurrentProfilePassword ? "Hide" : "Show"}</button>
+                  </div>
+                  {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
+                </label>
+                <div className="profileSaveModalActions">
+                  <button className="secondary" onClick={() => setProfileSaveConfirmOpen(false)} disabled={profileSaving}>Cancel</button>
+                  <button className="primary" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Verifying…" : "Confirm & save"}</button>
+                </div>
+              </div>
+            </div>}
             <div className="profileSettingsCard card">
               <div className="profileSettingsIntro">
                 <span>ACCOUNT</span>
