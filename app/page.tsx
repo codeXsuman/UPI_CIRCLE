@@ -1208,7 +1208,7 @@ export default function Home() {
               </div>}
             </div>
 
-            {profileSaveConfirmOpen && <div className="profileSaveModalBackdrop" onClick={() => !profileSaving && setProfileSaveConfirmOpen(false)}>
+            {profileSaveConfirmOpen && <div className="profileSaveModalBackdrop" onClick={() => !profileSaving && resetProfileSaveVerification()}>
               <div className="profileSaveModal" onClick={e => e.stopPropagation()}>
                 <div className="profileSaveModalIcon">🔐</div>
                 <h3>Verify your password</h3>
