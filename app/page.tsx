@@ -120,6 +120,7 @@ export default function Home() {
   const [toastTarget, setToastTarget] = useState<string | null>(null);
   const [billValidationError, setBillValidationError] = useState("");
   const [billCreatedSuccess, setBillCreatedSuccess] = useState(false);
+  const [memberSearch, setMemberSearch] = useState("");
   const toastTimerRef = useRef<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
@@ -977,15 +978,23 @@ export default function Home() {
           <div className="productGrid">
             <div className="productMain">
               <div className="card productCard">
-                <div className="sectionTitle"><div><b>1</b><div><h2>Select members</h2><small>Choose registered members who need to pay.</small></div></div><span>{selected.length} selected</span></div>
+                <div className="sectionTitle"><div><b>1</b><div><h2>Select members</h2><small>Choose who needs to pay.</small></div></div><span>{selected.length ? `${selected.length} ${selected.length === 1 ? "member" : "members"} selected` : "No members selected"}</span></div>
                 {billValidationError && !selected.length && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check your members</strong><small>{billValidationError}</small></div></div>}
-                {members.length ? <div className="registeredList">{members.map(member => (
-                  <button className={"registeredMember " + (selected.includes(member.id) ? "selected" : "")} key={member.id} onClick={() => toggleMember(member.id)}>
-                    <span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span>
-                    <span><strong>{member.name}</strong><small>{member.upi} · Registered</small></span>
-                    <i>{selected.includes(member.id) ? "✓" : "+"}</i>
-                  </button>
-                ))}</div> : <div className="emptyMembers"><strong>No other registered members yet</strong><small>Create another account to make a member-to-member bill.</small></div>}
+                {members.length ? <>
+                  {members.length >= 5 && <div className="memberSearch"><span aria-hidden="true">⌕</span><input aria-label="Search members" placeholder="Search members..." value={memberSearch} onChange={e => setMemberSearch(e.target.value)} /><button type="button" onClick={() => setMemberSearch("")} aria-label="Clear member search" style={{display:memberSearch?"inline-flex":"none"}}>×</button></div>}
+                  {selected.length > 0 && <div className="selectedMemberChips"><small>SELECTED</small><div>{selectedMembers.map(member => <button type="button" key={member.id} onClick={() => toggleMember(member.id)} aria-label={`Remove ${member.name}`}><span>{member.name}</span><b>×</b></button>)}</div></div>}
+                  {(() => {
+                    const query = memberSearch.trim().toLowerCase();
+                    const filteredMembers = members.filter(member => !query || member.name.toLowerCase().includes(query) || member.upi.toLowerCase().includes(query));
+                    return <div className="registeredList">{filteredMembers.length ? filteredMembers.map(member => (
+                      <button type="button" className={"registeredMember " + (selected.includes(member.id) ? "selected" : "")} key={member.id} onClick={() => toggleMember(member.id)} aria-pressed={selected.includes(member.id)}>
+                        <span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span>
+                        <span><strong>{member.name}</strong><small>{member.upi}</small></span>
+                        <i aria-hidden="true">{selected.includes(member.id) ? "✓" : "○"}</i>
+                      </button>
+                    )) : <div className="memberSearchEmpty"><strong>No matching members</strong><small>Try a different name or UPI ID.</small></div>}</div>;
+                  })()}
+                </> : <div className="emptyMembers"><strong>No other registered members yet</strong><small>Create another account to make a member-to-member bill.</small></div>}
               </div>
 
               <div className="card productCard">
