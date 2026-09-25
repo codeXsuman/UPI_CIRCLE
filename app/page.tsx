@@ -35,6 +35,7 @@ export default function Home() {
   const [page, setPage] = useState<AppPage>("home");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileSection, setProfileSection] = useState<"profile" | "activity" | "settings">("profile");
+  const suppressOutsideMenuClickRef = useRef(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState({ mine: false, others: false, dashboard: false });
@@ -171,6 +172,14 @@ export default function Home() {
     // When a popup is open, the first click outside it should only dismiss
     // the popup. It must not also trigger the underlying page action.
     const closeMenuBeforeOutsideAction = (event: MouseEvent) => {
+      if (suppressOutsideMenuClickRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        suppressOutsideMenuClickRef.current = false;
+      }
+    };
+
+    const handleOutsideMenuPointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
       const accountMenu = document.querySelector(".accountMenuWrap");
@@ -178,19 +187,19 @@ export default function Home() {
       const outsideAccount = accountMenuOpen && accountMenu && !accountMenu.contains(target);
       const outsideProfile = profileMenuOpen && profileMenu && !profileMenu.contains(target);
       if (outsideAccount || outsideProfile) {
+        // Consume this interaction so it only dismisses the popup.
         event.preventDefault();
         event.stopPropagation();
+        suppressOutsideMenuClickRef.current = true;
         if (outsideAccount) setAccountMenuOpen(false);
         if (outsideProfile) setProfileMenuOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", closeMenu);
-    document.addEventListener("touchstart", closeMenu);
+    document.addEventListener("pointerdown", handleOutsideMenuPointerDown, true);
     document.addEventListener("click", closeMenuBeforeOutsideAction, true);
     return () => {
-      document.removeEventListener("mousedown", closeMenu);
-      document.removeEventListener("touchstart", closeMenu);
+      document.removeEventListener("pointerdown", handleOutsideMenuPointerDown, true);
       document.removeEventListener("click", closeMenuBeforeOutsideAction, true);
     };
   }, [accountMenuOpen, profileMenuOpen]);
