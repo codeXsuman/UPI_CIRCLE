@@ -235,30 +235,39 @@ export default function Home() {
     const handlePopState = () => {
       const urlPage = getPageFromUrl();
       const nextPage = urlPage || (profile ? "dashboard" : "home");
+      const nextProfileSection = nextPage === "profile" ? getProfileSectionFromUrl() : "profile";
 
       if (page === "profile" && nextPage !== "profile" && profileEditing && profileEditOriginalRef.current && profile) {
         const original = profileEditOriginalRef.current;
         const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
 
         if (dirty && !window.confirm("You have unsaved profile changes. Leave without saving?")) {
-          window.history.pushState({ page: "profile" }, "", pagePath("profile"));
+          window.history.pushState({ page: "profile", section: profileSection }, "", profilePath(profileSection));
           return;
         }
 
         cancelProfileEdit(true);
       }
 
+      // Profile subsections are separate history entries even though they share
+      // the same pathname. Never treat them as duplicate page navigation.
+      if (urlPage === "profile" && page === "profile") {
+        setProfileSection(nextProfileSection);
+        touchDraftActivity("profile");
+        setPage("profile");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      if (urlPage && urlPage === page) {
+        window.history.go(-1);
+        return;
+      }
+
       if (urlPage) {
-        // Older sessions can contain duplicate entries for the same route.
-        // When Back lands on an identical route, skip that duplicate so the
-        // user reaches the previous actual page with a single Back action.
-        if (urlPage === page) {
-          window.history.go(-1);
-          return;
-        }
         touchDraftActivity(urlPage);
         setPage(urlPage);
-        if (urlPage === "profile") setProfileSection(getProfileSectionFromUrl());
+        if (urlPage === "profile") setProfileSection(nextProfileSection);
       } else {
         if (nextPage === page) {
           window.history.go(-1);
@@ -266,12 +275,12 @@ export default function Home() {
         }
         touchDraftActivity(nextPage);
         setPage(nextPage);
-        if (nextPage === "profile") setProfileSection(getProfileSectionFromUrl());
+        if (nextPage === "profile") setProfileSection(nextProfileSection);
       }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [profile, page, profileEditing]);
+  }, [profile, page, profileEditing, profileSection]);
 
   useEffect(() => {
     (async () => {
