@@ -74,6 +74,12 @@ export default function Home() {
   }[nextPage]);
 
   const navigate = (nextPage: AppPage, replace = false) => {
+    if (page === "profile" && nextPage !== "profile" && profileEditing && profileEditOriginalRef.current && profile) {
+      const original = profileEditOriginalRef.current;
+      const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
+      if (dirty && !window.confirm("You have unsaved profile changes. Leave without saving?")) return;
+      if (dirty) cancelProfileEdit();
+    }
     const url = pagePath(nextPage);
     const currentPage = getPageFromUrl();
     
@@ -304,6 +310,20 @@ export default function Home() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (page !== "profile" || !profileEditing || !profileEditOriginalRef.current || !profile) return;
+      const original = profileEditOriginalRef.current;
+      const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hydrated, page, profileEditing, profile]);
 
   useEffect(() => {
     if (!hydrated || draftResettingRef.current) return;
@@ -647,17 +667,32 @@ export default function Home() {
     }
   };
 
-  const cancelProfileEdit = () => {
+  const cancelProfileEdit = (skipConfirm = false) => {
     if (!profile || !profileEditOriginalRef.current) return;
     const original = profileEditOriginalRef.current;
     const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
-    if (dirty && !window.confirm("Discard your unsaved profile changes?")) return;
+    if (dirty && !skipConfirm && !window.confirm("Discard your unsaved profile changes?")) return;
     setProfile({ ...original, password: "" });
     setProfileErrors({});
     setCurrentProfilePassword("");
     setShowCurrentProfilePassword(false);
     resetProfileSaveVerification();
     setProfileEditing(false);
+  };
+
+  const changeProfileSection = (nextSection: "profile" | "activity" | "settings") => {
+    if (nextSection === profileSection) return;
+    if (profileEditing && profileEditOriginalRef.current && profile) {
+      const original = profileEditOriginalRef.current;
+      const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
+      if (dirty) {
+        if (!window.confirm("You have unsaved profile changes. Leave without saving?")) return;
+        cancelProfileEdit(true);
+      } else {
+        cancelProfileEdit(true);
+      }
+    }
+    setProfileSection(nextSection);
   };
 
   const toggleMember = (id: string) => {
@@ -954,15 +989,15 @@ export default function Home() {
                     <strong>{profile.name}</strong>
                     <small>{profile.upi}</small>
                   </div>
-                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); setProfileSection("profile"); navigate("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("profile"); navigate("profile"); }} role="menuitem">
                     <span className="profileMenuIcon">◉</span>
                     <span><strong>Profile</strong><small>View your profile information</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); setProfileSection("activity"); navigate("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("activity"); navigate("profile"); }} role="menuitem">
                     <span className="profileMenuIcon">↗</span>
                     <span><strong>Account activity</strong><small>Bills and payment activity</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); setProfileSection("settings"); navigate("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("settings"); navigate("profile"); }} role="menuitem">
                     <span className="profileMenuIcon">⚙</span>
                     <span><strong>Settings</strong><small>Edit profile and account</small></span>
                   </button>
@@ -1115,9 +1150,9 @@ export default function Home() {
           </div>
 
           <div className="profileSubnav card">
-            <button className={profileSection === "profile" ? "active" : ""} onClick={() => setProfileSection("profile")}>Profile</button>
-            <button className={profileSection === "activity" ? "active" : ""} onClick={() => setProfileSection("activity")}>Activity</button>
-            <button className={profileSection === "settings" ? "active" : ""} onClick={() => setProfileSection("settings")}>Settings</button>
+            <button className={profileSection === "profile" ? "active" : ""} onClick={() => changeProfileSection("profile")}>Profile</button>
+            <button className={profileSection === "activity" ? "active" : ""} onClick={() => changeProfileSection("activity")}>Activity</button>
+            <button className={profileSection === "settings" ? "active" : ""} onClick={() => changeProfileSection("settings")}>Settings</button>
           </div>
 
           {profileSection === "profile" && <>
