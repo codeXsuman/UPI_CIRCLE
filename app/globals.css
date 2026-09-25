@@ -879,3 +879,22 @@ input,button{touch-action:manipulation}
 .billCreatedSuccess strong{font-size:12px}.billCreatedSuccess small{font-size:11px;color:#5f7e6d}
 .billCreatedSuccess button{flex:0 0 auto}
 @media(max-width:600px){.billCreatedSuccess{align-items:flex-start;flex-wrap:wrap}.billCreatedSuccess button{width:100%}}
+
+.memberSearch{display:flex;align-items:center;gap:9px;margin:14px 0 10px;padding:0 12px;height:44px;border:1px solid #e5e7eb;border-radius:12px;background:#fafafa;color:#6b7280}
+.memberSearch:focus-within{border-color:#b8c7ff;background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,.07)}
+.memberSearch>span{font-size:20px;line-height:1}
+.memberSearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit;font-size:12px}
+.memberSearch input::placeholder{color:#9ca3af}
+.memberSearch button{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:0;background:transparent;color:#6b7280;font-size:17px;cursor:pointer}
+.selectedMemberChips{margin:12px 0 14px}
+.selectedMemberChips>small{display:block;margin-bottom:7px;font-size:9px;letter-spacing:.08em;font-weight:800;color:#8b92a0}
+.selectedMemberChips>div{display:flex;flex-wrap:wrap;gap:7px}
+.selectedMemberChips button{display:inline-flex;align-items:center;gap:7px;border:1px solid #d8e6dc;border-radius:999px;background:#f3faf5;color:#1e5d3d;padding:7px 9px 7px 11px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.selectedMemberChips button b{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#dcefe2;color:#397355;font-size:13px;line-height:1}
+.memberSearchEmpty{padding:20px 12px;text-align:center;border:1px dashed #dfe3e8;border-radius:12px;color:#6b7280}
+.memberSearchEmpty strong{display:block;font-size:12px;color:#3f4650}.memberSearchEmpty small{display:block;margin-top:3px;font-size:11px}
+.registeredMember{transition:background .18s,border-color .18s,transform .12s,box-shadow .18s}
+.registeredMember.selected{background:#f3faf5;border-color:#cfe5d6;box-shadow:0 2px 8px rgba(20,80,45,.05)}
+.registeredMember:active{transform:scale(.995)}
+.registeredMember i{display:grid;place-items:center;width:25px;height:25px;border:1px solid #d8dde4;border-radius:50%;font-style:normal;font-size:13px;color:#7b8490}
+.registeredMember.selected i{border-color:#b9ddc5;background:#dff3e5;color:#1c7a49;font-weight:900}
