@@ -127,6 +127,8 @@ export default function Home() {
   const [upiCopied, setUpiCopied] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [currentProfilePassword, setCurrentProfilePassword] = useState("");
+  const [showCurrentProfilePassword, setShowCurrentProfilePassword] = useState(false);
+  const [showNewProfilePassword, setShowNewProfilePassword] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const profileEditOriginalRef = useRef<User | null>(null);
@@ -1098,14 +1100,7 @@ export default function Home() {
                   <input id="profile-email" value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
                   {profileErrors.email && <span className="fieldErrorMessage">{profileErrors.email}</span>}
                 </label>
-                <label className={profileErrors.currentPassword ? "fieldError" : ""}>Current password
-                  <input id="profile-currentPassword" value={currentProfilePassword} type="password" placeholder="Enter your current password" autoComplete="current-password" aria-invalid={!!profileErrors.currentPassword} onChange={e => { setCurrentProfilePassword(e.target.value); setProfileErrors(old => ({ ...old, currentPassword: "" })); }} />
-                  {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
-                </label>
-                <label className={profileErrors.password ? "fieldError" : ""}>New password <small className="fieldHint">(optional)</small>
-                  <input id="profile-password" value={profile.password || ""} type="password" placeholder="Leave blank to keep current" autoComplete="new-password" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
-                  {profileErrors.password && <span className="fieldErrorMessage">{profileErrors.password}</span>}
-                </label>
+
               </div>
               <div className="profileEditActions">
                 <button className="primary accountSubmit" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
@@ -1114,11 +1109,34 @@ export default function Home() {
             </div>
 
             <div className="profileSettingsCard card">
-              <div>
+              <div className="profileSettingsIntro">
                 <span>ACCOUNT</span>
                 <h2>Account settings</h2>
-                <p>More account controls will be added here as they become available.</p>
+                <p>Manage your password and account controls.</p>
               </div>
+
+              <div className="changePasswordSection">
+                <div className="changePasswordHead">
+                  <div><strong>Change password</strong><small>Enter your current password to verify your identity before saving changes.</small></div>
+                </div>
+                <div className="passwordFieldsGrid">
+                  <label className={profileErrors.currentPassword ? "fieldError" : ""}>Current password
+                    <div className="passwordInputWrap">
+                      <input id="profile-currentPassword" value={currentProfilePassword} type={showCurrentProfilePassword ? "text" : "password"} placeholder="Enter current password" autoComplete="current-password" aria-invalid={!!profileErrors.currentPassword} onChange={e => { setCurrentProfilePassword(e.target.value); setProfileErrors(old => ({ ...old, currentPassword: "" })); }} />
+                      <button type="button" className="passwordToggle" onClick={() => setShowCurrentProfilePassword(v => !v)} aria-label={showCurrentProfilePassword ? "Hide current password" : "Show current password"}>{showCurrentProfilePassword ? "Hide" : "Show"}</button>
+                    </div>
+                    {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
+                  </label>
+                  <label className={profileErrors.password ? "fieldError" : ""}>New password <small className="fieldHint">(optional)</small>
+                    <div className="passwordInputWrap">
+                      <input id="profile-password" value={profile.password || ""} type={showNewProfilePassword ? "text" : "password"} placeholder="Leave blank to keep current" autoComplete="new-password" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
+                      <button type="button" className="passwordToggle" onClick={() => setShowNewProfilePassword(v => !v)} aria-label={showNewProfilePassword ? "Hide new password" : "Show new password"}>{showNewProfilePassword ? "Hide" : "Show"}</button>
+                    </div>
+                    {profileErrors.password && <span className="fieldErrorMessage">{profileErrors.password}</span>}
+                  </label>
+                </div>
+              </div>
+
               <div className="profileSettingsActions">
                 <button className="secondary" onClick={() => pop("This feature is coming soon.", "info")}>Deactivate account</button>
                 <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
