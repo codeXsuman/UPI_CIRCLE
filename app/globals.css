@@ -1077,3 +1077,160 @@ input,button{touch-action:manipulation}
     box-shadow:0 8px 24px rgba(16,24,40,.06);
   }
 }
+
+
+/* Change password: fully styled security form */
+.changePasswordSection{
+  position:relative;
+  overflow:hidden;
+  padding:22px;
+  border:1px solid #e8e8e5;
+  border-radius:20px;
+  background:linear-gradient(180deg,#ffffff 0%,#fafaf8 100%);
+  box-shadow:0 8px 24px rgba(17,17,17,.04);
+}
+.changePasswordSection::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:4px;
+  height:100%;
+  background:linear-gradient(180deg,#ffd21a,#f0b900);
+}
+.changePasswordHead{
+  display:flex;
+  align-items:flex-start;
+  gap:13px;
+  margin-bottom:20px;
+}
+.changePasswordHead::before{
+  content:"🔐";
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:#fff7d6;
+  font-size:18px;
+}
+.changePasswordHead>div{min-width:0}
+.changePasswordHead strong{
+  display:block;
+  font:700 20px/1.2 'Space Grotesk';
+  letter-spacing:-.3px;
+  color:#171717;
+}
+.changePasswordHead small{
+  display:block;
+  max-width:520px;
+  margin-top:5px;
+  color:#858b95;
+  font-size:12px;
+  line-height:1.5;
+}
+.passwordFieldsGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:0;
+}
+.passwordFieldsGrid>label{
+  display:block;
+  min-width:0;
+  color:#3b414a;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.15px;
+}
+.passwordFieldsGrid .passwordInputWrap{margin-top:7px}
+.passwordFieldsGrid .passwordInputWrap input{
+  width:100%;
+  height:50px;
+  margin:0;
+  padding:0 62px 0 14px;
+  border:1px solid #dfe2e8;
+  border-radius:13px;
+  outline:none;
+  background:#fff;
+  color:#171717;
+  font-size:13px;
+  transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.passwordFieldsGrid .passwordInputWrap input::placeholder{color:#a2a7af}
+.passwordFieldsGrid .passwordInputWrap input:focus{
+  border-color:#8e85ff;
+  box-shadow:0 0 0 4px rgba(99,91,255,.09);
+  background:#fff;
+}
+.passwordFieldsGrid label.fieldError .passwordInputWrap input{
+  border-color:#e0a0a0;
+  box-shadow:0 0 0 3px rgba(180,35,24,.07);
+}
+.passwordFieldsGrid .passwordToggle{
+  right:7px;
+  color:#667085;
+  font-size:11px;
+  border-radius:8px;
+}
+.passwordFieldsGrid .passwordToggle:hover{background:#f4f5f7;color:#222}
+.passwordFieldsGrid .fieldErrorMessage{
+  display:block;
+  margin-top:5px;
+  color:#b42318;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.35;
+}
+.changePasswordActions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid #ecece8;
+}
+.changePasswordActions .primary{
+  min-width:185px;
+  min-height:46px;
+  border-radius:12px;
+  background:#151515;
+  color:#ffd21a;
+  box-shadow:0 8px 18px rgba(17,17,17,.10);
+}
+.changePasswordActions .primary:hover:not(:disabled){
+  background:#090909;
+  transform:translateY(-1px);
+}
+.profileSettingsIntro{margin-bottom:18px}
+.profileSettingsIntro>span{
+  display:inline-flex;
+  align-items:center;
+  min-height:25px;
+  padding:0 9px;
+  border-radius:999px;
+  background:#f5f5f3;
+  color:#686d75;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+.profileSettingsIntro h2{font-size:22px!important;margin:10px 0 5px!important}
+.profileSettingsIntro p{font-size:12px!important;color:#8a9099!important}
+@media(max-width:850px){
+  .passwordFieldsGrid{grid-template-columns:1fr 1fr}
+  .passwordFieldsGrid>label:last-child{grid-column:1/-1}
+}
+@media(max-width:700px){
+  .profileSettingsCard{padding:16px!important}
+  .changePasswordSection{padding:18px 16px}
+  .changePasswordHead{gap:11px;margin-bottom:17px}
+  .changePasswordHead::before{width:38px;height:38px;flex-basis:38px;font-size:16px;border-radius:11px}
+  .changePasswordHead strong{font-size:18px}
+  .changePasswordHead small{font-size:11px}
+  .passwordFieldsGrid{grid-template-columns:1fr;gap:12px}
+  .passwordFieldsGrid>label:last-child{grid-column:auto}
+  .passwordFieldsGrid .passwordInputWrap input{height:50px;font-size:14px}
+  .changePasswordActions{margin-top:16px;padding-top:14px}
+  .changePasswordActions .primary{width:100%;min-width:0}
+}
