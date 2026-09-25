@@ -126,6 +126,7 @@ export default function Home() {
   const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
   const [upiCopied, setUpiCopied] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
+  const [currentProfilePassword, setCurrentProfilePassword] = useState("");
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const profileEditOriginalRef = useRef<User | null>(null);
@@ -515,6 +516,7 @@ export default function Home() {
     const mobile = profile.mobile.replace(/\D/g, "");
     const email = profile.email.trim();
 
+    if (!currentProfilePassword.trim()) errors.currentPassword = "Current password is required to verify your identity";
     if (!name) errors.name = "Name is required";
     if (!upi) errors.upi = "UPI ID is required";
     if (!mobile) errors.mobile = "Mobile number is required";
@@ -536,7 +538,7 @@ export default function Home() {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(normalizedProfile)
+        body: JSON.stringify({ ...normalizedProfile, currentPassword: currentProfilePassword })
       });
       const data = await res.json();
       if (!res.ok) return pop(data.error || "Unable to update profile", "error");
@@ -1096,8 +1098,12 @@ export default function Home() {
                   <input id="profile-email" value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
                   {profileErrors.email && <span className="fieldErrorMessage">{profileErrors.email}</span>}
                 </label>
-                <label className={profileErrors.password ? "fieldError" : ""}>Password
-                  <input id="profile-password" value={profile.password || ""} type="password" placeholder="Leave blank to keep current" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
+                <label className={profileErrors.currentPassword ? "fieldError" : ""}>Current password
+                  <input id="profile-currentPassword" value={currentProfilePassword} type="password" placeholder="Enter your current password" autoComplete="current-password" aria-invalid={!!profileErrors.currentPassword} onChange={e => { setCurrentProfilePassword(e.target.value); setProfileErrors(old => ({ ...old, currentPassword: "" })); }} />
+                  {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
+                </label>
+                <label className={profileErrors.password ? "fieldError" : ""}>New password <small className="fieldHint">(optional)</small>
+                  <input id="profile-password" value={profile.password || ""} type="password" placeholder="Leave blank to keep current" autoComplete="new-password" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
                   {profileErrors.password && <span className="fieldErrorMessage">{profileErrors.password}</span>}
                 </label>
               </div>
