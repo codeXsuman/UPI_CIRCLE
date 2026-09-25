@@ -615,7 +615,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated || !profile) return;
-    if (page === "dashboard") refreshDashboardStats();
+    if (page === "dashboard" || page === "profile") refreshDashboardStats();
     else if (page === "mine") loadMyBills();
     else if (page === "others") loadOtherBills();
   }, [hydrated, profile?.id, page]);
@@ -926,6 +926,31 @@ export default function Home() {
               </div>
               <div className="profileInfoRow">
                 <span>Email</span><strong className="profileEmailValue">{profile.email}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="profileActivityCard card">
+            <div className="profileSectionHead">
+              <div><span>ACCOUNT ACTIVITY</span><small>A quick view of your bill activity</small></div>
+              {dataLoading.dashboard && <span className="profileActivityLoading">Updating…</span>}
+            </div>
+            <div className="profileActivityGrid">
+              <div className="profileActivityStat">
+                <strong>{dashboardStats.created}</strong>
+                <span>Bills created</span>
+              </div>
+              <div className="profileActivityStat">
+                <strong>{dashboardStats.pending}</strong>
+                <span>Pending bills</span>
+              </div>
+              <div className="profileActivityStat">
+                <strong>₹{money(dashboardStats.received)}</strong>
+                <span>Payments received</span>
+              </div>
+              <div className="profileActivityStat">
+                <strong>₹{money(dashboardStats.owing)}</strong>
+                <span>Amount to pay</span>
               </div>
             </div>
           </div>
