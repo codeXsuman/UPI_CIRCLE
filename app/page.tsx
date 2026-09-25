@@ -317,8 +317,10 @@ export default function Home() {
         const res = await fetch("/api/auth/me", { cache: "no-store" });
         const data = await res.json();
         if (data.user) {
-          const savedProfile = saved?.profileDraft;
-          setProfile(savedProfile ? { ...data.user, ...savedProfile } : { ...data.user, password: "" });
+          // Profile edits are server-backed only. Never restore unsaved profile
+          // fields from sessionStorage, otherwise a refresh could bypass the
+          // password-verification save flow.
+          setProfile({ ...data.user, password: "" });
 
           // Keep a real deep-link page on refresh. Only the authenticated root
           // and public auth pages resolve to Dashboard.
@@ -369,7 +371,6 @@ export default function Home() {
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
           savedAt,
           page,
-          profileDraft: profile,
           register,
           privacyAccepted,
           login,
