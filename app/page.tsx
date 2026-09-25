@@ -123,6 +123,9 @@ export default function Home() {
   const [memberSearch, setMemberSearch] = useState("");
   const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
   const [upiCopied, setUpiCopied] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
+  const profileEditOriginalRef = useRef<User | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
@@ -449,21 +452,55 @@ export default function Home() {
   };
 
   const updateProfile = async () => {
-    if (!profile) return;
+    if (!profile || profileSaving) return;
+    const errors: Record<string, string> = {};
+    const name = profile.name.trim();
+    const upi = profile.upi.trim();
+    const mobile = profile.mobile.replace(/\D/g, "");
+    const email = profile.email.trim();
+
+    if (!name) errors.name = "Name is required";
+    if (!upi) errors.upi = "UPI ID is required";
+    if (!mobile) errors.mobile = "Mobile number is required";
+    else if (!/^[6-9]\d{9}$/.test(mobile)) errors.mobile = "Enter a valid 10-digit Indian mobile number";
+    if (!email) errors.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = "Enter a valid email address";
+    if (profile.password?.trim() && profile.password.trim().length < 6) errors.password = "Password must be at least 6 characters";
+
+    setProfileErrors(errors);
+    if (Object.keys(errors).length) {
+      const first = Object.keys(errors)[0];
+      document.getElementById("profile-" + first)?.focus();
+      return pop("Please fix the highlighted profile fields", "error");
+    }
+
+    const normalizedProfile = { ...profile, name, upi, mobile, email };
     try {
-      setLoading(true);
+      setProfileSaving(true);
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profile)
+        body: JSON.stringify(normalizedProfile)
       });
       const data = await res.json();
-      if (!res.ok) return pop(data.error || "Unable to update profile");
-      setProfile({ ...data.user, password: "" });
+      if (!res.ok) return pop(data.error || "Unable to update profile", "error");
+      const savedProfile = { ...data.user, password: "" };
+      setProfile(savedProfile);
+      profileEditOriginalRef.current = savedProfile;
+      setProfileErrors({});
       await loadMembers();
-      pop("Profile updated successfully");
-    } catch { pop("Unable to update profile"); }
-    finally { setLoading(false); }
+      pop("Profile updated successfully", "success");
+    } catch { pop("Unable to update profile", "error"); }
+    finally { setProfileSaving(false); }
+  };
+
+  const cancelProfileEdit = () => {
+    if (!profile || !profileEditOriginalRef.current) return;
+    const original = profileEditOriginalRef.current;
+    const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
+    if (dirty && !window.confirm("Discard your unsaved profile changes?")) return;
+    setProfile({ ...original, password: "" });
+    setProfileErrors({});
   };
 
   const toggleMember = (id: string) => {
@@ -615,6 +652,10 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated || !profile) return;
+    if (page === "profile" && profileEditOriginalRef.current?.id !== profile.id) {
+      profileEditOriginalRef.current = { ...profile, password: "" };
+      setProfileErrors({});
+    }
     if (page === "dashboard" || page === "profile") refreshDashboardStats();
     else if (page === "mine") loadMyBills();
     else if (page === "others") loadOtherBills();
@@ -958,15 +999,34 @@ export default function Home() {
           <div className="profileEditCard card">
             <div className="profileSectionHead">
               <div><span>EDIT PROFILE</span><small>Update your account information</small></div>
+              {profileSaving && <span className="profileActivityLoading">Saving…</span>}
             </div>
             <div className="formStack">
-              <label>Name<input value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} /></label>
-              <label>UPI ID<input value={profile.upi} onChange={e => setProfile({ ...profile, upi: e.target.value })} /></label>
-              <label>Mobile number<input value={profile.mobile} maxLength={10} inputMode="numeric" onChange={e => setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") })} /></label>
-              <label>Email<input value={profile.email} type="email" onChange={e => setProfile({ ...profile, email: e.target.value })} /></label>
-              <label>Password<input value={profile.password || ""} type="password" placeholder="Leave blank to keep current" onChange={e => setProfile({ ...profile, password: e.target.value })} /></label>
+              <label className={profileErrors.name ? "fieldError" : ""}>Name
+                <input id="profile-name" value={profile.name} aria-invalid={!!profileErrors.name} onChange={e => { setProfile({ ...profile, name: e.target.value }); setProfileErrors(old => ({ ...old, name: "" })); }} />
+                {profileErrors.name && <span className="fieldErrorMessage">{profileErrors.name}</span>}
+              </label>
+              <label className={profileErrors.upi ? "fieldError" : ""}>UPI ID
+                <input id="profile-upi" value={profile.upi} aria-invalid={!!profileErrors.upi} onChange={e => { setProfile({ ...profile, upi: e.target.value }); setProfileErrors(old => ({ ...old, upi: "" })); }} />
+                {profileErrors.upi && <span className="fieldErrorMessage">{profileErrors.upi}</span>}
+              </label>
+              <label className={profileErrors.mobile ? "fieldError" : ""}>Mobile number
+                <input id="profile-mobile" value={profile.mobile} maxLength={10} inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
+                {profileErrors.mobile && <span className="fieldErrorMessage">{profileErrors.mobile}</span>}
+              </label>
+              <label className={profileErrors.email ? "fieldError" : ""}>Email
+                <input id="profile-email" value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
+                {profileErrors.email && <span className="fieldErrorMessage">{profileErrors.email}</span>}
+              </label>
+              <label className={profileErrors.password ? "fieldError" : ""}>Password
+                <input id="profile-password" value={profile.password || ""} type="password" placeholder="Leave blank to keep current" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
+                {profileErrors.password && <span className="fieldErrorMessage">{profileErrors.password}</span>}
+              </label>
             </div>
-            <button className="primary accountSubmit" onClick={updateProfile}>Save changes</button>
+            <div className="profileEditActions">
+              <button className="primary accountSubmit" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
+              <button className="secondary" onClick={cancelProfileEdit} disabled={profileSaving}>Cancel</button>
+            </div>
           </div>
 
           <div className="profileAccountActions card">
