@@ -637,6 +637,7 @@ export default function Home() {
       return pop("No changes to save", "info");
     }
 
+    if (!profile) return;
     const upi = profile.upi.trim().toLowerCase();
     if (!upi) {
       setProfileErrors(old => ({ ...old, upi: "UPI ID is required" }));
