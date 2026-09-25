@@ -856,3 +856,19 @@ input,button{touch-action:manipulation}
 .historyEmpty h2{margin:0 0 7px;font-size:22px;letter-spacing:-.02em}
 .historyEmpty p{max-width:420px;margin:0 0 18px;color:#7b8490;line-height:1.55}
 @media(max-width:700px){.historyEmpty{min-height:200px;padding:28px 18px}.historyEmpty h2{font-size:20px}}
+
+/* Compact bill-card summaries */
+.historySummary{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:7px;color:#7b8490;font-size:11px;font-weight:600}
+.historySummary span:nth-child(2),.historySummary span:nth-child(4){color:#c3c7cc}
+.historyCardTop>strong{font-size:26px}
+.billDetailPanel{margin-top:12px;padding:16px;border:1px solid #ececea;border-radius:14px;background:#fcfcfb}
+.billDetailPanel .detailSectionTitle{margin:3px 0 7px;color:#777f89;font-size:9px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase}
+.billDetailPanel .detailSectionTitle:not(:first-child){margin-top:16px}
+.historyDetailActions{display:flex;gap:8px;margin-top:15px;padding-top:12px;border-top:1px solid #ececea}
+.historyDetailActions button{flex:1}
+@media(max-width:700px){
+  .historySummary{font-size:10px;line-height:1.5}
+  .historyCardTop>strong{font-size:22px}
+  .historyDetailActions{display:grid;grid-template-columns:1fr 1fr}
+}
+@media(max-width:380px){.historyDetailActions{grid-template-columns:1fr}}
