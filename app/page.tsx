@@ -78,7 +78,7 @@ export default function Home() {
       const original = profileEditOriginalRef.current;
       const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
       if (dirty && !window.confirm("You have unsaved profile changes. Leave without saving?")) return;
-      if (dirty) cancelProfileEdit();
+      cancelProfileEdit(true);
     }
     const url = pagePath(nextPage);
     const currentPage = getPageFromUrl();
@@ -226,6 +226,19 @@ export default function Home() {
   useEffect(() => {
     const handlePopState = () => {
       const urlPage = getPageFromUrl();
+      const nextPage = urlPage || (profile ? "dashboard" : "home");
+
+      if (page === "profile" && nextPage !== "profile" && profileEditing && profileEditOriginalRef.current && profile) {
+        const original = profileEditOriginalRef.current;
+        const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
+
+        if (dirty && !window.confirm("You have unsaved profile changes. Leave without saving?")) {
+          window.history.pushState({ page: "profile" }, "", pagePath("profile"));
+          return;
+        }
+
+        cancelProfileEdit(true);
+      }
 
       if (urlPage) {
         // Older sessions can contain duplicate entries for the same route.
@@ -238,18 +251,17 @@ export default function Home() {
         touchDraftActivity(urlPage);
         setPage(urlPage);
       } else {
-        const next = profile ? "dashboard" : "home";
-        if (next === page) {
+        if (nextPage === page) {
           window.history.go(-1);
           return;
         }
-        touchDraftActivity(next);
-        setPage(next);
+        touchDraftActivity(nextPage);
+        setPage(nextPage);
       }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [profile, page]);
+  }, [profile, page, profileEditing]);
 
   useEffect(() => {
     (async () => {
