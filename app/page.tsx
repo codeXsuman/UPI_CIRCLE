@@ -62,6 +62,14 @@ export default function Home() {
     return routes[path] || null;
   };
 
+  const getProfileSectionFromUrl = (): "profile" | "activity" | "settings" => {
+    const section = new URLSearchParams(window.location.search).get("section");
+    return section === "activity" || section === "settings" ? section : "profile";
+  };
+
+  const profilePath = (section: "profile" | "activity" | "settings") =>
+    section === "profile" ? "/profile" : `/profile?section=${section}`;
+
   const pagePath = (nextPage: AppPage) => ({
     home: "/",
     account: "/register",
@@ -70,7 +78,7 @@ export default function Home() {
     product: "/bills/create",
     mine: "/bills/mine",
     others: "/bills/others",
-    profile: "/profile",
+    profile: profilePath(profileSection),
   }[nextPage]);
 
   const navigate = (nextPage: AppPage, replace = false) => {
@@ -250,6 +258,7 @@ export default function Home() {
         }
         touchDraftActivity(urlPage);
         setPage(urlPage);
+        if (urlPage === "profile") setProfileSection(getProfileSectionFromUrl());
       } else {
         if (nextPage === page) {
           window.history.go(-1);
@@ -257,6 +266,7 @@ export default function Home() {
         }
         touchDraftActivity(nextPage);
         setPage(nextPage);
+        if (nextPage === "profile") setProfileSection(getProfileSectionFromUrl());
       }
     };
     window.addEventListener("popstate", handlePopState);
@@ -705,6 +715,23 @@ export default function Home() {
     setProfileEditing(false);
   };
 
+  const navigateToProfileSection = (nextSection: "profile" | "activity" | "settings") => {
+    if (profileEditing && profileEditOriginalRef.current && profile) {
+      const original = profileEditOriginalRef.current;
+      const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
+      if (dirty) {
+        if (!window.confirm("You have unsaved profile changes. Leave without saving?")) return;
+        cancelProfileEdit(true);
+      }
+    }
+    setProfileSection(nextSection);
+    const url = profilePath(nextSection);
+    const current = window.location.pathname + window.location.search;
+    if (current !== url) window.history.pushState({ page: "profile", section: nextSection }, "", url);
+    setPage("profile");
+    touchDraftActivity("profile");
+  };
+
   const changeProfileSection = (nextSection: "profile" | "activity" | "settings") => {
     if (nextSection === profileSection) return;
     if (profileEditing && profileEditOriginalRef.current && profile) {
@@ -1014,15 +1041,15 @@ export default function Home() {
                     <strong>{profile.name}</strong>
                     <small>{profile.upi}</small>
                   </div>
-                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("profile"); navigate("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("profile"); navigateToProfileSection("profile"); }} role="menuitem">
                     <span className="profileMenuIcon">◉</span>
                     <span><strong>Profile</strong><small>View your profile information</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("activity"); navigate("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("activity"); navigateToProfileSection("activity"); }} role="menuitem">
                     <span className="profileMenuIcon">↗</span>
                     <span><strong>Account activity</strong><small>Bills and payment activity</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("settings"); navigate("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("settings"); navigateToProfileSection("settings"); }} role="menuitem">
                     <span className="profileMenuIcon">⚙</span>
                     <span><strong>Settings</strong><small>Edit profile and account</small></span>
                   </button>
