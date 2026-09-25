@@ -1033,11 +1033,23 @@ export default function Home() {
 
             <aside className="productSide">
               <div className="card previewCard">
-                <span className="live">● BILL PREVIEW</span>
+                <div className="previewHeader">
+                  <span className="live">● BILL PREVIEW</span>
+                  <span className="previewDraft">DRAFT</span>
+                </div>
                 <h2>{items.filter(i => i.name.trim()).map(i => i.name).join(" + ") || "Your bill items"}</h2>
+                <div className="previewTotalLabel">Total bill</div>
                 <div className="previewTotal">₹{money(total)}</div>
-                <small>Paid to</small><strong>{profile.name}</strong><span>{profile.upi}</span>
-                {selectedMembers.length > 0 && <div className="selectedPayers"><small>Bill for</small>{selectedMembers.map(m => <div key={m.id}><span>{m.name}</span><b>{hasCustomSplit && !recipientAmounts[m.id] ? "—" : "₹" + money(Number(displayShareAmounts[m.id]) || 0)}</b></div>)}</div>}
+                <div className="previewPayee"><small>Paid to</small><strong>{profile.name}</strong><span>{profile.upi}</span></div>
+                {items.some(i => i.name.trim() || Number(i.amount)) && <div className="previewItems">
+                  <div className="previewSectionTitle"><span>Items</span><small>{items.length} {items.length === 1 ? "item" : "items"}</small></div>
+                  {items.filter(i => i.name.trim() || Number(i.amount)).map((item, index) => <div className="previewItem" key={item.id}><span><i>{index + 1}</i>{item.name.trim() || "Unnamed item"}</span><b>₹{money(Number(item.amount) || 0)}</b></div>)}
+                </div>}
+                {selectedMembers.length > 0 && <div className="selectedPayers">
+                  <div className="previewSectionTitle"><span>Who pays</span><small>{selectedMembers.length} {selectedMembers.length === 1 ? "person" : "people"}</small></div>
+                  {selectedMembers.map(m => <div className="previewPayer" key={m.id}><span><i>{m.name.charAt(0).toUpperCase()}</i>{m.name}</span><b>{hasCustomSplit && !recipientAmounts[m.id] ? "—" : "₹" + money(Number(displayShareAmounts[m.id]) || 0)}</b></div>)}
+                  <div className={"previewSplitSummary " + (hasCustomSplit ? (Math.abs(displayShareTotal-total)<0.001 ? "balanced" : "unbalanced") : "balanced")}><span>{hasCustomSplit ? "Custom split" : "Equal split"}</span><strong>{hasCustomSplit ? (Math.abs(displayShareTotal-total)<0.001 ? "✓ Balanced" : "₹" + money(Math.abs(total-displayShareTotal)) + " remaining") : "₹" + money(displayShareTotal) + " allocated"}</strong></div>
+                </div>}
                 <div className="secureNote">✓ Payments go to the bill creator's registered UPI ID.</div>
               </div>
             </aside>
