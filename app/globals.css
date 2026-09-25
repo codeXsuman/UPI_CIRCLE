@@ -872,3 +872,10 @@ input,button{touch-action:manipulation}
   .historyDetailActions{display:grid;grid-template-columns:1fr 1fr}
 }
 @media(max-width:380px){.historyDetailActions{grid-template-columns:1fr}}
+
+.billCreatedSuccess{display:flex;align-items:center;gap:11px;margin-top:12px;padding:12px 13px;border:1px solid #cfe9d9;border-radius:14px;background:#f3fbf6;color:#185c39}
+.billCreatedSuccess>span{display:grid;place-items:center;width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:#d9f7e5;color:#137044;font-weight:900}
+.billCreatedSuccess>div{min-width:0;display:flex;flex:1;flex-direction:column;gap:2px}
+.billCreatedSuccess strong{font-size:12px}.billCreatedSuccess small{font-size:11px;color:#5f7e6d}
+.billCreatedSuccess button{flex:0 0 auto}
+@media(max-width:600px){.billCreatedSuccess{align-items:flex-start;flex-wrap:wrap}.billCreatedSuccess button{width:100%}}
