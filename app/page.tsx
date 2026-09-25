@@ -320,7 +320,7 @@ export default function Home() {
           // Profile edits are server-backed only. Never restore unsaved profile
           // fields from sessionStorage, otherwise a refresh could bypass the
           // password-verification save flow.
-          setProfile({ ...data.user, password: "" });
+          setProfile({ ...data.user, mobile: data.user.mobile || "", password: "" });
 
           // Keep a real deep-link page on refresh. Only the authenticated root
           // and public auth pages resolve to Dashboard.
@@ -619,7 +619,7 @@ export default function Home() {
         }
         return;
       }
-      const savedProfile = { ...data.user, password: "" };
+      const savedProfile = { ...data.user, mobile: data.user.mobile || "", password: "" };
       setProfile(savedProfile);
       profileEditOriginalRef.current = savedProfile;
       setProfileErrors({});
