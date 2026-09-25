@@ -564,6 +564,7 @@ export default function Home() {
     if (!currentProfilePassword.trim()) errors.currentPassword = "Current password is required to verify your identity";
     if (!name) errors.name = "Name is required";
     if (!upi) errors.upi = "UPI ID is required";
+    else if (!/^[A-Za-z0-9][A-Za-z0-9._-]{1,}@[A-Za-z0-9][A-Za-z0-9.-]{1,}$/.test(upi)) errors.upi = "Enter a valid UPI ID (example: name@bank)";
     if (!mobile) errors.mobile = "Mobile number is required";
     else if (!/^[6-9]\d{9}$/.test(mobile)) errors.mobile = "Enter a valid 10-digit Indian mobile number";
     if (!email) errors.email = "Email is required";
