@@ -167,11 +167,31 @@ export default function Home() {
       if (accountMenuOpen && accountMenu && !accountMenu.contains(target)) setAccountMenuOpen(false);
       if (profileMenuOpen && profileMenu && !profileMenu.contains(target)) setProfileMenuOpen(false);
     };
+
+    // When a popup is open, the first click outside it should only dismiss
+    // the popup. It must not also trigger the underlying page action.
+    const closeMenuBeforeOutsideAction = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      const accountMenu = document.querySelector(".accountMenuWrap");
+      const profileMenu = document.querySelector(".profileMenuWrap");
+      const outsideAccount = accountMenuOpen && accountMenu && !accountMenu.contains(target);
+      const outsideProfile = profileMenuOpen && profileMenu && !profileMenu.contains(target);
+      if (outsideAccount || outsideProfile) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (outsideAccount) setAccountMenuOpen(false);
+        if (outsideProfile) setProfileMenuOpen(false);
+      }
+    };
+
     document.addEventListener("mousedown", closeMenu);
     document.addEventListener("touchstart", closeMenu);
+    document.addEventListener("click", closeMenuBeforeOutsideAction, true);
     return () => {
       document.removeEventListener("mousedown", closeMenu);
       document.removeEventListener("touchstart", closeMenu);
+      document.removeEventListener("click", closeMenuBeforeOutsideAction, true);
     };
   }, [accountMenuOpen, profileMenuOpen]);
 
