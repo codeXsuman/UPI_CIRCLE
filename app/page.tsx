@@ -1007,10 +1007,10 @@ export default function Home() {
                       placeholder="0.00"
                       onChange={e => { e.currentTarget.setCustomValidity(""); updateItem(item.id, "amount", e.target.value); }}
                     /></div>
-                    <button onClick={() => setItems(old => old.length === 1 ? old : old.filter(x => x.id !== item.id))} disabled={items.length === 1}>×</button>
+                    <button onClick={() => { if (items.length === 1) return; setBillCreatedSuccess(false); setBillValidationError(""); setItems(old => old.filter(x => x.id !== item.id)); }} disabled={items.length === 1}>×</button>
                   </div>
                 ))}</div>
-                <button className="addItem" onClick={() => setItems(old => [...old, { id: Date.now(), name: "", amount: "" }])}>＋ Add another item</button>
+                <button className="addItem" onClick={() => { setBillCreatedSuccess(false); setBillValidationError(""); setItems(old => [...old, { id: Date.now(), name: "", amount: "" }]); }}>＋ Add another item</button>
                 {billValidationError && hasCustomSplit && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check the split</strong><small>{billValidationError}</small></div></div>}
                 {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>Split between members</strong><small>Use equal shares or enter a custom amount for every member.</small></div><button className="secondary" onClick={splitEvenly}>Split equally</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={((Number(displayShareAmounts[m.id]) || 0)).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)}/></div></label>)}<small className={Math.abs(displayShareTotal-total)<0.001?"splitGood":"splitWarning"}>{hasCustomSplit ? `Allocated ₹${money(displayShareTotal)} of ₹${money(total)}` : `Equal split · ₹${money(displayShareTotal)} allocated`}</small></div>}
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
