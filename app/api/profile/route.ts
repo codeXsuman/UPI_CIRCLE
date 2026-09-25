@@ -25,8 +25,8 @@ export async function PATCH(req: Request) {
 
     const passwordHash = password?.trim() ? await bcrypt.hash(password.trim(),12) : null;
     const rows=passwordHash
-      ? await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile || null},email=${normalizedEmail},password_hash=${passwordHash},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`
-      : await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile || null},email=${normalizedEmail},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`;
+      ? await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},password_hash=${passwordHash},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`
+      : await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`;
     return NextResponse.json({user:rows[0]});
   } catch(error){console.error(error);return NextResponse.json({error:"Unable to update profile"},{status:500});}
 }
