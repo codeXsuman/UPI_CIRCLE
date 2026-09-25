@@ -1064,3 +1064,16 @@ input,button{touch-action:manipulation}
 .changePasswordActions .primary{min-width:170px}
 .profileInlineError{margin:12px 0;padding:10px 12px;border-radius:10px;background:#fff1f0;color:#b42318;font-size:12px;font-weight:600}
 @media(max-width:700px){.changePasswordActions .primary{width:100%}}
+
+
+/* Mobile profile tabs: keep the section switcher in normal flow so it never
+   covers the section heading while the page scrolls. */
+@media(max-width:700px){
+  .profileSubnav{
+    position:relative;
+    top:auto;
+    z-index:1;
+    margin-bottom:20px;
+    box-shadow:0 8px 24px rgba(16,24,40,.06);
+  }
+}
