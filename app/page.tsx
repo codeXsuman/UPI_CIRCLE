@@ -626,6 +626,18 @@ export default function Home() {
     if (original && JSON.stringify({ ...profile, password: "" }) === JSON.stringify({ ...original, password: "" })) {
       return pop("No changes to save", "info");
     }
+
+    const upi = profile.upi.trim().toLowerCase();
+    if (!upi) {
+      setProfileErrors(old => ({ ...old, upi: "UPI ID is required" }));
+      return;
+    }
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{1,}@[A-Za-z0-9][A-Za-z0-9.-]{1,}$/.test(upi)) {
+      setProfileErrors(old => ({ ...old, upi: "Enter a valid UPI ID (example: name@bank)" }));
+      return;
+    }
+
+    setProfileErrors(old => ({ ...old, upi: "", server: "" }));
     resetProfileSaveVerification();
     setProfileSaveConfirmOpen(true);
   };
