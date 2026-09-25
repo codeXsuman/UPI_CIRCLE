@@ -935,3 +935,6 @@ input,button{touch-action:manipulation}
 .profileEditActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.profileEditActions .accountSubmit{max-width:220px}.profileEditActions button{min-height:42px}.profileEditCard label.fieldError input{border-color:#e0a0a0;box-shadow:0 0 0 3px #b4231812}.profileEditCard .fieldErrorMessage{display:block;margin-top:5px;color:#b42318;font-size:9px;font-weight:700}
 @media(max-width:700px){.profileEditActions{display:grid;grid-template-columns:1fr 1fr}.profileEditActions .accountSubmit{max-width:none}.profileEditActions button{width:100%}}
 @media(max-width:380px){.profileEditActions{grid-template-columns:1fr}}
+
+/* Profile security actions */
+.profileActionButtons .dangerAction:disabled{opacity:.65;cursor:not-allowed}.profileActionButtons .dangerAction{min-width:108px}
