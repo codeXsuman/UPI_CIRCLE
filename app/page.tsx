@@ -124,6 +124,7 @@ export default function Home() {
   const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
   const [upiCopied, setUpiCopied] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const profileEditOriginalRef = useRef<User | null>(null);
   const toastTimerRef = useRef<number | null>(null);
@@ -427,16 +428,39 @@ export default function Home() {
   };
 
   const logout = async () => {
-    setLoading(true);
-    try { await fetch("/api/auth/logout", { method: "POST" });
-    setProfile(null);
-    setMembers([]);
-    setSelected([]);
-    setRecipientAmounts({});
-    navigate("home");
-    try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
-    pop("Logged out");
-    } finally { setLoading(false); }
+    if (loggingOut) return;
+    if (!window.confirm("Log out of your UPI Bills account?")) return;
+
+    setLoggingOut(true);
+    try {
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (!res.ok) {
+        pop("Couldn't log out. Please try again.", "error");
+        return;
+      }
+
+      setProfile(null);
+      setMembers([]);
+      setSelected([]);
+      setRecipientAmounts({});
+      setMyBills([]);
+      setOtherBills([]);
+      setDashboardStats({ created: 0, pending: 0, received: 0, owing: 0 });
+      setProfileErrors({});
+      setProfileSaving(false);
+      setProfileMenuOpen(false);
+      setAccountMenuOpen(false);
+      profileEditOriginalRef.current = null;
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+
+      // Replace the authenticated page instead of leaving it in browser history.
+      navigate("home", true);
+      pop("Logged out successfully", "success");
+    } catch {
+      pop("Check your connection and try again.", "error");
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   const copyUpiId = async () => {
@@ -1033,7 +1057,7 @@ export default function Home() {
             <div><span>ACCOUNT</span><small>Return to your dashboard or end this session.</small></div>
             <div className="profileActionButtons">
               <button className="secondary" onClick={() => navigate("dashboard", true)}>Back to dashboard</button>
-              <button className="secondary dangerAction" onClick={logout}>Log out</button>
+              <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
             </div>
           </div>
         </section>
