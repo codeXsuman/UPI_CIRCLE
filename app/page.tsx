@@ -119,6 +119,7 @@ export default function Home() {
   const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
   const [toastTarget, setToastTarget] = useState<string | null>(null);
   const [billValidationError, setBillValidationError] = useState("");
+  const [billCreatedSuccess, setBillCreatedSuccess] = useState(false);
   const toastTimerRef = useRef<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
@@ -452,6 +453,7 @@ export default function Home() {
 
   const toggleMember = (id: string) => {
     setBillValidationError("");
+    setBillCreatedSuccess(false);
     setSelected(old => {
       if (old.includes(id)) {
         setRecipientAmounts(amounts => {
@@ -474,6 +476,7 @@ export default function Home() {
 
   const updateItem = (id: number, key: "name" | "amount", value: string) => {
     setBillValidationError("");
+    setBillCreatedSuccess(false);
     setItems(old => old.map(item => item.id === id
       ? { ...item, [key]: key === "amount" ? sanitizeMoneyInput(value) : value }
       : item));
@@ -623,11 +626,13 @@ export default function Home() {
   const splitEvenly = () => {
     if (!selected.length || total <= 0) return;
     setBillValidationError("");
+    setBillCreatedSuccess(false);
     setRecipientAmounts(getEqualShareAmounts());
   };
 
   const setRecipientAmount = (id: string, value: string) => {
     setBillValidationError("");
+    setBillCreatedSuccess(false);
     setRecipientAmounts(prev => ({ ...prev, [id]: sanitizeMoneyInput(value) }));
   };
 
@@ -701,6 +706,7 @@ export default function Home() {
       setSelected([]);
       setRecipientAmounts({});
       setBillValidationError("");
+      setBillCreatedSuccess(true);
       pop("Bill created successfully", "success");
     } catch {
       pop("Check your connection and try again.", "error");
@@ -1009,6 +1015,7 @@ export default function Home() {
                 {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>Split between members</strong><small>Use equal shares or enter a custom amount for every member.</small></div><button className="secondary" onClick={splitEvenly}>Split equally</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={((Number(displayShareAmounts[m.id]) || 0)).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)}/></div></label>)}<small className={Math.abs(displayShareTotal-total)<0.001?"splitGood":"splitWarning"}>{hasCustomSplit ? `Allocated ₹${money(displayShareTotal)} of ₹${money(total)}` : `Equal split · ₹${money(displayShareTotal)} allocated`}</small></div>}
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
                 <button className="primary generateBtn" onClick={generateBill}>Create Bill →</button>
+                {billCreatedSuccess && <div className="billCreatedSuccess" role="status"><span>✓</span><div><strong>Bill created successfully</strong><small>The bill has been added to My Bills.</small></div><button className="secondary" onClick={() => navigate("mine")}>View My Bills →</button></div>}
               </div>
             </div>
 
