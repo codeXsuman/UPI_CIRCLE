@@ -131,6 +131,14 @@ export default function Home() {
   const [showNewProfilePassword, setShowNewProfilePassword] = useState(false);
   const [profileEditing, setProfileEditing] = useState(false);
   const [profileSaveConfirmOpen, setProfileSaveConfirmOpen] = useState(false);
+  const [changeCurrentPassword, setChangeCurrentPassword] = useState("");
+  const [changeNewPassword, setChangeNewPassword] = useState("");
+  const [changeConfirmPassword, setChangeConfirmPassword] = useState("");
+  const [showChangeCurrentPassword, setShowChangeCurrentPassword] = useState(false);
+  const [showChangeNewPassword, setShowChangeNewPassword] = useState(false);
+  const [showChangeConfirmPassword, setShowChangeConfirmPassword] = useState(false);
+  const [changePasswordSaving, setChangePasswordSaving] = useState(false);
+  const [changePasswordErrors, setChangePasswordErrors] = useState<Record<string, string>>({});
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const profileEditOriginalRef = useRef<User | null>(null);
@@ -543,14 +551,26 @@ export default function Home() {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...normalizedProfile, currentPassword: currentProfilePassword })
+        body: JSON.stringify({ name: normalizedProfile.name, upi: normalizedProfile.upi, mobile: normalizedProfile.mobile, email: normalizedProfile.email, currentPassword: currentProfilePassword })
       });
       const data = await res.json();
-      if (!res.ok) return pop(data.error || "Unable to update profile", "error");
+      if (!res.ok) {
+        if (res.status === 401) {
+          setCurrentProfilePassword("");
+          setProfileErrors(old => ({ ...old, currentPassword: data.error || "Current password is incorrect" }));
+        } else {
+          setProfileErrors(old => ({ ...old, server: data.error || "Unable to update profile" }));
+        }
+        return;
+      }
       const savedProfile = { ...data.user, password: "" };
       setProfile(savedProfile);
       profileEditOriginalRef.current = savedProfile;
       setProfileErrors({});
+      setCurrentProfilePassword("");
+      setShowCurrentProfilePassword(false);
+      setProfileSaveConfirmOpen(false);
+      setProfileEditing(false);
       await loadMembers();
       pop("Profile updated successfully", "success");
     } catch { pop("Unable to update profile", "error"); }
@@ -566,6 +586,56 @@ export default function Home() {
     setProfileSaveConfirmOpen(true);
   };
 
+  const changePassword = async () => {
+    if (changePasswordSaving) return;
+    const errors: Record<string, string> = {};
+    const current = changeCurrentPassword.trim();
+    const next = changeNewPassword.trim();
+    const confirm = changeConfirmPassword.trim();
+
+    if (!current) errors.current = "Current password is required";
+    if (!next) errors.newPassword = "New password is required";
+    else if (next.length < 6) errors.newPassword = "New password must be at least 6 characters";
+    if (!confirm) errors.confirmPassword = "Please confirm your new password";
+    else if (next !== confirm) errors.confirmPassword = "Passwords do not match";
+
+    setChangePasswordErrors(errors);
+    if (Object.keys(errors).length) return;
+
+    try {
+      setChangePasswordSaving(true);
+      const res = await fetch("/api/profile/password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: current, newPassword: next })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setChangeCurrentPassword("");
+          setChangePasswordErrors({ current: data.error || "Current password is incorrect" });
+        } else {
+          setChangePasswordErrors({ form: data.error || "Unable to change password" });
+        }
+        return;
+      }
+
+      setChangeCurrentPassword("");
+      setChangeNewPassword("");
+      setChangeConfirmPassword("");
+      setChangePasswordErrors({});
+      setShowChangeCurrentPassword(false);
+      setShowChangeNewPassword(false);
+      setShowChangeConfirmPassword(false);
+      pop("Password changed successfully", "success");
+    } catch {
+      setChangePasswordErrors({ form: "Unable to change password. Check your connection and try again." });
+    } finally {
+      setChangePasswordSaving(false);
+    }
+  };
+
   const cancelProfileEdit = () => {
     if (!profile || !profileEditOriginalRef.current) return;
     const original = profileEditOriginalRef.current;
@@ -573,6 +643,10 @@ export default function Home() {
     if (dirty && !window.confirm("Discard your unsaved profile changes?")) return;
     setProfile({ ...original, password: "" });
     setProfileErrors({});
+    setCurrentProfilePassword("");
+    setShowCurrentProfilePassword(false);
+    setProfileSaveConfirmOpen(false);
+    setProfileEditing(false);
   };
 
   const toggleMember = (id: string) => {
@@ -1150,23 +1224,34 @@ export default function Home() {
 
               <div className="changePasswordSection">
                 <div className="changePasswordHead">
-                  <div><strong>Change password</strong><small>Enter your current password to verify your identity before saving changes.</small></div>
+                  <div><strong>Change password</strong><small>Verify your current password, then create a new password.</small></div>
                 </div>
+                {changePasswordErrors.form && <div className="profileInlineError" role="alert">{changePasswordErrors.form}</div>}
                 <div className="passwordFieldsGrid">
-                  <label className={profileErrors.currentPassword ? "fieldError" : ""}>Current password
+                  <label className={changePasswordErrors.current ? "fieldError" : ""}>Current password
                     <div className="passwordInputWrap">
-                      <input id="profile-currentPassword" value={currentProfilePassword} type={showCurrentProfilePassword ? "text" : "password"} placeholder="Enter current password" autoComplete="current-password" aria-invalid={!!profileErrors.currentPassword} onChange={e => { setCurrentProfilePassword(e.target.value); setProfileErrors(old => ({ ...old, currentPassword: "" })); }} />
-                      <button type="button" className="passwordToggle" onClick={() => setShowCurrentProfilePassword(v => !v)} aria-label={showCurrentProfilePassword ? "Hide current password" : "Show current password"}>{showCurrentProfilePassword ? "Hide" : "Show"}</button>
+                      <input id="change-current-password" value={changeCurrentPassword} type={showChangeCurrentPassword ? "text" : "password"} placeholder="Enter current password" autoComplete="current-password" aria-invalid={!!changePasswordErrors.current} onChange={e => { setChangeCurrentPassword(e.target.value); setChangePasswordErrors(old => ({ ...old, current: "", form: "" })); }} />
+                      <button type="button" className="passwordToggle" onClick={() => setShowChangeCurrentPassword(v => !v)} aria-label={showChangeCurrentPassword ? "Hide current password" : "Show current password"}>{showChangeCurrentPassword ? "Hide" : "Show"}</button>
                     </div>
-                    {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
+                    {changePasswordErrors.current && <span className="fieldErrorMessage">{changePasswordErrors.current}</span>}
                   </label>
-                  <label className={profileErrors.password ? "fieldError" : ""}>New password <small className="fieldHint">(optional)</small>
+                  <label className={changePasswordErrors.newPassword ? "fieldError" : ""}>New password
                     <div className="passwordInputWrap">
-                      <input id="profile-password" value={profile.password || ""} type={showNewProfilePassword ? "text" : "password"} placeholder="Leave blank to keep current" autoComplete="new-password" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
-                      <button type="button" className="passwordToggle" onClick={() => setShowNewProfilePassword(v => !v)} aria-label={showNewProfilePassword ? "Hide new password" : "Show new password"}>{showNewProfilePassword ? "Hide" : "Show"}</button>
+                      <input id="change-new-password" value={changeNewPassword} type={showChangeNewPassword ? "text" : "password"} placeholder="Create a new password" autoComplete="new-password" aria-invalid={!!changePasswordErrors.newPassword} onChange={e => { setChangeNewPassword(e.target.value); setChangePasswordErrors(old => ({ ...old, newPassword: "", form: "" })); }} />
+                      <button type="button" className="passwordToggle" onClick={() => setShowChangeNewPassword(v => !v)} aria-label={showChangeNewPassword ? "Hide new password" : "Show new password"}>{showChangeNewPassword ? "Hide" : "Show"}</button>
                     </div>
-                    {profileErrors.password && <span className="fieldErrorMessage">{profileErrors.password}</span>}
+                    {changePasswordErrors.newPassword && <span className="fieldErrorMessage">{changePasswordErrors.newPassword}</span>}
                   </label>
+                  <label className={changePasswordErrors.confirmPassword ? "fieldError" : ""}>Confirm new password
+                    <div className="passwordInputWrap">
+                      <input id="change-confirm-password" value={changeConfirmPassword} type={showChangeConfirmPassword ? "text" : "password"} placeholder="Re-enter new password" autoComplete="new-password" aria-invalid={!!changePasswordErrors.confirmPassword} onChange={e => { setChangeConfirmPassword(e.target.value); setChangePasswordErrors(old => ({ ...old, confirmPassword: "", form: "" })); }} />
+                      <button type="button" className="passwordToggle" onClick={() => setShowChangeConfirmPassword(v => !v)} aria-label={showChangeConfirmPassword ? "Hide new password confirmation" : "Show new password confirmation"}>{showChangeConfirmPassword ? "Hide" : "Show"}</button>
+                    </div>
+                    {changePasswordErrors.confirmPassword && <span className="fieldErrorMessage">{changePasswordErrors.confirmPassword}</span>}
+                  </label>
+                </div>
+                <div className="changePasswordActions">
+                  <button className="primary" type="button" onClick={changePassword} disabled={changePasswordSaving}>{changePasswordSaving ? "Changing password…" : "Change password"}</button>
                 </div>
               </div>
 
