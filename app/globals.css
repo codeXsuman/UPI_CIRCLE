@@ -969,7 +969,30 @@ input,button{touch-action:manipulation}
 .profileSettingsActions{display:flex;gap:8px;flex-wrap:wrap}
 .profileSettingsActions .dangerAction{min-width:108px}
 @media(max-width:700px){
-  .profileDropdown{width:min(300px,calc(100vw - 24px));right:-2px}
+  .profileDropdown{
+    width:min(270px,calc(100vw - 72px));
+    right:0;
+    padding:6px;
+    border-radius:16px;
+  }
+  .profileDropdownHead{padding:7px 9px 9px;margin-bottom:3px}
+  .profileDropdown button{
+    gap:8px;
+    padding:8px 8px;
+    min-height:48px;
+    border-radius:10px;
+  }
+  .profileMenuIcon{
+    width:30px;
+    height:30px;
+    border-radius:8px;
+    font-size:12px;
+  }
+  .profileDropdown button strong{font-size:12px}
+  .profileDropdown button small{font-size:10px;margin-top:2px}
+  .profileDropdownHead strong{font-size:13px}
+  .profileDropdownHead small{font-size:10px}
+  .profileDropdownDivider{margin:3px 4px}
   .profileSubnav{position:sticky;top:72px;z-index:20}
   .profileActivityLinks,.profileSettingsCard{align-items:flex-start;flex-direction:column;padding:18px}
   .profileSettingsActions{width:100%;display:grid;grid-template-columns:1fr 1fr}
