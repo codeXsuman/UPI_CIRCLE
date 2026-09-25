@@ -10,7 +10,10 @@ export async function PATCH(req: Request) {
     const { name, upi, mobile, email, password, currentPassword } = await req.json();
     if (!String(currentPassword || "").trim()) return NextResponse.json({error:"Current password is required to save changes"},{status:400});
     const authRows = await sql`SELECT password_hash FROM users WHERE id=${id} LIMIT 1`;
-    if (!authRows.length || !(await bcrypt.compare(String(currentPassword), authRows[0].password_hash))) return NextResponse.json({error:"Current password is incorrect"},{status:401});
+    const storedPasswordHash = authRows[0]?.password_hash;
+    if (!storedPasswordHash) return NextResponse.json({error:"This account cannot verify its password. Please contact support."},{status:400});
+    const passwordMatches = await bcrypt.compare(String(currentPassword), String(storedPasswordHash));
+    if (!passwordMatches) return NextResponse.json({error:"Current password is incorrect"},{status:401});
 
     const normalizedEmail=String(email||"").trim().toLowerCase();
     const normalizedUpi=String(upi||"").trim().toLowerCase();
@@ -25,8 +28,8 @@ export async function PATCH(req: Request) {
 
     const passwordHash = password?.trim() ? await bcrypt.hash(password.trim(),12) : null;
     const rows=passwordHash
-      ? await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},password_hash=${passwordHash},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`
-      : await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile},email=${normalizedEmail},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`;
+      ? await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile || null},email=${normalizedEmail},password_hash=${passwordHash},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`
+      : await sql`UPDATE users SET name=${name.trim()},upi_id=${normalizedUpi},mobile=${normalizedMobile || null},email=${normalizedEmail},updated_at=NOW() WHERE id=${id} RETURNING id,name,upi_id AS upi,mobile,email`;
     return NextResponse.json({user:rows[0]});
   } catch(error){console.error(error);return NextResponse.json({error:"Unable to update profile"},{status:500});}
 }
