@@ -1251,7 +1251,7 @@ export default function Home() {
               </div>
               {profileEditing && <div className="profileEditActions">
                 <button className="primary accountSubmit" onClick={requestProfileSave} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
-                <button className="secondary" onClick={cancelProfileEdit} disabled={profileSaving}>Cancel</button>
+                <button className="secondary" onClick={() => cancelProfileEdit()} disabled={profileSaving}>Cancel</button>
               </div>}
             </div>
 
