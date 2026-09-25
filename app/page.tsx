@@ -78,7 +78,7 @@ export default function Home() {
     product: "/bills/create",
     mine: "/bills/mine",
     others: "/bills/others",
-    profile: profilePath(profileSection),
+    profile: "/profile",
   }[nextPage]);
 
   const navigate = (nextPage: AppPage, replace = false) => {
@@ -728,24 +728,16 @@ export default function Home() {
     setProfileSection(nextSection);
     const url = profilePath(nextSection);
     const current = window.location.pathname + window.location.search;
-    if (current !== url) window.history.pushState({ page: "profile", section: nextSection }, "", url);
+    if (current !== url) {
+      window.history.pushState({ page: "profile", section: nextSection }, "", url);
+    }
     setPage("profile");
     touchDraftActivity("profile");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const changeProfileSection = (nextSection: "profile" | "activity" | "settings") => {
-    if (nextSection === profileSection) return;
-    if (profileEditing && profileEditOriginalRef.current && profile) {
-      const original = profileEditOriginalRef.current;
-      const dirty = profile.name !== original.name || profile.upi !== original.upi || profile.mobile !== original.mobile || profile.email !== original.email || !!profile.password;
-      if (dirty) {
-        if (!window.confirm("You have unsaved profile changes. Leave without saving?")) return;
-        cancelProfileEdit(true);
-      } else {
-        cancelProfileEdit(true);
-      }
-    }
-    setProfileSection(nextSection);
+    navigateToProfileSection(nextSection);
   };
 
   const toggleMember = (id: string) => {
@@ -1042,15 +1034,15 @@ export default function Home() {
                     <strong>{profile.name}</strong>
                     <small>{profile.upi}</small>
                   </div>
-                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("profile"); navigateToProfileSection("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); navigateToProfileSection("profile"); }} role="menuitem">
                     <span className="profileMenuIcon">◉</span>
                     <span><strong>Profile</strong><small>View your profile information</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("activity"); navigateToProfileSection("activity"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); navigateToProfileSection("activity"); }} role="menuitem">
                     <span className="profileMenuIcon">↗</span>
                     <span><strong>Account activity</strong><small>Bills and payment activity</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); changeProfileSection("settings"); navigateToProfileSection("settings"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); navigateToProfileSection("settings"); }} role="menuitem">
                     <span className="profileMenuIcon">⚙</span>
                     <span><strong>Settings</strong><small>Edit profile and account</small></span>
                   </button>
