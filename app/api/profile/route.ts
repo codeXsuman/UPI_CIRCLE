@@ -7,7 +7,10 @@ export async function PATCH(req: Request) {
   const id = await getSessionUserId();
   if (!id) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   try {
-    const { name, upi, mobile, email, password } = await req.json();
+    const { name, upi, mobile, email, password, currentPassword } = await req.json();
+    if (!String(currentPassword || "").trim()) return NextResponse.json({error:"Current password is required to save changes"},{status:400});
+    const authRows = await sql`SELECT password_hash FROM users WHERE id=${id} LIMIT 1`;
+    if (!authRows.length || !(await bcrypt.compare(String(currentPassword), authRows[0].password_hash))) return NextResponse.json({error:"Current password is incorrect"},{status:401});
     const normalizedEmail=String(email||"").trim().toLowerCase(), normalizedUpi=String(upi||"").trim().toLowerCase(), normalizedMobile=String(mobile||"").replace(/\D/g,"");
     if (!name?.trim() || !normalizedUpi || !normalizedMobile || !normalizedEmail) return NextResponse.json({error:"All profile fields are required"},{status:400});
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail) || !/^[6-9]\d{9}$/.test(normalizedMobile)) return NextResponse.json({error:"Enter valid profile details"},{status:400});
