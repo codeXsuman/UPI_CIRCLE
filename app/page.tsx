@@ -267,13 +267,11 @@ export default function Home() {
           login,
           items,
           selected,
-          generated,
-          generatedBillId,
         }));
       } catch {}
     }, 750);
     return () => window.clearTimeout(timer);
-  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, generated, generatedBillId]);
+  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
   // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
@@ -299,8 +297,6 @@ export default function Home() {
       setLogin({ email: "", password: "" });
       setItems([{ id: 1, name: "", amount: "" }]);
       setSelected([]);
-      setGenerated(false);
-      setGeneratedBillId(null);
       setRegisterErrors({});
       setExistingAccount(false);
       setShareTarget(null);
@@ -428,7 +424,6 @@ export default function Home() {
     setProfile(null);
     setMembers([]);
     setSelected([]);
-    setGenerated(false);
     navigate("home");
     try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
     pop("Logged out");
@@ -649,9 +644,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) return pop(data.error || "Unable to save bill");
-      setGeneratedBillId(data.billId);
-      setGenerated(true);
-      pop("Bill created · Ready to share", "success");
+      pop("Bill created successfully");
     } catch { pop("Unable to save bill"); }
     finally { setLoading(false); }
   };
