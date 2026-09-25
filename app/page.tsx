@@ -1093,7 +1093,10 @@ export default function Home() {
             <div className="profileEditCard card">
               <div className="profileSectionHead">
                 <div><span>EDIT PROFILE</span><small>Update your account information</small></div>
-                {profileSaving && <span className="profileActivityLoading">Saving…</span>}
+                <div className="profileEditHeaderAction">
+                  {profileSaving && <span className="profileActivityLoading">Saving…</span>}
+                  {!profileEditing && <button type="button" className="secondary profileEditButton" onClick={() => setProfileEditing(true)}>Edit</button>}
+                </div>
               </div>
               <div className="formStack">
                 <label className={profileErrors.name ? "fieldError" : ""}>Name
