@@ -108,8 +108,7 @@ export default function Home() {
   const [loginCredentialError, setLoginCredentialError] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
-  const [generated, setGenerated] = useState(false);
-  const [generatedBillId, setGeneratedBillId] = useState<string | null>(null);
+
   const [myBills, setMyBills] = useState<any[]>([]);
   const [otherBills, setOtherBills] = useState<any[]>([]);
   const [dashboardStats, setDashboardStats] = useState({ created: 0, pending: 0, received: 0, owing: 0 });
@@ -218,8 +217,6 @@ export default function Home() {
       if (saved?.login) setLogin(saved.login);
       if (Array.isArray(saved?.items) && saved.items.length) setItems(saved.items);
       if (Array.isArray(saved?.selected)) setSelected(saved.selected);
-      if (typeof saved?.generated === "boolean") setGenerated(saved.generated);
-      if (saved?.generatedBillId) setGeneratedBillId(saved.generatedBillId);
 
       try {
         setLoading(true);
@@ -728,8 +725,7 @@ export default function Home() {
   const createNewBill = () => {
     setSelected([]);
     setItems([{ id: Date.now(), name: "", amount: "" }]);
-    setGenerated(false);
-    setGeneratedBillId(null);
+
     setShareTarget(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
     pop("Ready to create a new bill");
@@ -1050,27 +1046,6 @@ export default function Home() {
             </aside>
           </div>
 
-          {generated && <div className="generatedBills">
-            <div className="generatedHead"><div><span className="live">● GENERATED</span><h2>UPI bills ready to share</h2><p>Each selected member gets a personal share with their assigned amount and payment QR.</p></div><div className="generatedActions"><button onClick={() => setGenerated(false)}>Edit</button><button className="primary newBillBtn" onClick={createNewBill}>＋ New bill</button></div></div>
-            <div className="qrBillGrid">{selectedMembers.map(member => (
-              <div className="card qrBill" key={member.id}>
-                <div className="qrBillTop"><div><span className="memberAvatar">{member.name.charAt(0).toUpperCase()}</span><div><strong>{member.name}</strong><small>{member.upi}</small></div></div><strong>₹{money(Number(recipientAmounts[member.id]) || total / Math.max(selected.length,1))}</strong></div>
-                <div className="qrBillContent">
-                  <div className="qr"><QRCodeSVG value={makePaymentLink(profile.upi,profile.name,Number(recipientAmounts[member.id]) || total / Math.max(selected.length,1))} size={180} level="M" /></div>
-                  <div className="billDetails">
-                    <h3>Billing details</h3>
-                    {items.filter(i => i.name.trim()).map(i => <div key={i.id}><span>{i.name}</span><b>₹{money(Number(i.amount) || 0)}</b></div>)}
-                    <div className="detailTotal"><span>Your share</span><b>₹{money(Number(recipientAmounts[member.id]) || total / Math.max(selected.length,1))}</b></div>
-                    <small>Bill for: {member.name}<br />Pay to: {profile.name}<br />UPI ID: {profile.upi}</small>
-                    <div className="paymentActions">
-                      <button onClick={() => shareBill(member)}>Share link ↗</button>
-                      <button onClick={() => copyPaymentLink(member)}>Copy link</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}</div>
-          </div>}
         </section>
       )}
 
