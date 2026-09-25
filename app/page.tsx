@@ -122,6 +122,7 @@ export default function Home() {
   const [billCreatedSuccess, setBillCreatedSuccess] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
   const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
+  const [upiCopied, setUpiCopied] = useState(false);
   const toastTimerRef = useRef<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
@@ -433,6 +434,18 @@ export default function Home() {
     try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
     pop("Logged out");
     } finally { setLoading(false); }
+  };
+
+  const copyUpiId = async () => {
+    if (!profile?.upi) return;
+    try {
+      await navigator.clipboard.writeText(profile.upi);
+      setUpiCopied(true);
+      pop("UPI ID copied", "success");
+      window.setTimeout(() => setUpiCopied(false), 1800);
+    } catch {
+      pop("Couldn't copy the UPI ID", "error");
+    }
   };
 
   const updateProfile = async () => {
@@ -877,21 +890,66 @@ export default function Home() {
       )}
 
       {page === "profile" && profile && (
-        <section className="account profilePage">
-          <div className="card accountCard">
-            <div className="accountBadge">YOUR PROFILE</div>
-            <label>UPI BILLS ACCOUNT</label><h1>Edit profile</h1>
-            <p>Changes you type here remain in the current browser session until you save them.</p>
+        <section className="profilePage profilePageV2">
+          <div className="profileIntro">
+            <div>
+              <div className="eyebrow"><span>●</span> UPI BILLS <b>YOUR PROFILE</b></div>
+              <h1>Profile</h1>
+              <p>Manage your account information and UPI details.</p>
+            </div>
+          </div>
+
+          <div className="profileHero card">
+            <div className="profileAvatarLarge">{profile.name.trim().charAt(0).toUpperCase() || "U"}</div>
+            <div className="profileHeroCopy">
+              <h2>{profile.name}</h2>
+              <span>{profile.upi}</span>
+              <small><i /> Account active</small>
+            </div>
+          </div>
+
+          <div className="profileInfoCard card">
+            <div className="profileSectionHead">
+              <div><span>PROFILE INFORMATION</span><small>Your registered account details</small></div>
+              <span className="profileStatus">ACTIVE</span>
+            </div>
+            <div className="profileInfoGrid">
+              <div className="profileInfoRow">
+                <span>Full name</span><strong>{profile.name}</strong>
+              </div>
+              <div className="profileInfoRow">
+                <span>Mobile</span><strong>{profile.mobile ? "••••••••" + profile.mobile.slice(-2) : "Not provided"}</strong>
+              </div>
+              <div className="profileInfoRow profileUpiRow">
+                <span>UPI ID</span>
+                <div><strong>{profile.upi}</strong><button className="secondary profileCopyBtn" onClick={copyUpiId}>{upiCopied ? "✓ Copied" : "Copy"}</button></div>
+              </div>
+              <div className="profileInfoRow">
+                <span>Email</span><strong className="profileEmailValue">{profile.email}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="profileEditCard card">
+            <div className="profileSectionHead">
+              <div><span>EDIT PROFILE</span><small>Update your account information</small></div>
+            </div>
             <div className="formStack">
               <label>Name<input value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} /></label>
               <label>UPI ID<input value={profile.upi} onChange={e => setProfile({ ...profile, upi: e.target.value })} /></label>
-              <label>Mobile number<input value={profile.mobile} maxLength={10} onChange={e => setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") })} /></label>
+              <label>Mobile number<input value={profile.mobile} maxLength={10} inputMode="numeric" onChange={e => setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") })} /></label>
               <label>Email<input value={profile.email} type="email" onChange={e => setProfile({ ...profile, email: e.target.value })} /></label>
               <label>Password<input value={profile.password || ""} type="password" placeholder="Leave blank to keep current" onChange={e => setProfile({ ...profile, password: e.target.value })} /></label>
             </div>
             <button className="primary accountSubmit" onClick={updateProfile}>Save changes</button>
-            <button className="wideBtn" onClick={() => navigate("dashboard", true)}>Back to dashboard</button>
-            <button className="wideBtn" onClick={logout}>Logout</button>
+          </div>
+
+          <div className="profileAccountActions card">
+            <div><span>ACCOUNT</span><small>Return to your dashboard or end this session.</small></div>
+            <div className="profileActionButtons">
+              <button className="secondary" onClick={() => navigate("dashboard", true)}>Back to dashboard</button>
+              <button className="secondary dangerAction" onClick={logout}>Log out</button>
+            </div>
           </div>
         </section>
       )}
