@@ -397,7 +397,8 @@ export default function Home() {
 
     try {
       setLoading(true);
-      const res = await fetch("/api/auth/login", {        method: "POST",
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(login)
       });
@@ -796,7 +797,8 @@ export default function Home() {
                 {registerErrors.name && <span className="fieldErrorMessage">{registerErrors.name}</span>}
               </label>
               <label className={registerErrors.upi ? "fieldError" : ""}>UPI ID
-                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />                {registerErrors.upi && <span className="fieldErrorMessage">{registerErrors.upi}</span>}
+                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />
+                {registerErrors.upi && <span className="fieldErrorMessage">{registerErrors.upi}</span>}
               </label>
               <label className={registerErrors.mobile ? "fieldError" : ""}>Mobile number <span className="optionalTag">Optional</span>
                 <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); setRegisterServerError(""); }} />
