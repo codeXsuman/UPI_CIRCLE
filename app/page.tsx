@@ -582,7 +582,7 @@ export default function Home() {
     const errors: Record<string, string> = {};
     const name = profile.name.trim();
     const upi = profile.upi.trim();
-    const mobile = profile.mobile.replace(/\D/g, "");
+    const mobile = String(profile.mobile || "").replace(/\D/g, "");
     const email = profile.email.trim();
 
     if (!currentProfilePassword.trim()) errors.currentPassword = "Current password is required to verify your identity";
