@@ -120,7 +120,6 @@ export default function Home() {
   const [toastTarget, setToastTarget] = useState<string | null>(null);
   const [billValidationError, setBillValidationError] = useState("");
   const toastTimerRef = useRef<number | null>(null);
-  const [shareTarget, setShareTarget] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const draftActivityRef = useRef<number>(Date.now());
   const draftResettingRef = useRef(false);
@@ -217,6 +216,7 @@ export default function Home() {
       if (saved?.login) setLogin(saved.login);
       if (Array.isArray(saved?.items) && saved.items.length) setItems(saved.items);
       if (Array.isArray(saved?.selected)) setSelected(saved.selected);
+      if (saved?.recipientAmounts && typeof saved.recipientAmounts === "object") setRecipientAmounts(saved.recipientAmounts);
 
       try {
         setLoading(true);
@@ -267,11 +267,12 @@ export default function Home() {
           login,
           items,
           selected,
+          recipientAmounts,
         }));
       } catch {}
     }, 750);
     return () => window.clearTimeout(timer);
-  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected]);
+  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, recipientAmounts]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
   // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
@@ -297,9 +298,9 @@ export default function Home() {
       setLogin({ email: "", password: "" });
       setItems([{ id: 1, name: "", amount: "" }]);
       setSelected([]);
+      setRecipientAmounts({});
       setRegisterErrors({});
       setExistingAccount(false);
-      setShareTarget(null);
       setToast("");
       if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       draftActivityRef.current = Date.now();
@@ -424,6 +425,7 @@ export default function Home() {
     setProfile(null);
     setMembers([]);
     setSelected([]);
+    setRecipientAmounts({});
     navigate("home");
     try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
     pop("Logged out");
@@ -448,12 +450,32 @@ export default function Home() {
     finally { setLoading(false); }
   };
 
-  const toggleMember = (id: string) =>
-    setSelected(old => old.includes(id) ? old.filter(x => x !== id) : [...old, id]);
+  const toggleMember = (id: string) => {
+    setBillValidationError("");
+    setSelected(old => {
+      if (old.includes(id)) {
+        setRecipientAmounts(amounts => {
+          const next = { ...amounts };
+          delete next[id];
+          return next;
+        });
+        return old.filter(x => x !== id);
+      }
+      return [...old, id];
+    });
+  };
+
+  const sanitizeMoneyInput = (value: string) => {
+    const cleaned = value.replace(/[^0-9.]/g, "");
+    const dot = cleaned.indexOf(".");
+    if (dot === -1) return cleaned;
+    return cleaned.slice(0, dot + 1) + cleaned.slice(dot + 1).replace(/\./g, "").slice(0, 2);
+  };
 
   const updateItem = (id: number, key: "name" | "amount", value: string) => {
+    setBillValidationError("");
     setItems(old => old.map(item => item.id === id
-      ? { ...item, [key]: key === "amount" ? value.replace(/[^0-9.]/g, "") : value }
+      ? { ...item, [key]: key === "amount" ? sanitizeMoneyInput(value) : value }
       : item));
   };
 
@@ -464,15 +486,7 @@ export default function Home() {
 
   const makePaymentLink = (upi: string, name: string, amount: number) => "upi://pay?pa=" + encodeURIComponent(upi) + "&pn=" + encodeURIComponent(name) + "&am=" + amount.toFixed(2) + "&cu=INR";
 
-  const paymentLink = useMemo(() => {
-    if (!profile) return "";
-    const note = items.filter(i => i.name.trim()).map(i => i.name.trim()).join(", ").slice(0, 60) || "UPI Bills bill";
-    return "upi://pay?pa=" + encodeURIComponent(profile.upi)
-      + "&pn=" + encodeURIComponent(profile.name)
-      + "&am=" + total.toFixed(2)
-      + "&cu=INR"
-      + "&tn=" + encodeURIComponent(note);
-  }, [profile, items, total]);
+
 
   const deleteMyBill = async (billId: string) => {
     if (!window.confirm("Delete this bill? This cannot be undone.")) return;
@@ -588,27 +602,61 @@ export default function Home() {
     else if (page === "others") loadOtherBills();
   }, [hydrated, profile?.id, page]);
 
+  const getEqualShareAmounts = () => {
+    const next: Record<string, string> = {};
+    if (!selected.length || total <= 0) return next;
+    const totalCents = Math.round(total * 100);
+    const baseCents = Math.floor(totalCents / selected.length);
+    const remainderCents = totalCents - baseCents * selected.length;
+    selected.forEach((id, index) => {
+      next[id] = ((baseCents + (index === 0 ? remainderCents : 0)) / 100).toFixed(2);
+    });
+    return next;
+  };
+
+  const hasCustomSplit = selected.some(id => (recipientAmounts[id] || "").trim() !== "");
+  const displayShareAmounts = hasCustomSplit ? recipientAmounts : getEqualShareAmounts();
+  const displayShareTotal = hasCustomSplit
+    ? selectedShareTotal
+    : Object.values(displayShareAmounts).reduce((sum, value) => sum + (Number(value) || 0), 0);
+
   const splitEvenly = () => {
     if (!selected.length || total <= 0) return;
-    const base = Math.floor((total / selected.length) * 100) / 100;
-    const remainder = Math.round((total - base * selected.length) * 100) / 100;
-    const next: Record<string, string> = {};
-    selected.forEach((id, index) => { next[id] = (base + (index === 0 ? remainder : 0)).toFixed(2); });
-    setRecipientAmounts(next);
+    setBillValidationError("");
+    setRecipientAmounts(getEqualShareAmounts());
   };
 
   const setRecipientAmount = (id: string, value: string) => {
-    setRecipientAmounts(prev => ({ ...prev, [id]: value.replace(/[^0-9.]/g, "") }));
+    setBillValidationError("");
+    setRecipientAmounts(prev => ({ ...prev, [id]: sanitizeMoneyInput(value) }));
   };
 
   const generateBill = async () => {
     if (!profile) return;
 
     setBillValidationError("");
+
     if (!selected.length) {
-      const memberSection = document.querySelector(".registeredList, .emptyMembers") as HTMLElement | null;
-      memberSection?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.querySelector(".registeredList, .emptyMembers")?.scrollIntoView({ behavior: "smooth", block: "center" });
       setBillValidationError("Select at least one registered member.");
+      return;
+    }
+
+    const invalidItem = items.find(item => !item.name.trim() || !item.amount.trim() || Number(item.amount) <= 0);
+    if (invalidItem) {
+      const itemRow = document.querySelector(`.billItem[data-item-id="${invalidItem.id}"]`) as HTMLElement | null;
+      const input = itemRow?.querySelector(!invalidItem.name.trim() ? 'input[data-field="name"]' : 'input[data-field="amount"]') as HTMLInputElement | null;
+      const message = !invalidItem.name.trim()
+        ? "Enter a name for each bill item."
+        : !invalidItem.amount.trim()
+          ? "Enter an amount for each bill item."
+          : "Enter an amount greater than 0 for each bill item.";
+      setBillValidationError(message);
+      if (input) {
+        input.setCustomValidity(message);
+        input.reportValidity();
+        input.focus();
+      }
       return;
     }
 
@@ -617,111 +665,48 @@ export default function Home() {
       document.querySelector(".billItems")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    if (selectedShareTotal > 0 && Math.abs(selectedShareTotal - total) > 0.01) {
-      setBillValidationError("Member shares must add up to the total bill.");
-      document.querySelector(".splitBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
+
+    if (hasCustomSplit) {
+      const missingShare = selected.find(id => !(recipientAmounts[id] || "").trim() || Number(recipientAmounts[id]) <= 0);
+      if (missingShare) {
+        setBillValidationError("Enter a valid amount for every selected member, or use Split equally.");
+        document.querySelector(".splitBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      if (Math.abs(selectedShareTotal - total) > 0.001) {
+        setBillValidationError("Member shares must add up to the total bill.");
+        document.querySelector(".splitBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
     }
 
-    const invalidItem = items.find(item => !item.name.trim() || !item.amount.trim() || Number(item.amount) <= 0);
-    if (invalidItem) {
-      const itemRow = document.querySelector(`.billItem[data-item-id="${invalidItem.id}"]`) as HTMLElement | null;
-      const input = itemRow?.querySelector(!invalidItem.name.trim() ? 'input[data-field="name"]' : 'input[data-field="amount"]') as HTMLInputElement | null;
-      setBillValidationError(!invalidItem.name.trim() ? "Enter a name for each bill item." : !invalidItem.amount.trim() ? "Enter an amount for each bill item." : "Enter an amount greater than 0 for each bill item.");
-      if (input) {
-        input.setCustomValidity(!invalidItem.name.trim() ? "Item name is required" : !invalidItem.amount.trim() ? "Amount is required" : "Enter an amount greater than 0");
-        input.reportValidity();
-        input.focus();
-      }
-      return;
-    }
     try {
       setLoading(true);
       const res = await fetch("/api/bills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, recipientIds: selected, recipientAmounts })
+        body: JSON.stringify({ items, recipientIds: selected, recipientAmounts: hasCustomSplit ? recipientAmounts : {} })
       });
-      const data = await res.json();
-      if (!res.ok) return pop(data.error || "Unable to save bill");
-      pop("Bill created successfully");
-    } catch { pop("Unable to save bill"); }
-    finally { setLoading(false); }
-  };
+      const data = await res.json().catch(() => ({}));
 
-  const shareText = (member: User) => {
-    const memberAmount = Number(recipientAmounts[member.id]) || total / Math.max(selected.length, 1);
-    const memberPaymentLink = makePaymentLink(profile?.upi || "", profile?.name || "", memberAmount);
-    const itemLines = items.filter(i => i.name.trim()).map(i => "• " + i.name.trim() + " — ₹" + money(Number(i.amount) || 0)).join("\n");
-    return [
-      "UPI Bills Bill","",
-      "Hi " + member.name + ",",
-      "Here is your bill:","",
-      "Billing items:", itemLines,"",
-      "Your amount: ₹" + money(memberAmount),
-      "Total bill: ₹" + money(total),
-      "Pay to: " + profile?.name,
-      "UPI ID: " + profile?.upi,"",
-      "Direct payment link:", memberPaymentLink
-    ].join("\n");
-  };
-
-  const shareBill = (member: User) => setShareTarget(member);
-
-  const shareWithApps = async () => {
-    if (!shareTarget) return;
-    const text = shareText(shareTarget);
-    const shareAmount = Number(recipientAmounts[shareTarget.id]) || total / Math.max(selected.length, 1);
-    const shareLink = makePaymentLink(profile?.upi || "", profile?.name || "", shareAmount);
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "UPI Bills Bill — ₹" + money(total),
-          text,
-          url: shareLink
-        });
-        setShareTarget(null);
+      if (!res.ok) {
+        const message = data.error || (res.status >= 500
+          ? "Couldn't create the bill. Something went wrong while saving it."
+          : "Couldn't create the bill. Please check the details and try again.");
+        pop(message, "error");
         return;
-      } catch (error: any) {
-        if (error?.name === "AbortError") return;
       }
+
+      setItems([{ id: Date.now(), name: "", amount: "" }]);
+      setSelected([]);
+      setRecipientAmounts({});
+      setBillValidationError("");
+      pop("Bill created successfully", "success");
+    } catch {
+      pop("Check your connection and try again.", "error");
+    } finally {
+      setLoading(false);
     }
-    pop("Your browser does not provide the app share menu. Try WhatsApp or copy the link.");
-  };
-
-  const shareOnWhatsApp = () => {
-    if (!shareTarget) return;
-    const text = shareText(shareTarget);
-    const whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(text);
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    setShareTarget(null);
-  };
-
-  const copyBill = async () => {
-    if (!shareTarget) return;
-    try {
-      await navigator.clipboard.writeText(shareText(shareTarget));
-      setShareTarget(null);
-      pop("Bill details and payment link copied");
-    } catch { pop("Unable to copy bill"); }
-  };
-
-  const copyPaymentLink = async (member?: User) => {
-    try {
-      const target = member || shareTarget;
-      const amount = target ? (Number(recipientAmounts[target.id]) || total / Math.max(selected.length, 1)) : total;
-      await navigator.clipboard.writeText(makePaymentLink(profile?.upi || "", profile?.name || "", amount));
-      pop("Payment link copied");
-    } catch { pop("Unable to copy payment link"); }
-  };
-
-  const createNewBill = () => {
-    setSelected([]);
-    setItems([{ id: Date.now(), name: "", amount: "" }]);
-
-    setShareTarget(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    pop("Ready to create a new bill");
   };
   const selectedMembers = members.filter(m => selected.includes(m.id));
 
@@ -1020,10 +1005,10 @@ export default function Home() {
                   </div>
                 ))}</div>
                 <button className="addItem" onClick={() => setItems(old => [...old, { id: Date.now(), name: "", amount: "" }])}>＋ Add another item</button>
-                {billValidationError && selected.length > 0 && selectedShareTotal > 0 && Math.abs(selectedShareTotal-total) > 0.01 && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check the split</strong><small>{billValidationError}</small></div></div>}
-                {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>Split between members</strong><small>Set custom shares or split equally.</small></div><button className="secondary" onClick={splitEvenly}>Split equally</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={(total/selected.length).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)}/></div></label>)}<small className={Math.abs(selectedShareTotal-total)<0.01?"splitGood":"splitWarning"}>Allocated ₹{money(selectedShareTotal)} of ₹{money(total)}</small></div>}
+                {billValidationError && hasCustomSplit && <div className="billInlineError" role="alert"><span>!</span><div><strong>Check the split</strong><small>{billValidationError}</small></div></div>}
+                {selected.length>0 && <div className="splitBox"><div className="splitBoxHead"><div><strong>Split between members</strong><small>Use equal shares or enter a custom amount for every member.</small></div><button className="secondary" onClick={splitEvenly}>Split equally</button></div>{selectedMembers.map(m=><label key={m.id}><span>{m.name}</span><div><span>₹</span><input inputMode="decimal" value={recipientAmounts[m.id]||""} placeholder={((Number(displayShareAmounts[m.id]) || 0)).toFixed(2)} onChange={e=>setRecipientAmount(m.id,e.target.value)}/></div></label>)}<small className={Math.abs(displayShareTotal-total)<0.001?"splitGood":"splitWarning"}>{hasCustomSplit ? `Allocated ₹${money(displayShareTotal)} of ₹${money(total)}` : `Equal split · ₹${money(displayShareTotal)} allocated`}</small></div>}
                 <div className="totalBar"><span>Total amount</span><strong>₹{money(total)}</strong></div>
-                <button className="primary generateBtn" onClick={generateBill}>Generate UPI QR bill →</button>
+                <button className="primary generateBtn" onClick={generateBill}>Create Bill →</button>
               </div>
             </div>
 
@@ -1033,39 +1018,13 @@ export default function Home() {
                 <h2>{items.filter(i => i.name.trim()).map(i => i.name).join(" + ") || "Your bill items"}</h2>
                 <div className="previewTotal">₹{money(total)}</div>
                 <small>Paid to</small><strong>{profile.name}</strong><span>{profile.upi}</span>
-                {selectedMembers.length > 0 && <div className="selectedPayers"><small>Bill for</small>{selectedMembers.map(m => <div key={m.id}><span>{m.name}</span><b>₹{money(Number(recipientAmounts[m.id])||total/Math.max(selected.length,1))}</b></div>)}</div>}
-                <div className="secureNote">✓ QR bill uses the registered UPI ID of the person who will receive payment.</div>
+                {selectedMembers.length > 0 && <div className="selectedPayers"><small>Bill for</small>{selectedMembers.map(m => <div key={m.id}><span>{m.name}</span><b>{hasCustomSplit && !recipientAmounts[m.id] ? "—" : "₹" + money(Number(displayShareAmounts[m.id]) || 0)}</b></div>)}</div>}
+                <div className="secureNote">✓ Payments go to the bill creator's registered UPI ID.</div>
               </div>
             </aside>
           </div>
 
         </section>
-      )}
-
-      {shareTarget && (
-        <div className="shareOverlay" onClick={() => setShareTarget(null)}>
-          <div className="shareModal" onClick={e => e.stopPropagation()}>
-            <button className="shareClose" onClick={() => setShareTarget(null)} aria-label="Close">×</button>
-            <div className="shareIcon">↗</div>
-            <span className="live">SHARE BILL</span>
-            <h2>Send {shareTarget.name}'s bill</h2>
-            <p>Choose where you want to send the bill. The message includes the billing items, total amount and direct UPI payment link.</p>
-            <div className="shareChoices">
-              <button className="shareChoice whatsappChoice" onClick={shareOnWhatsApp}>
-                <span className="whatsappLogo" aria-hidden="true">
-                  <svg viewBox="0 0 32 32" role="img"><path d="M16 3.2c-7.06 0-12.8 5.55-12.8 12.4 0 2.2.59 4.26 1.62 6.04L3.05 28.8l7.39-1.69A13 13 0 0 0 16 28c7.06 0 12.8-5.55 12.8-12.4S23.06 3.2 16 3.2Zm0 22.55c-1.98 0-3.83-.53-5.42-1.45l-.39-.23-4.38 1 1.01-4.17-.25-.4a10.36 10.36 0 0 1-1.59-5.5C4.98 10.48 9.92 5.7 16 5.7s11.02 4.78 11.02 10.3S22.08 25.75 16 25.75Zm5.96-7.68c-.33-.16-1.95-.94-2.25-1.05-.3-.11-.52-.16-.74.16-.22.33-.85 1.05-1.04 1.27-.19.22-.38.25-.71.08-.33-.16-1.39-.5-2.65-1.59-.98-.85-1.64-1.89-1.83-2.21-.19-.33-.02-.5.14-.66.15-.15.33-.38.49-.57.16-.19.22-.33.33-.55.11-.22.05-.41-.03-.57-.08-.16-.74-1.78-1.01-2.44-.27-.65-.54-.56-.74-.57h-.63c-.22 0-.57.08-.87.41-.3.33-1.14 1.11-1.14 2.71s1.17 3.14 1.33 3.36c.16.22 2.3 3.53 5.58 4.95.78.34 1.39.54 1.86.69.78.25 1.49.21 2.05.13.63-.09 1.95-.8 2.22-1.57.27-.77.27-1.43.19-1.57-.08-.14-.3-.22-.63-.38Z"/></svg>
-                </span><strong>WhatsApp</strong><small>Open WhatsApp with the bill ready to send</small><b>→</b>
-              </button>
-              <button className="shareChoice" onClick={shareWithApps}>
-                <span>↗</span><strong>Other apps</strong><small>Use your phone's share menu for chats and apps</small><b>→</b>
-              </button>
-              <button className="shareChoice" onClick={copyBill}>
-                <span>⧉</span><strong>Copy bill</strong><small>Copy the complete bill text and payment link</small><b>→</b>
-              </button>
-            </div>
-            <small className="shareHint">WhatsApp opens WhatsApp Web on desktop or the WhatsApp app when supported on your device.</small>
-          </div>
-        </div>
       )}
 
       {existingAccount && (
