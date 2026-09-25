@@ -34,6 +34,7 @@ export default function Home() {
   type AppPage = "home" | "account" | "login" | "dashboard" | "product" | "mine" | "others" | "profile";
   const [page, setPage] = useState<AppPage>("home");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [profileSection, setProfileSection] = useState<"profile" | "activity" | "settings">("profile");
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState({ mine: false, others: false, dashboard: false });
@@ -157,12 +158,14 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!accountMenuOpen) return;
+    if (!accountMenuOpen && !profileMenuOpen) return;
     const closeMenu = (event: Event) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
-      const menu = document.querySelector(".accountMenuWrap");
-      if (menu && !menu.contains(target)) setAccountMenuOpen(false);
+      const accountMenu = document.querySelector(".accountMenuWrap");
+      const profileMenu = document.querySelector(".profileMenuWrap");
+      if (accountMenuOpen && accountMenu && !accountMenu.contains(target)) setAccountMenuOpen(false);
+      if (profileMenuOpen && profileMenu && !profileMenu.contains(target)) setProfileMenuOpen(false);
     };
     document.addEventListener("mousedown", closeMenu);
     document.addEventListener("touchstart", closeMenu);
@@ -170,7 +173,7 @@ export default function Home() {
       document.removeEventListener("mousedown", closeMenu);
       document.removeEventListener("touchstart", closeMenu);
     };
-  }, [accountMenuOpen]);
+  }, [accountMenuOpen, profileMenuOpen]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -811,16 +814,33 @@ export default function Home() {
                 className="profileButton"
                 aria-label="Open profile menu"
                 aria-expanded={profileMenuOpen}
-                onClick={() => {
-                  if (window.innerWidth <= 600) setProfileMenuOpen(v => !v);
-                  else navigate("profile");
-                }}
+                onClick={() => setProfileMenuOpen(v => !v)}
               >
                 <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
               </button>
               {profileMenuOpen && (
-                <div className="mobileProfileMenu">
-                  <button onClick={() => { setProfileMenuOpen(false); navigate("profile"); }}>Profile</button>
+                <div className="profileDropdown" role="menu">
+                  <div className="profileDropdownHead">
+                    <strong>{profile.name}</strong>
+                    <small>{profile.upi}</small>
+                  </div>
+                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); setProfileSection("profile"); navigate("profile"); }} role="menuitem">
+                    <span className="profileMenuIcon">◉</span>
+                    <span><strong>Profile</strong><small>View your profile information</small></span>
+                  </button>
+                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); setProfileSection("activity"); navigate("profile"); }} role="menuitem">
+                    <span className="profileMenuIcon">↗</span>
+                    <span><strong>Account activity</strong><small>Bills and payment activity</small></span>
+                  </button>
+                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); setProfileSection("settings"); navigate("profile"); }} role="menuitem">
+                    <span className="profileMenuIcon">⚙</span>
+                    <span><strong>Settings</strong><small>Edit profile and account</small></span>
+                  </button>
+                  <div className="profileDropdownDivider" />
+                  <button className="profileDropdownLogout" onClick={() => { setProfileMenuOpen(false); logout(); }} role="menuitem">
+                    <span className="profileMenuIcon">↪</span>
+                    <span><strong>Log out</strong><small>End your current session</small></span>
+                  </button>
                 </div>
               )}
             </div>
@@ -958,108 +978,118 @@ export default function Home() {
         <section className="profilePage profilePageV2">
           <div className="profileIntro">
             <div>
-              <div className="eyebrow"><span>●</span> UPI BILLS <b>YOUR PROFILE</b></div>
-              <h1>Profile</h1>
-              <p>Manage your account information and UPI details.</p>
+              <div className="eyebrow"><span>●</span> UPI BILLS <b>{profileSection === "profile" ? "YOUR PROFILE" : profileSection === "activity" ? "ACCOUNT ACTIVITY" : "SETTINGS"}</b></div>
+              <h1>{profileSection === "profile" ? "Profile" : profileSection === "activity" ? "Account activity" : "Settings"}</h1>
+              <p>{profileSection === "profile" ? "View your account information and UPI details." : profileSection === "activity" ? "Track your bills and payment activity at a glance." : "Manage your profile, security, and account options."}</p>
             </div>
           </div>
 
-          <div className="profileHero card">
-            <div className="profileAvatarLarge">{profile.name.trim().charAt(0).toUpperCase() || "U"}</div>
-            <div className="profileHeroCopy">
-              <h2>{profile.name}</h2>
-              <span>{profile.upi}</span>
-              <small><i /> Account active</small>
-            </div>
+          <div className="profileSubnav card">
+            <button className={profileSection === "profile" ? "active" : ""} onClick={() => setProfileSection("profile")}>Profile</button>
+            <button className={profileSection === "activity" ? "active" : ""} onClick={() => setProfileSection("activity")}>Activity</button>
+            <button className={profileSection === "settings" ? "active" : ""} onClick={() => setProfileSection("settings")}>Settings</button>
           </div>
 
-          <div className="profileInfoCard card">
-            <div className="profileSectionHead">
-              <div><span>PROFILE INFORMATION</span><small>Your registered account details</small></div>
-              <span className="profileStatus">ACTIVE</span>
-            </div>
-            <div className="profileInfoGrid">
-              <div className="profileInfoRow">
-                <span>Full name</span><strong>{profile.name}</strong>
-              </div>
-              <div className="profileInfoRow">
-                <span>Mobile</span><strong>{profile.mobile ? "••••••••" + profile.mobile.slice(-2) : "Not provided"}</strong>
-              </div>
-              <div className="profileInfoRow profileUpiRow">
-                <span>UPI ID</span>
-                <div><strong>{profile.upi}</strong><button className="secondary profileCopyBtn" onClick={copyUpiId}>{upiCopied ? "✓ Copied" : "Copy"}</button></div>
-              </div>
-              <div className="profileInfoRow">
-                <span>Email</span><strong className="profileEmailValue">{profile.email}</strong>
+          {profileSection === "profile" && <>
+            <div className="profileHero card">
+              <div className="profileAvatarLarge">{profile.name.trim().charAt(0).toUpperCase() || "U"}</div>
+              <div className="profileHeroCopy">
+                <h2>{profile.name}</h2>
+                <span>{profile.upi}</span>
+                <small><i /> Account active</small>
               </div>
             </div>
-          </div>
 
-          <div className="profileActivityCard card">
-            <div className="profileSectionHead">
-              <div><span>ACCOUNT ACTIVITY</span><small>A quick view of your bill activity</small></div>
-              {dataLoading.dashboard && <span className="profileActivityLoading">Updating…</span>}
-            </div>
-            <div className="profileActivityGrid">
-              <div className="profileActivityStat">
-                <strong>{dashboardStats.created}</strong>
-                <span>Bills created</span>
+            <div className="profileInfoCard card">
+              <div className="profileSectionHead">
+                <div><span>PROFILE INFORMATION</span><small>Your registered account details</small></div>
+                <span className="profileStatus">ACTIVE</span>
               </div>
-              <div className="profileActivityStat">
-                <strong>{dashboardStats.pending}</strong>
-                <span>Pending bills</span>
-              </div>
-              <div className="profileActivityStat">
-                <strong>₹{money(dashboardStats.received)}</strong>
-                <span>Payments received</span>
-              </div>
-              <div className="profileActivityStat">
-                <strong>₹{money(dashboardStats.owing)}</strong>
-                <span>Amount to pay</span>
+              <div className="profileInfoGrid">
+                <div className="profileInfoRow"><span>Full name</span><strong>{profile.name}</strong></div>
+                <div className="profileInfoRow"><span>Mobile</span><strong>{profile.mobile ? "••••••••" + profile.mobile.slice(-2) : "Not provided"}</strong></div>
+                <div className="profileInfoRow profileUpiRow"><span>UPI ID</span><div><strong>{profile.upi}</strong><button className="secondary profileCopyBtn" onClick={copyUpiId}>{upiCopied ? "✓ Copied" : "Copy"}</button></div></div>
+                <div className="profileInfoRow"><span>Email</span><strong className="profileEmailValue">{profile.email}</strong></div>
               </div>
             </div>
-          </div>
 
-          <div className="profileEditCard card">
-            <div className="profileSectionHead">
-              <div><span>EDIT PROFILE</span><small>Update your account information</small></div>
-              {profileSaving && <span className="profileActivityLoading">Saving…</span>}
+            <div className="profileAccountActions card">
+              <div><span>ACCOUNT</span><small>Return to your dashboard or end this session.</small></div>
+              <div className="profileActionButtons">
+                <button className="secondary" onClick={() => navigate("dashboard", true)}>Back to dashboard</button>
+                <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
+              </div>
             </div>
-            <div className="formStack">
-              <label className={profileErrors.name ? "fieldError" : ""}>Name
-                <input id="profile-name" value={profile.name} aria-invalid={!!profileErrors.name} onChange={e => { setProfile({ ...profile, name: e.target.value }); setProfileErrors(old => ({ ...old, name: "" })); }} />
-                {profileErrors.name && <span className="fieldErrorMessage">{profileErrors.name}</span>}
-              </label>
-              <label className={profileErrors.upi ? "fieldError" : ""}>UPI ID
-                <input id="profile-upi" value={profile.upi} aria-invalid={!!profileErrors.upi} onChange={e => { setProfile({ ...profile, upi: e.target.value }); setProfileErrors(old => ({ ...old, upi: "" })); }} />
-                {profileErrors.upi && <span className="fieldErrorMessage">{profileErrors.upi}</span>}
-              </label>
-              <label className={profileErrors.mobile ? "fieldError" : ""}>Mobile number
-                <input id="profile-mobile" value={profile.mobile} maxLength={10} inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
-                {profileErrors.mobile && <span className="fieldErrorMessage">{profileErrors.mobile}</span>}
-              </label>
-              <label className={profileErrors.email ? "fieldError" : ""}>Email
-                <input id="profile-email" value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
-                {profileErrors.email && <span className="fieldErrorMessage">{profileErrors.email}</span>}
-              </label>
-              <label className={profileErrors.password ? "fieldError" : ""}>Password
-                <input id="profile-password" value={profile.password || ""} type="password" placeholder="Leave blank to keep current" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
-                {profileErrors.password && <span className="fieldErrorMessage">{profileErrors.password}</span>}
-              </label>
-            </div>
-            <div className="profileEditActions">
-              <button className="primary accountSubmit" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
-              <button className="secondary" onClick={cancelProfileEdit} disabled={profileSaving}>Cancel</button>
-            </div>
-          </div>
+          </>}
 
-          <div className="profileAccountActions card">
-            <div><span>ACCOUNT</span><small>Return to your dashboard or end this session.</small></div>
-            <div className="profileActionButtons">
-              <button className="secondary" onClick={() => navigate("dashboard", true)}>Back to dashboard</button>
-              <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
+          {profileSection === "activity" && <>
+            <div className="profileActivityCard card">
+              <div className="profileSectionHead">
+                <div><span>ACCOUNT ACTIVITY</span><small>A quick view of your bill activity</small></div>
+                {dataLoading.dashboard && <span className="profileActivityLoading">Updating…</span>}
+              </div>
+              <div className="profileActivityGrid">
+                <div className="profileActivityStat"><strong>{dashboardStats.created}</strong><span>Bills created</span></div>
+                <div className="profileActivityStat"><strong>{dashboardStats.pending}</strong><span>Pending bills</span></div>
+                <div className="profileActivityStat"><strong>₹{money(dashboardStats.received)}</strong><span>Payments received</span></div>
+                <div className="profileActivityStat"><strong>₹{money(dashboardStats.owing)}</strong><span>Amount to pay</span></div>
+              </div>
             </div>
-          </div>
+            <div className="profileActivityLinks card">
+              <div><strong>View detailed bill history</strong><small>Open the complete lists of bills you created or bills shared with you.</small></div>
+              <div className="profileActionButtons">
+                <button className="secondary" onClick={openMyBills}>My Bills →</button>
+                <button className="secondary" onClick={openOtherBills}>Others’ Bills →</button>
+              </div>
+            </div>
+          </>}
+
+          {profileSection === "settings" && <>
+            <div className="profileEditCard card">
+              <div className="profileSectionHead">
+                <div><span>EDIT PROFILE</span><small>Update your account information</small></div>
+                {profileSaving && <span className="profileActivityLoading">Saving…</span>}
+              </div>
+              <div className="formStack">
+                <label className={profileErrors.name ? "fieldError" : ""}>Name
+                  <input id="profile-name" value={profile.name} aria-invalid={!!profileErrors.name} onChange={e => { setProfile({ ...profile, name: e.target.value }); setProfileErrors(old => ({ ...old, name: "" })); }} />
+                  {profileErrors.name && <span className="fieldErrorMessage">{profileErrors.name}</span>}
+                </label>
+                <label className={profileErrors.upi ? "fieldError" : ""}>UPI ID
+                  <input id="profile-upi" value={profile.upi} aria-invalid={!!profileErrors.upi} onChange={e => { setProfile({ ...profile, upi: e.target.value }); setProfileErrors(old => ({ ...old, upi: "" })); }} />
+                  {profileErrors.upi && <span className="fieldErrorMessage">{profileErrors.upi}</span>}
+                </label>
+                <label className={profileErrors.mobile ? "fieldError" : ""}>Mobile number
+                  <input id="profile-mobile" value={profile.mobile} maxLength={10} inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
+                  {profileErrors.mobile && <span className="fieldErrorMessage">{profileErrors.mobile}</span>}
+                </label>
+                <label className={profileErrors.email ? "fieldError" : ""}>Email
+                  <input id="profile-email" value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
+                  {profileErrors.email && <span className="fieldErrorMessage">{profileErrors.email}</span>}
+                </label>
+                <label className={profileErrors.password ? "fieldError" : ""}>Password
+                  <input id="profile-password" value={profile.password || ""} type="password" placeholder="Leave blank to keep current" aria-invalid={!!profileErrors.password} onChange={e => { setProfile({ ...profile, password: e.target.value }); setProfileErrors(old => ({ ...old, password: "" })); }} />
+                  {profileErrors.password && <span className="fieldErrorMessage">{profileErrors.password}</span>}
+                </label>
+              </div>
+              <div className="profileEditActions">
+                <button className="primary accountSubmit" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
+                <button className="secondary" onClick={cancelProfileEdit} disabled={profileSaving}>Cancel</button>
+              </div>
+            </div>
+
+            <div className="profileSettingsCard card">
+              <div>
+                <span>ACCOUNT</span>
+                <h2>Account settings</h2>
+                <p>More account controls will be added here as they become available.</p>
+              </div>
+              <div className="profileSettingsActions">
+                <button className="secondary" onClick={() => pop("This feature is coming soon.", "info")}>Deactivate account</button>
+                <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
+              </div>
+            </div>
+          </>}
         </section>
       )}
 
