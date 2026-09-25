@@ -567,14 +567,24 @@ export default function Home() {
       setProfile(savedProfile);
       profileEditOriginalRef.current = savedProfile;
       setProfileErrors({});
-      setCurrentProfilePassword("");
-      setShowCurrentProfilePassword(false);
-      setProfileSaveConfirmOpen(false);
+      resetProfileSaveVerification();
       setProfileEditing(false);
       await loadMembers();
       pop("Profile updated successfully", "success");
     } catch { pop("Unable to update profile", "error"); }
     finally { setProfileSaving(false); }
+  };
+
+  const resetProfileSaveVerification = () => {
+    setCurrentProfilePassword("");
+    setShowCurrentProfilePassword(false);
+    setProfileErrors(old => {
+      const next = { ...old };
+      delete next.currentPassword;
+      delete next.server;
+      return next;
+    });
+    setProfileSaveConfirmOpen(false);
   };
 
   const requestProfileSave = () => {
@@ -583,6 +593,7 @@ export default function Home() {
     if (original && JSON.stringify({ ...profile, password: "" }) === JSON.stringify({ ...original, password: "" })) {
       return pop("No changes to save", "info");
     }
+    resetProfileSaveVerification();
     setProfileSaveConfirmOpen(true);
   };
 
@@ -645,7 +656,7 @@ export default function Home() {
     setProfileErrors({});
     setCurrentProfilePassword("");
     setShowCurrentProfilePassword(false);
-    setProfileSaveConfirmOpen(false);
+    resetProfileSaveVerification();
     setProfileEditing(false);
   };
 
@@ -1169,7 +1180,7 @@ export default function Home() {
                 <div><span>EDIT PROFILE</span><small>Update your account information</small></div>
                 <div className="profileEditHeaderAction">
                   {profileSaving && <span className="profileActivityLoading">Saving…</span>}
-                  {!profileEditing && <button type="button" className="secondary profileEditButton" onClick={() => setProfileEditing(true)}>Edit</button>}
+                  {!profileEditing && <button type="button" className="secondary profileEditButton" onClick={() => { resetProfileSaveVerification(); setProfileEditing(true); }}>Edit</button>}
                 </div>
               </div>
               <div className="formStack">
@@ -1210,7 +1221,7 @@ export default function Home() {
                   {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
                 </label>
                 <div className="profileSaveModalActions">
-                  <button className="secondary" onClick={() => setProfileSaveConfirmOpen(false)} disabled={profileSaving}>Cancel</button>
+                  <button className="secondary" onClick={resetProfileSaveVerification} disabled={profileSaving}>Cancel</button>
                   <button className="primary" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Verifying…" : "Confirm & save"}</button>
                 </div>
               </div>
