@@ -1033,3 +1033,15 @@ input,button{touch-action:manipulation}
   .profileMenuWrap{z-index:101}
   .profileDropdown{z-index:110}
 }
+
+
+/* Account settings password controls */
+.profileSettingsIntro{margin-bottom:18px}
+.changePasswordSection{border:1px solid #eaecf0;border-radius:14px;padding:18px;margin-bottom:18px;background:#fcfcfb}
+.changePasswordHead strong,.changePasswordHead small{display:block}
+.changePasswordHead strong{font-size:14px}.changePasswordHead small{font-size:11px;color:#98a2b3;margin-top:4px;line-height:1.5}
+.passwordFieldsGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.passwordInputWrap{position:relative}
+.passwordInputWrap input{padding-right:68px}
+.passwordToggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#667085;font-size:11px;font-weight:700;padding:6px 7px;cursor:pointer}
+@media(max-width:700px){.passwordFieldsGrid{grid-template-columns:1fr}.changePasswordSection{padding:15px}.changePasswordHead small{font-size:10px}}
