@@ -73,6 +73,10 @@ export default function Home() {
   }[nextPage]);
 
   const navigate = (nextPage: AppPage, replace = false) => {
+    // Always dismiss open menus before navigating so the old popup never
+    // remains visible while the next page is loading.
+    setProfileMenuOpen(false);
+    setAccountMenuOpen(false);
     const url = pagePath(nextPage);
     const currentPage = getPageFromUrl();
     
@@ -814,7 +818,14 @@ export default function Home() {
                 className="profileButton"
                 aria-label="Open profile menu"
                 aria-expanded={profileMenuOpen}
-                onClick={() => setProfileMenuOpen(v => !v)}
+                onClick={() => {
+                  if (page === "profile") {
+                    setProfileMenuOpen(false);
+                    navigate("dashboard", true);
+                  } else {
+                    setProfileMenuOpen(v => !v);
+                  }
+                }}
               >
                 <span>{profile.name.charAt(0).toUpperCase()}</span><strong>{profile.name.split(" ")[0]}</strong>
               </button>
