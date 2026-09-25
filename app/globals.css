@@ -1002,3 +1002,11 @@ input,button{touch-action:manipulation}
   .profileDropdownHead strong{font-size:14px}.profileDropdownHead small{font-size:10px}
   .profileDropdown button strong{font-size:12px}.profileDropdown button small{font-size:10px}
 }
+
+
+/* Mobile profile menu stacking fix: keep the header popup above sticky profile content */
+@media(max-width:700px){
+  header{z-index:100}
+  .profileMenuWrap{z-index:101}
+  .profileDropdown{z-index:110}
+}
