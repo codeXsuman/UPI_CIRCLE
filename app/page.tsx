@@ -298,8 +298,12 @@ export default function Home() {
       }
 
       const urlPage = getPageFromUrl();
-      if (urlPage) setPage(urlPage);
-      else if (saved?.page) setPage(saved.page);
+      if (urlPage) {
+        setPage(urlPage);
+        if (urlPage === "profile") setProfileSection(getProfileSectionFromUrl());
+      } else if (saved?.page) {
+        setPage(saved.page);
+      }
 
       if (saved?.register) setRegister(saved.register);
       if (saved?.privacyAccepted) setPrivacyAccepted(true);
@@ -376,7 +380,7 @@ export default function Home() {
       } catch {}
     }, 750);
     return () => window.clearTimeout(timer);
-  }, [hydrated, page, profile, register, privacyAccepted, login, items, selected, recipientAmounts]);
+  }, [hydrated, page, register, privacyAccepted, login, items, selected, recipientAmounts]);
 
   // Reset the inactivity timer whenever the user is actively operating the app.
   // A refresh/back also restarts the timer. Staying idle allows the draft to expire.
