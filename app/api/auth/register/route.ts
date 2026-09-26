@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         ${id},
         ${name.trim()},
         ${normalizedUpi},
-        ${normalizedMobile || null},
+        ${normalizedMobile || ""},
         ${normalizedEmail},
         ${passwordHash}
       )
