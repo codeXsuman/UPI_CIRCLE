@@ -469,6 +469,7 @@ export default function Home() {
           setRegisterServerError(data.error);
         }
         setRegisterErrors(nextErrors);
+        setRegisterServerError("");
         setExistingAccount(false);
         const first = Object.keys(nextErrors)[0];
         if (first) document.getElementById("register-" + first)?.focus();
@@ -1234,6 +1235,7 @@ export default function Home() {
             </div>
             {registerServerError && <div className="registerServerError" role="alert"><span>!</span><div><strong>Registration couldn’t be completed</strong><small>{registerServerError}</small></div></div>}
             <button className="primary accountSubmit" onClick={registerAccount} disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
+            <div className="accountLoginPrompt">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in</button></div>
             <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
           </div>
         </section>
