@@ -92,6 +92,11 @@ footer{padding:28px 20px 34px;text-align:center;color:#98a2b3;font-size:11px}
 .formStack label small,.accountCard>label small{display:block;margin-top:6px;color:var(--danger);font-size:11px}
 .optionalTag{margin-left:6px;color:#98a2b3;font-size:10px;font-weight:600}
 .passwordStrength{color:#667085!important}.passwordStrength strong{font-weight:800}.passwordStrength.weak strong{color:#d04444}.passwordStrength.medium strong{color:#b7791f}.passwordStrength.strong strong{color:var(--success)}
+.formWarning{display:flex;align-items:flex-start;gap:14px;margin:18px 0 20px;padding:16px 18px;border:1px solid #efb7b7;border-radius:18px;background:#fff6f6;color:#8f2929}
+.formWarningIcon{display:flex;align-items:center;justify-content:center;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:#ffe0e0;color:#b3261e;font-size:22px;font-weight:900;line-height:1}
+.formWarning div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.formWarning strong{font-size:16px;line-height:1.25;color:#8f2929}
+.formWarning small{font-size:14px;line-height:1.45;color:#a15c5c}
 .privacyCheckWrap{margin:20px 0}
 .privacyCheck{display:flex!important;align-items:flex-start;gap:10px;color:#667085!important;font-weight:500!important;line-height:1.45;padding:10px 12px;border:1px solid #e6eaf0;border-radius:12px;cursor:pointer;user-select:none;transition:border-color .15s,background .15s}
 .privacyCheck:hover{border-color:#cfd6e2;background:#fafbfc}
