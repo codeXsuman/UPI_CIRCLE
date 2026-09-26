@@ -789,7 +789,7 @@ export default function Home() {
     [items]
   );
 
-  const makePaymentLink = (upi: string, name: string, amount: number) => "upi://pay?pa=" + encodeURIComponent(upi) + "&pn=" + encodeURIComponent(name) + "&am=" + amount.toFixed(2) + "&cu=INR";
+  const makePaymentLink = (upi: string, _name: string, amount: number) => "upi://pay?pa=" + encodeURIComponent(upi) + "&am=" + amount.toFixed(2) + "&cu=INR";
 
 
 
@@ -1047,20 +1047,20 @@ export default function Home() {
                     <strong>{profile.name}</strong>
                     <small>{profile.upi}</small>
                   </div>
-                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); navigateToProfileSection("profile"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "profile" ? "active" : ""} onClick={() => { navigateToProfileSection("profile"); setProfileMenuOpen(false); }} role="menuitem">
                     <span className="profileMenuIcon">◉</span>
                     <span><strong>Profile</strong><small>View your profile information</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); navigateToProfileSection("activity"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "activity" ? "active" : ""} onClick={() => { navigateToProfileSection("activity"); setProfileMenuOpen(false); }} role="menuitem">
                     <span className="profileMenuIcon">↗</span>
                     <span><strong>Account activity</strong><small>Bills and payment activity</small></span>
                   </button>
-                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { setProfileMenuOpen(false); navigateToProfileSection("settings"); }} role="menuitem">
+                  <button className={page === "profile" && profileSection === "settings" ? "active" : ""} onClick={() => { navigateToProfileSection("settings"); setProfileMenuOpen(false); }} role="menuitem">
                     <span className="profileMenuIcon">⚙</span>
                     <span><strong>Settings</strong><small>Edit profile and account</small></span>
                   </button>
                   <div className="profileDropdownDivider" />
-                  <button className="profileDropdownLogout" onClick={() => { setProfileMenuOpen(false); logout(); }} role="menuitem">
+                  <button className="profileDropdownLogout" onClick={() => { logout(); setProfileMenuOpen(false); }} role="menuitem">
                     <span className="profileMenuIcon">↪</span>
                     <span><strong>Log out</strong><small>End your current session</small></span>
                   </button>
