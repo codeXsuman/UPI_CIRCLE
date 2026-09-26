@@ -1189,6 +1189,15 @@ export default function Home() {
             <label>UPI BILLS REGISTRATION</label>
             <h1>Create your account</h1>
             <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
+            {(Object.keys(registerErrors).length > 0 || registerServerError) && (
+              <div className="formWarning" role="alert">
+                <span className="formWarningIcon">!</span>
+                <div>
+                  <strong>{registerServerError ? "Registration needs attention" : "Check your details"}</strong>
+                  <small>{registerServerError || "Please fix the highlighted fields before creating your account."}</small>
+                </div>
+              </div>
+            )}
             <div className="formStack">
               <label className={registerErrors.name ? "fieldError" : ""}>Name
                 <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
@@ -1247,6 +1256,15 @@ export default function Home() {
             <div className="accountBadge">WELCOME BACK</div>
             <label>UPI BILLS LOGIN</label><h1>Login</h1>
             <p>Your login form also stays on this page after an accidental refresh.</p>
+            {(Object.keys(loginErrors).length > 0 || loginCredentialError) && (
+              <div className="formWarning" role="alert">
+                <span className="formWarningIcon">!</span>
+                <div>
+                  <strong>{loginCredentialError ? "Login unsuccessful" : "Check your login details"}</strong>
+                  <small>{loginCredentialError || "Please fix the highlighted fields before logging in."}</small>
+                </div>
+              </div>
+            )}
             <div className="formStack loginFormStack">
               <label className={loginErrors.email ? "fieldError" : ""}>Email address
                 <input value={login.email} aria-invalid={!!loginErrors.email} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
