@@ -371,9 +371,9 @@ export default function Home() {
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
           savedAt,
           page,
-          register,
+          register: { ...register, password: "" },
           privacyAccepted,
-          login,
+          login: { ...login, password: "" },
           items,
           selected,
           recipientAmounts,
