@@ -116,6 +116,8 @@ export default function Home() {
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
   const [registerServerError, setRegisterServerError] = useState("");
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
   const [existingAccount, setExistingAccount] = useState(false);
   const [existingAccountMessage, setExistingAccountMessage] = useState("An account already exists with one or more of these details.");
@@ -447,6 +449,7 @@ export default function Home() {
 
     try {
       setLoading(true);
+      setRegisterLoading(true);
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -490,6 +493,7 @@ export default function Home() {
       setRegisterErrors({});
       setRegisterServerError("Check your connection and try again.");
     } finally {
+      setRegisterLoading(false);
       setLoading(false);
     }
   };
@@ -1203,7 +1207,7 @@ export default function Home() {
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
-                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type={showLoginPassword ? "text" : "password"} placeholder="Create a password" onChange={e => {
+                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type={showRegisterPassword ? "text" : "password"} placeholder="Create a password" onChange={e => {
                   const value = e.target.value;
                   setRegister({ ...register, password: value });
                   setRegisterErrors(old => ({ ...old, password: "" }));
@@ -1213,8 +1217,8 @@ export default function Home() {
                   else if (value.length < 10 || !/[A-Z]/.test(value) || !/[^A-Za-z0-9]/.test(value)) setPasswordStrength("medium");
                   else setPasswordStrength("strong");
                 }} />
-                <button type="button" className="passwordToggle" onClick={() => setShowLoginPassword(old => !old)} aria-label={showLoginPassword ? "Hide password" : "Show password"}>
-                  {showLoginPassword ? "Hide" : "Show"}
+                <button type="button" className="passwordToggle" onClick={() => setShowRegisterPassword(old => !old)} aria-label={showRegisterPassword ? "Hide password" : "Show password"}>
+                  {showRegisterPassword ? "Hide" : "Show"}
                 </button>
                 </div>
                 {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}
