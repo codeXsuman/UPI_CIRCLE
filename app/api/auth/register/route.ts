@@ -24,8 +24,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Enter a valid 10-digit Indian mobile number" }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+      return NextResponse.json(
+        { error: "Use at least 8 characters with a letter and a number" },
+        { status: 400 }
+      );
     }
 
     const existing = await sql`
