@@ -614,10 +614,10 @@ input,button{touch-action:manipulation}
 .dashboardOption.create{background:#111;color:#fff;border-color:#111}
 .dashboardOption.create small{color:#c9c9ce}.dashboardOption.create .dashboardIcon{background:#f4d600;color:#111}
 .othersPaymentArea{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:22px;padding-top:20px;border-top:1px solid #eee}
-.othersQr{display:flex;align-items:center;gap:14px}.othersQr svg{padding:10px;background:#fff;border-radius:12px;border:1px solid #eee}.othersQr small{color:#667085}
+.othersQr{display:flex;align-items:center;gap:14px}.othersQrImage{display:grid;place-items:center;padding:10px;background:#fff;border-radius:12px;border:1px solid #eee}.othersQrCopy{display:flex;flex-direction:column;align-items:flex-start;gap:10px}.othersQr small{color:#667085;line-height:1.5}.saveQrButton{min-height:36px;padding:0 12px;font-size:10px;font-weight:700}
 @media(max-width:800px){
  .dashboardPage{padding:30px 16px 60px}.dashboardOptions{grid-template-columns:1fr}.dashboardOption{min-height:210px}
- .othersPaymentArea{align-items:flex-start;flex-direction:column}.othersQr{flex-direction:column;align-items:flex-start}
+ .othersPaymentArea{align-items:flex-start;flex-direction:column}.othersQr{flex-direction:column;align-items:flex-start}.othersQrCopy{align-items:flex-start;width:100%}.saveQrButton{width:100%}
 }
 
 
