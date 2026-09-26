@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 
 type User = { id: string; name: string; upi: string; mobile: string; email: string; password?: string };
 type Item = { id: number; name: string; amount: string };
@@ -797,71 +797,69 @@ export default function Home() {
     "&tn=" + encodeURIComponent("UPI Bills payment");
 
   const saveOtherBillQr = async (billId: string) => {
-    const svg = document.getElementById("other-bill-qr-" + billId) as SVGSVGElement | null;
-    if (!svg) {
+    const qrCanvas = document.querySelector(
+      "#other-bill-qr-" + billId + " canvas"
+    ) as HTMLCanvasElement | null;
+
+    if (!qrCanvas) {
       pop("QR code is not ready yet", "error");
       return;
     }
 
     try {
-      const svgMarkup = new XMLSerializer().serializeToString(svg);
-      const svgBlob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
-      const svgUrl = URL.createObjectURL(svgBlob);
-      const image = new Image();
+      const padding = 24;
+      const output = document.createElement("canvas");
+      output.width = qrCanvas.width + padding * 2;
+      output.height = qrCanvas.height + padding * 2;
 
-      image.onload = async () => {
-        try {
-          const padding = 24;
-          const size = Math.max(svg.viewBox.baseVal.width || svg.clientWidth || 170, 170);
-          const canvas = document.createElement("canvas");
-          canvas.width = size + padding * 2;
-          canvas.height = size + padding * 2;
-          const context = canvas.getContext("2d");
-          if (!context) throw new Error("Canvas is unavailable");
+      const context = output.getContext("2d");
+      if (!context) throw new Error("Canvas is unavailable");
 
-          context.fillStyle = "#ffffff";
-          context.fillRect(0, 0, canvas.width, canvas.height);
-          context.drawImage(image, padding, padding, size, size);
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, output.width, output.height);
+      context.drawImage(qrCanvas, padding, padding);
 
-          const png = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png"));
-          if (!png) throw new Error("Unable to create image");
+      const png = await new Promise<Blob | null>(resolve =>
+        output.toBlob(resolve, "image/png")
+      );
+      if (!png) throw new Error("Unable to create image");
 
-          const file = new File([png], "upi-bill-qr-" + billId + ".png", { type: "image/png" });
-          const canShareFile = typeof navigator.share === "function" &&
-            typeof navigator.canShare === "function" &&
-            navigator.canShare({ files: [file] });
+      const file = new File(
+        [png],
+        "upi-bill-qr-" + billId + ".png",
+        { type: "image/png" }
+      );
 
-          if (canShareFile) {
-            await navigator.share({ files: [file], title: "UPI Bill QR", text: "UPI payment QR code" });
-            pop("QR image ready to save", "success");
-          } else {
-            const downloadUrl = URL.createObjectURL(png);
-            const link = document.createElement("a");
-            link.href = downloadUrl;
-            link.download = file.name;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-            pop("QR code saved", "success");
-          }
-        } catch (error: any) {
-          if (error?.name !== "AbortError") pop("Could not save the QR code. Please try again.", "error");
-        } finally {
-          URL.revokeObjectURL(svgUrl);
-        }
-      };
+      const canShareFile =
+        typeof navigator.share === "function" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] });
 
-      image.onerror = () => {
-        URL.revokeObjectURL(svgUrl);
-        pop("Could not prepare the QR code. Please try again.", "error");
-      };
-      image.src = svgUrl;
-    } catch {
-      pop("Could not save the QR code. Please try again.", "error");
+      if (canShareFile) {
+        await navigator.share({
+          files: [file],
+          title: "UPI Bill QR",
+          text: "UPI payment QR code"
+        });
+        pop("QR image ready to save", "success");
+        return;
+      }
+
+      const downloadUrl = URL.createObjectURL(png);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      pop("QR code saved", "success");
+    } catch (error: any) {
+      if (error?.name !== "AbortError") {
+        pop("Could not save the QR code. Please try again.", "error");
+      }
     }
   };
-
 
 
   const deleteMyBill = async (billId: string) => {
@@ -1510,7 +1508,7 @@ export default function Home() {
             return <div className="card historyCard" key={bill.id}>
               <div className="historyCardTop"><div><span className={"alertStatus "+(bill.paymentStatus==="received"?"paid":"pending")}>● {bill.paymentStatus==="received"?"PAYMENT RECEIVED":"PAYMENT PENDING"}</span><h2>From {bill.creatorName}</h2><div className="historySummary"><span>{(bill.items||[]).length} items</span><span>·</span><span>{bill.recipients?.length||1} recipients</span><span>·</span><span>Created {new Date(bill.createdAt).toLocaleDateString("en-IN",{dateStyle:"medium"})}</span></div></div><strong>₹{money(amount)}</strong></div>
               <div className="historyCardActions"><button className="secondary" onClick={()=>setOpenBillId(openBillId===bill.id?null:bill.id)}>{openBillId===bill.id?"Hide details":"View details"}</button><button className="primary" onClick={()=>window.location.href=link} disabled={bill.paymentStatus==="received"}>Pay now ↗</button></div>
-              {openBillId===bill.id&&<div className="billDetailPanel"><div className="detailSectionTitle">Items</div>{(bill.items||[]).map((item:any)=><div key={item.id}><span>{item.name}</span><strong>₹{money(Number(item.amount))}</strong></div>)}<div className="detailSectionTitle">Payment</div><div><span>Created by</span><strong>{bill.creatorName}</strong></div><div><span>Pay to</span><strong>{bill.creatorUpi}</strong></div><div><span>Your share</span><strong>₹{money(amount)}</strong></div><div className="othersPaymentArea"><div className="othersQr"><div className="othersQrImage" id={"other-bill-qr-" + bill.id}><QRCodeSVG value={link} size={170} level="M"/></div><div className="othersQrCopy"><small>Scan with any UPI app<br/>Your share: ₹{money(amount)}</small><button type="button" className="secondary saveQrButton" onClick={() => saveOtherBillQr(bill.id)}>↓ Save QR</button></div></div></div></div>}
+              {openBillId===bill.id&&<div className="billDetailPanel"><div className="detailSectionTitle">Items</div>{(bill.items||[]).map((item:any)=><div key={item.id}><span>{item.name}</span><strong>₹{money(Number(item.amount))}</strong></div>)}<div className="detailSectionTitle">Payment</div><div><span>Created by</span><strong>{bill.creatorName}</strong></div><div><span>Pay to</span><strong>{bill.creatorUpi}</strong></div><div><span>Your share</span><strong>₹{money(amount)}</strong></div><div className="othersPaymentArea"><div className="othersQr"><div className="othersQrImage" id={"other-bill-qr-" + bill.id}><QRCodeCanvas value={link} size={170} level="M"/></div><div className="othersQrCopy"><small>Scan with any UPI app<br/>Your share: ₹{money(amount)}</small><button type="button" className="secondary saveQrButton" onClick={() => saveOtherBillQr(bill.id)}>↓ Save QR</button></div></div></div></div>}
             </div>
           })}</div>}
         </section>
