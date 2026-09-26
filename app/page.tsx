@@ -427,12 +427,15 @@ export default function Home() {
     setRegisterServerError("");
 
     if (!register.name.trim()) errors.name = "Name is required";
-    if (!register.upi.trim()) errors.upi = "UPI ID is required";
+    const upi = register.upi.trim().toLowerCase();
+    if (!upi) errors.upi = "UPI ID is required";
+    else if (!/^[A-Za-z0-9][A-Za-z0-9._-]{1,}@[A-Za-z0-9][A-Za-z0-9.-]{1,}$/.test(upi)) errors.upi = "Enter a valid UPI ID (example: name@bank)";
     if (!email) errors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.email = "Enter a valid email address";
     if (mobile && !/^[6-9]\d{9}$/.test(mobile)) errors.mobile = "Enter a valid 10-digit Indian mobile number";
     if (!register.password) errors.password = "Password is required";
-    else if (register.password.length < 6) errors.password = "Password must be at least 6 characters";
+    else if (register.password.length < 8) errors.password = "Password must be at least 8 characters";
+    else if (!/[A-Za-z]/.test(register.password) || !/\d/.test(register.password)) errors.password = "Use at least 8 characters with a letter and a number";
     if (!privacyAccepted) errors.privacy = "Please accept the Privacy Policy to continue";
 
     setRegisterErrors(errors);
@@ -447,7 +450,7 @@ export default function Home() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(register)
+        body: JSON.stringify({ ...register, upi })
       });
       const data = await res.json().catch(() => ({}));
 
@@ -1199,7 +1202,8 @@ export default function Home() {
                 {registerErrors.email && <span className="fieldErrorMessage">{registerErrors.email}</span>}
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
-                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type="password" placeholder="Create a password" onChange={e => {
+                <div className="passwordInputWrap">
+                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type={showLoginPassword ? "text" : "password"} placeholder="Create a password" onChange={e => {
                   const value = e.target.value;
                   setRegister({ ...register, password: value });
                   setRegisterErrors(old => ({ ...old, password: "" }));
@@ -1209,6 +1213,10 @@ export default function Home() {
                   else if (value.length < 10 || !/[A-Z]/.test(value) || !/[^A-Za-z0-9]/.test(value)) setPasswordStrength("medium");
                   else setPasswordStrength("strong");
                 }} />
+                <button type="button" className="passwordToggle" onClick={() => setShowLoginPassword(old => !old)} aria-label={showLoginPassword ? "Hide password" : "Show password"}>
+                  {showLoginPassword ? "Hide" : "Show"}
+                </button>
+                </div>
                 {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}
                 {registerErrors.password && <span className="fieldErrorMessage">{registerErrors.password}</span>}
               </label>
@@ -1221,7 +1229,7 @@ export default function Home() {
               {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
             </div>
             {registerServerError && <div className="registerServerError" role="alert"><span>!</span><div><strong>Registration couldn’t be completed</strong><small>{registerServerError}</small></div></div>}
-            <button className="primary accountSubmit" onClick={registerAccount}>Create account</button>
+            <button className="primary accountSubmit" onClick={registerAccount} disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
             <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
           </div>
         </section>
