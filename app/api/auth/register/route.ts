@@ -20,6 +20,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
     }
 
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{1,}@[A-Za-z0-9][A-Za-z0-9.-]{1,}$/.test(normalizedUpi)) {
+      return NextResponse.json({ error: "Enter a valid UPI ID (example: name@bank)" }, { status: 400 });
+    }
+
     if (normalizedMobile && !/^[6-9]\d{9}$/.test(normalizedMobile)) {
       return NextResponse.json({ error: "Enter a valid 10-digit Indian mobile number" }, { status: 400 });
     }
