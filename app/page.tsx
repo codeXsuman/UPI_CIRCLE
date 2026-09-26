@@ -789,7 +789,12 @@ export default function Home() {
     [items]
   );
 
-  const makePaymentLink = (upi: string, _name: string, amount: number) => "upi://pay?pa=" + encodeURIComponent(upi) + "&am=" + amount.toFixed(2) + "&cu=INR";
+  const makePaymentLink = (upi: string, name: string, amount: number) =>
+    "upi://pay?pa=" + encodeURIComponent(upi) +
+    "&pn=" + encodeURIComponent(name) +
+    "&am=" + amount.toFixed(2) +
+    "&cu=INR" +
+    "&tn=" + encodeURIComponent("UPI Bills payment");
 
 
 
