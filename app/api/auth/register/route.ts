@@ -4,9 +4,22 @@ import { randomUUID } from "crypto";
 import { sql } from "@/lib/db";
 import { setSession } from "@/lib/auth";
 
+const registrationAttempts = new Map<string, { count: number; resetAt: number }>();
+const WINDOW_MS = 60 * 60 * 1000;
+const MAX_ATTEMPTS = 5;
+function clientKey(req: Request) { return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"; }
+function limited(key: string) {
+  const now = Date.now(); const current = registrationAttempts.get(key);
+  if (!current || current.resetAt <= now) { registrationAttempts.set(key, { count: 1, resetAt: now + WINDOW_MS }); return false; }
+  current.count += 1; return current.count > MAX_ATTEMPTS;
+}
+
 export async function POST(req: Request) {
+  if (limited(clientKey(req))) return NextResponse.json({ error: "Too many registration attempts. Please try again later." }, { status: 429, headers: { "Retry-After": "3600" } });
+  let body: any;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid request body" }, { status: 400 }); }
   try {
-    const { name, upi, mobile, email, password } = await req.json();
+    const { name, upi, mobile, email, password } = body;
 
     if (!name?.trim() || !upi?.trim() || !email?.trim() || !password) {
       return NextResponse.json({ error: "Please complete all required fields" }, { status: 400 });
