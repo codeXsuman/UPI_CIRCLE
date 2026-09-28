@@ -1358,225 +1358,68 @@ export default function Home() {
       )}
 
       {page === "login" && (
-        <section key="login-page" className="account authPageTransition">
-          <div className="card accountCard">
-            <div className="accountBadge">WELCOME BACK</div>
-            <div className="authSectionEyebrow">UPI BILLS LOGIN</div><h1>Login</h1>
-            <p>Your login form also stays on this page after an accidental refresh.</p>
-            {(Object.keys(loginErrors).length > 0 || loginCredentialError) && (
-              <div className="formWarning" role="alert">
-                <span className="formWarningIcon">!</span>
-                <div>
-                  <strong>{loginCredentialError ? "Login unsuccessful" : "Check your login details"}</strong>
-                  <small>{loginCredentialError || "Please fix the highlighted fields before logging in."}</small>
-                </div>
+        <section key="login-page" className="loginPage">
+          <div className="loginShell">
+            <aside className="loginIntro">
+              <button type="button" className="loginBack" onClick={() => navigate("home")}><span aria-hidden="true">←</span> Back to home</button>
+              <div className="loginBrandMark" aria-hidden="true"><b>U</b></div>
+              <div className="eyebrow"><span>●</span> UPI BILLS <b>WELCOME BACK</b></div>
+              <h1>Your bills.<br /><i>Right where you left them.</i></h1>
+              <p>Sign in to continue managing shared expenses, checking bills, and keeping your payment activity organized.</p>
+              <div className="loginFeatureList">
+                <div><span>01</span><strong>Shared bills</strong><small>See the bills you've created or received.</small></div>
+                <div><span>02</span><strong>Payment activity</strong><small>Keep track of pending and completed payments.</small></div>
+                <div><span>03</span><strong>Quick access</strong><small>Return to your account without rebuilding anything.</small></div>
               </div>
-            )}
-            <form className="authForm" onSubmit={e => { e.preventDefault(); loginAccount(); }}>
-              <div className="formStack loginFormStack">
-              <label className={loginErrors.email ? "fieldError" : ""}>Email address
-                <input id="login-email" value={login.email} aria-invalid={!!loginErrors.email} autoComplete="email" maxLength={254} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
-                {loginErrors.email && <span className="fieldErrorMessage">{loginErrors.email}</span>}
-              </label>
-              <label className={loginErrors.password ? "fieldError" : ""}>Password
-                <div className="passwordInputWrap">
-                  <input id="login-password" value={login.password} aria-invalid={!!loginErrors.password} aria-describedby={loginCapsLock ? "login-caps-lock" : undefined} autoComplete="current-password" maxLength={128} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onKeyDown={e => setLoginCapsLock(e.getModifierState("CapsLock"))} onKeyUp={e => setLoginCapsLock(e.getModifierState("CapsLock"))} onBlur={() => setLoginCapsLock(false)} onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
-                  <button
-                    type="button"
-                    className="passwordToggle"
-                    onClick={() => setShowLoginPassword(old => !old)}
-                    aria-label={showLoginPassword ? "Hide password" : "Show password"}
-                  >
-                    {showLoginPassword ? (
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 4.4A10.9 10.9 0 0 1 12 4.2c5.2 0 9.2 3.3 10.5 7.8a11.7 11.7 0 0 1-3 5.1M6.2 6.2C4.4 7.5 2.8 9.5 1.5 12 2.8 16.5 6.8 19.8 12 19.8c1.2 0 2.3-.2 3.3-.5" /></svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
-                    )}
-                  </button>
-                </div>
-                {loginCapsLock && <div id="login-caps-lock" className="capsLockHint" role="status"><span aria-hidden="true">⇧</span> Caps Lock is on</div>}
-                {loginErrors.password && <span className="fieldErrorMessage">{loginErrors.password}</span>}
-                {loginCredentialError && <span className="loginCredentialError">{loginCredentialError}</span>}
-              </label>
-            </div>
-              <button type="submit" className="primary accountSubmit" disabled={loginLoading}>{loginLoading ? "Logging in…" : "Login"}</button>
-              <button type="button" className="newAccountPrompt" onClick={() => navigate("account")}>
-                New here? <strong>Create an account now</strong>
-              </button>
-            </form>
-          </div>
-        </section>
-      )}
+              <div className="loginRegisterHint">Don't have an account? <button type="button" onClick={() => navigate("account")}>Create one →</button></div>
+            </aside>
 
-      {page === "profile" && profile && (
-        <section className="profilePage profilePageV2">
-          <div className="profileIntro">
-            <div>
-              <div className="eyebrow"><span>●</span> UPI BILLS <b>{profileSection === "profile" ? "YOUR PROFILE" : profileSection === "activity" ? "ACCOUNT ACTIVITY" : "SETTINGS"}</b></div>
-              <h1>{profileSection === "profile" ? "Profile" : profileSection === "activity" ? "Account activity" : "Settings"}</h1>
-              <p>{profileSection === "profile" ? "View your account information and UPI details." : profileSection === "activity" ? "Track your bills and payment activity at a glance." : "Manage your profile, security, and account options."}</p>
-            </div>
-          </div>
+            <div className="loginFormCard">
+              <div className="loginFormHeader">
+                <span className="loginStep">ACCOUNT ACCESS</span>
+                <h2>Log in to UPI Bills</h2>
+                <p>Use the email address and password associated with your account.</p>
+              </div>
 
-          <div className="profileSubnav card">
-            <button className={profileSection === "profile" ? "active" : ""} onClick={() => changeProfileSection("profile")}>Profile</button>
-            <button className={profileSection === "activity" ? "active" : ""} onClick={() => changeProfileSection("activity")}>Activity</button>
-            <button className={profileSection === "settings" ? "active" : ""} onClick={() => changeProfileSection("settings")}>Settings</button>
-          </div>
-
-          {profileSection === "profile" && <>
-            <div className="profileHero card">
-              <div className="profileAvatarLarge">{profile.name.trim().charAt(0).toUpperCase() || "U"}</div>
-              <div className="profileHeroCopy">
-                <h2>{profile.name}</h2>
-                <span>{profile.upi}</span>
-                <small><i /> Account active</small>
-              </div>
-            </div>
-
-            <div className="profileInfoCard card">
-              <div className="profileSectionHead">
-                <div><span>PROFILE INFORMATION</span><small>Your registered account details</small></div>
-                <span className="profileStatus">ACTIVE</span>
-              </div>
-              <div className="profileInfoGrid">
-                <div className="profileInfoRow"><span>Full name</span><strong>{profile.name}</strong></div>
-                <div className="profileInfoRow"><span>Mobile</span><strong>{profile.mobile ? "••••••••" + profile.mobile.slice(-2) : "Not provided"}</strong></div>
-                <div className="profileInfoRow profileUpiRow"><span>UPI ID</span><div><strong>{profile.upi}</strong><button className="secondary profileCopyBtn" onClick={copyUpiId}>{upiCopied ? "✓ Copied" : "Copy"}</button></div></div>
-                <div className="profileInfoRow"><span>Email</span><strong className="profileEmailValue">{profile.email}</strong></div>
-              </div>
-            </div>
-
-            <div className="profileAccountActions card">
-              <div><span>ACCOUNT</span><small>Return to your dashboard or end this session.</small></div>
-              <div className="profileActionButtons">
-                <button className="secondary" onClick={() => navigate("dashboard", true)}>Back to dashboard</button>
-                <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
-              </div>
-            </div>
-          </>}
-
-          {profileSection === "activity" && <>
-            <div className="profileActivityCard card">
-              <div className="profileSectionHead">
-                <div><span>ACCOUNT ACTIVITY</span><small>A quick view of your bill activity</small></div>
-                {dataLoading.dashboard && <span className="profileActivityLoading">Updating…</span>}
-              </div>
-              <div className="profileActivityGrid">
-                <div className="profileActivityStat"><strong>{dashboardStats.created}</strong><span>Bills created</span></div>
-                <div className="profileActivityStat"><strong>{dashboardStats.pending}</strong><span>Pending bills</span></div>
-                <div className="profileActivityStat"><strong>₹{money(dashboardStats.received)}</strong><span>Payments received</span></div>
-                <div className="profileActivityStat"><strong>₹{money(dashboardStats.owing)}</strong><span>Amount to pay</span></div>
-              </div>
-            </div>
-            <div className="profileActivityLinks card">
-              <div><strong>View detailed bill history</strong><small>Open the complete lists of bills you created or bills shared with you.</small></div>
-              <div className="profileActionButtons">
-                <button className="secondary" onClick={openMyBills}>My Bills →</button>
-                <button className="secondary" onClick={openOtherBills}>Others’ Bills →</button>
-              </div>
-            </div>
-          </>}
-
-          {profileSection === "settings" && <>
-            <div className="profileEditCard card">
-              <div className="profileSectionHead">
-                <div><span>EDIT PROFILE</span><small>Update your account information</small></div>
-                <div className="profileEditHeaderAction">
-                  {profileSaving && <span className="profileActivityLoading">Saving…</span>}
-                  {!profileEditing && <button type="button" className="secondary profileEditButton" onClick={() => { resetProfileSaveVerification(); setProfileEditing(true); }}>Edit</button>}
-                </div>
-              </div>
-              <div className="formStack">
-                <label className={profileErrors.name ? "fieldError" : ""}>Name
-                  <input id="profile-name" disabled={!profileEditing} value={profile.name} aria-invalid={!!profileErrors.name} onChange={e => { setProfile({ ...profile, name: e.target.value }); setProfileErrors(old => ({ ...old, name: "" })); }} />
-                  {profileErrors.name && <span className="fieldErrorMessage">{profileErrors.name}</span>}
-                </label>
-                <label className={profileErrors.upi ? "fieldError" : ""}>UPI ID
-                  <input id="profile-upi" disabled={!profileEditing} value={profile.upi} aria-invalid={!!profileErrors.upi} onChange={e => { setProfile({ ...profile, upi: e.target.value }); setProfileErrors(old => ({ ...old, upi: "" })); }} />
-                  {profileErrors.upi && <span className="fieldErrorMessage">{profileErrors.upi}</span>}
-                </label>
-                <label className={profileErrors.mobile ? "fieldError" : ""}>Mobile number
-                  <input id="profile-mobile" disabled={!profileEditing} value={profile.mobile} maxLength={10} inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
-                  {profileErrors.mobile && <span className="fieldErrorMessage">{profileErrors.mobile}</span>}
-                </label>
-                <label className={profileErrors.email ? "fieldError" : ""}>Email
-                  <input id="profile-email" disabled={!profileEditing} value={profile.email} type="email" aria-invalid={!!profileErrors.email} onChange={e => { setProfile({ ...profile, email: e.target.value }); setProfileErrors(old => ({ ...old, email: "" })); }} />
-                  {profileErrors.email && <span className="fieldErrorMessage">{profileErrors.email}</span>}
-                </label>
-
-              </div>
-              {profileEditing && <div className="profileEditActions">
-                <button className="primary accountSubmit" onClick={requestProfileSave} disabled={profileSaving}>{profileSaving ? "Saving changes…" : "Save changes"}</button>
-                <button className="secondary" onClick={() => cancelProfileEdit()} disabled={profileSaving}>Cancel</button>
-              </div>}
-            </div>
-
-            {profileSaveConfirmOpen && <div className="profileSaveModalBackdrop" onClick={() => !profileSaving && resetProfileSaveVerification()}>
-              <div className="profileSaveModal" onClick={e => e.stopPropagation()}>
-                <div className="profileSaveModalIcon">🔐</div>
-                <h3>Verify your password</h3>
-                <p>Enter your current password to confirm these profile changes.</p>
-                <label className={profileErrors.currentPassword ? "fieldError" : ""}>Current password
-                  <div className="passwordInputWrap">
-                    <input id="profile-save-password" value={currentProfilePassword} type={showCurrentProfilePassword ? "text" : "password"} autoFocus placeholder="Enter current password" autoComplete="current-password" onChange={e => { setCurrentProfilePassword(e.target.value); setProfileErrors(old => ({ ...old, currentPassword: "" })); }} />
-                    <button type="button" className="passwordToggle" onClick={() => setShowCurrentProfilePassword(v => !v)}>{showCurrentProfilePassword ? "Hide" : "Show"}</button>
+              {(Object.keys(loginErrors).length > 0 || loginCredentialError) && (
+                <div className="loginAlert" role="alert">
+                  <span className="loginAlertIcon" aria-hidden="true">!</span>
+                  <div>
+                    <strong>{loginCredentialError ? "Login unsuccessful" : "Check your details"}</strong>
+                    <span>{loginCredentialError || "Please fix the highlighted fields and try again."}</span>
                   </div>
-                  {profileErrors.currentPassword && <span className="fieldErrorMessage">{profileErrors.currentPassword}</span>}
-                  {profileErrors.server && <span className="fieldErrorMessage">{profileErrors.server}</span>}
-                </label>
-                <div className="profileSaveModalActions">
-                  <button className="secondary" onClick={resetProfileSaveVerification} disabled={profileSaving}>Cancel</button>
-                  <button className="primary" onClick={updateProfile} disabled={profileSaving}>{profileSaving ? "Verifying…" : "Confirm & save"}</button>
                 </div>
-              </div>
-            </div>}
-            <div className="profileSettingsCard card">
-              <div className="profileSettingsIntro">
-                <span>ACCOUNT</span>
-                <h2>Account settings</h2>
-                <p>Manage your password and account controls.</p>
-              </div>
+              )}
 
-              <div className="changePasswordSection">
-                <div className="changePasswordHead">
-                  <div><strong>Change password</strong><small>Verify your current password, then create a new password.</small></div>
-                </div>
-                {changePasswordErrors.form && <div className="profileInlineError" role="alert">{changePasswordErrors.form}</div>}
-                <div className="passwordFieldsGrid">
-                  <label className={changePasswordErrors.current ? "fieldError" : ""}>Current password
-                    <div className="passwordInputWrap">
-                      <input id="change-current-password" value={changeCurrentPassword} type={showChangeCurrentPassword ? "text" : "password"} placeholder="Enter current password" autoComplete="current-password" aria-invalid={!!changePasswordErrors.current} onChange={e => { setChangeCurrentPassword(e.target.value); setChangePasswordErrors(old => ({ ...old, current: "", form: "" })); }} />
-                      <button type="button" className="passwordToggle" onClick={() => setShowChangeCurrentPassword(v => !v)} aria-label={showChangeCurrentPassword ? "Hide current password" : "Show current password"}>{showChangeCurrentPassword ? "Hide" : "Show"}</button>
-                    </div>
-                    {changePasswordErrors.current && <span className="fieldErrorMessage">{changePasswordErrors.current}</span>}
+              <form className="loginForm" onSubmit={e => { e.preventDefault(); loginAccount(); }} noValidate>
+                <div className="loginFields">
+                  <label className={loginErrors.email ? "fieldError" : ""}>
+                    <span>Email address</span>
+                    <input id="login-email" value={login.email} aria-invalid={!!loginErrors.email} autoComplete="email" maxLength={254} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
+                    {loginErrors.email && <small className="fieldErrorMessage">{loginErrors.email}</small>}
                   </label>
-                  <label className={changePasswordErrors.newPassword ? "fieldError" : ""}>New password
-                    <div className="passwordInputWrap">
-                      <input id="change-new-password" value={changeNewPassword} type={showChangeNewPassword ? "text" : "password"} placeholder="Create a new password" autoComplete="new-password" aria-invalid={!!changePasswordErrors.newPassword} onChange={e => { setChangeNewPassword(e.target.value); setChangePasswordErrors(old => ({ ...old, newPassword: "", form: "" })); }} />
-                      <button type="button" className="passwordToggle" onClick={() => setShowChangeNewPassword(v => !v)} aria-label={showChangeNewPassword ? "Hide new password" : "Show new password"}>{showChangeNewPassword ? "Hide" : "Show"}</button>
-                    </div>
-                    {changePasswordErrors.newPassword && <span className="fieldErrorMessage">{changePasswordErrors.newPassword}</span>}
-                  </label>
-                  <label className={changePasswordErrors.confirmPassword ? "fieldError" : ""}>Confirm new password
-                    <div className="passwordInputWrap">
-                      <input id="change-confirm-password" value={changeConfirmPassword} type={showChangeConfirmPassword ? "text" : "password"} placeholder="Re-enter new password" autoComplete="new-password" aria-invalid={!!changePasswordErrors.confirmPassword} onChange={e => { setChangeConfirmPassword(e.target.value); setChangePasswordErrors(old => ({ ...old, confirmPassword: "", form: "" })); }} />
-                      <button type="button" className="passwordToggle" onClick={() => setShowChangeConfirmPassword(v => !v)} aria-label={showChangeConfirmPassword ? "Hide new password confirmation" : "Show new password confirmation"}>{showChangeConfirmPassword ? "Hide" : "Show"}</button>
-                    </div>
-                    {changePasswordErrors.confirmPassword && <span className="fieldErrorMessage">{changePasswordErrors.confirmPassword}</span>}
-                  </label>
-                </div>
-                <div className="changePasswordActions">
-                  <button className="primary" type="button" onClick={changePassword} disabled={changePasswordSaving}>{changePasswordSaving ? "Changing password…" : "Change password"}</button>
-                </div>
-              </div>
 
-              <div className="profileSettingsActions">
-                <button className="secondary" onClick={() => pop("This feature is coming soon.", "info")}>Deactivate account</button>
-                <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
-              </div>
+                  <label className={loginErrors.password ? "fieldError" : ""}>
+                    <span>Password</span>
+                    <div className="loginPasswordWrap">
+                      <input id="login-password" value={login.password} aria-invalid={!!loginErrors.password} aria-describedby={loginCapsLock ? "login-caps-lock" : undefined} autoComplete="current-password" maxLength={128} type={showLoginPassword ? "text" : "password"} placeholder="Enter your password" onKeyDown={e => setLoginCapsLock(e.getModifierState("CapsLock"))} onKeyUp={e => setLoginCapsLock(e.getModifierState("CapsLock"))} onBlur={() => setLoginCapsLock(false)} onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
+                      <button type="button" className="loginPasswordToggle" onClick={() => setShowLoginPassword(v => !v)} aria-label={showLoginPassword ? "Hide password" : "Show password"}>
+                        {showLoginPassword ? "Hide" : "Show"}
+                      </button>
+                    </div>
+                    {loginCapsLock && <small id="login-caps-lock" className="loginCapsHint" role="status">⇧ Caps Lock is on</small>}
+                    {loginErrors.password && <small className="fieldErrorMessage">{loginErrors.password}</small>}
+                  </label>
+                </div>
+
+                <button type="submit" className="loginSubmit" disabled={loginLoading}>
+                  <span>{loginLoading ? "Logging in…" : "Log in"}</span>
+                  {!loginLoading && <span aria-hidden="true">→</span>}
+                </button>
+                <p className="loginSecureNote"><span aria-hidden="true">✓</span> Your credentials are securely handled.</p>
+              </form>
             </div>
-          </>}
+          </div>
         </section>
       )}
 
