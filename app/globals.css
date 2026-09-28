@@ -543,10 +543,10 @@ input,button{touch-action:manipulation}
 .pageMotion .mobileProfileMenu{
   transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background-color .2s ease,opacity .2s ease;
 }
-.pageMotion button:not(.passwordToggle):hover{
+.pageMotion button:not(.passwordToggle):not(.registerPasswordToggle):not(.loginPasswordToggle):hover{
   transform:translateY(-2px);
 }
-.pageMotion button:not(.passwordToggle):active{
+.pageMotion button:not(.passwordToggle):not(.registerPasswordToggle):not(.loginPasswordToggle):active{
   transform:translateY(0) scale(.98);
 }
 .pageMotion .registeredMember:hover,
@@ -2104,3 +2104,18 @@ input,button{touch-action:manipulation}
   cursor:pointer;
 }
 .deactivateModal .dangerAction:disabled{opacity:.6;cursor:not-allowed}
+
+/* Keep auth password visibility controls anchored while clicking/tapping. */
+.registerPasswordToggle,
+.registerPasswordToggle:hover,
+.registerPasswordToggle:active,
+.registerPasswordToggle:focus-visible,
+.loginPasswordToggle,
+.loginPasswordToggle:hover,
+.loginPasswordToggle:active,
+.loginPasswordToggle:focus-visible{
+  position:absolute!important;
+  top:50%!important;
+  right:7px!important;
+  transform:translateY(-50%)!important;
+}
