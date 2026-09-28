@@ -1372,3 +1372,58 @@ input,button{touch-action:manipulation}
   .accountCard h1{font-size:33px}
   .accountCard>p{font-size:12px}
 }
+
+/* About page / landing section */
+.publicHeaderActions{display:flex;align-items:center;gap:8px}
+.headerAboutLink{
+  min-height:40px;padding:0 12px;border:0;border-radius:11px;background:transparent;
+  color:#667085;font-size:12px;font-weight:700;cursor:pointer;transition:.16s ease
+}
+.headerAboutLink:hover{background:#f5f4ff;color:var(--brand)}
+.aboutTeaser{
+  width:min(1180px,calc(100% - 40px));margin:0 auto 80px;padding:58px 0 20px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,500px);gap:60px;align-items:center;
+  border-top:1px solid var(--line)
+}
+.aboutTeaserCopy h2{font:700 clamp(36px,5vw,58px)/.98 'Space Grotesk';letter-spacing:-2.8px;margin:14px 0 16px}
+.aboutTeaserCopy h2 i{font-style:normal;color:var(--brand)}
+.aboutTeaserCopy p{max-width:620px;color:var(--muted);font-size:15px;line-height:1.7;margin:0 0 12px}
+.aboutLearnBtn{margin-top:14px}
+.aboutFeatureGrid{display:grid;gap:10px}
+.aboutFeature{
+  display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:12px;padding:18px;
+  border:1px solid var(--line);border-radius:16px;background:#fff
+}
+.aboutFeature>b{grid-row:1 / span 2;color:var(--brand);font-size:10px;letter-spacing:1px}
+.aboutFeature strong{font:700 16px 'Space Grotesk'}
+.aboutFeature span{color:#8a9099;font-size:12px;line-height:1.5;margin-top:4px}
+.aboutPage{width:min(1080px,calc(100% - 40px));margin:auto;padding:65px 0 80px}
+.aboutPageHero{max-width:760px;margin-bottom:38px}
+.aboutPageHero h1{font:700 clamp(48px,7vw,78px)/.94 'Space Grotesk';letter-spacing:-4px;margin:18px 0 16px}
+.aboutPageHero h1 i{font-style:normal;color:var(--brand)}
+.aboutPageHero p{max-width:650px;color:var(--muted);font-size:17px;line-height:1.65;margin:0}
+.aboutPageGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.aboutInfoCard{padding:26px}
+.aboutInfoCard>span{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#efedff;color:var(--brand);font-size:10px;font-weight:800}
+.aboutInfoCard h2{font:700 21px 'Space Grotesk';margin:18px 0 8px}
+.aboutInfoCard p{color:var(--muted);font-size:13px;line-height:1.65;margin:0}
+.aboutBottom{
+  margin-top:16px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px
+}
+.aboutBottom>div{display:grid;gap:5px}
+.aboutBottom strong{font:700 18px 'Space Grotesk'}
+.aboutBottom span{color:var(--muted);font-size:12px}
+@media(max-width:760px){
+  .publicHeaderActions{gap:4px}
+  .headerAboutLink{padding:0 9px;font-size:11px}
+  .aboutTeaser{width:calc(100% - 24px);padding:40px 0 10px;grid-template-columns:1fr;gap:28px;margin-bottom:50px}
+  .aboutTeaserCopy h2{letter-spacing:-2px}
+  .aboutTeaserCopy p{font-size:13px;line-height:1.6}
+  .aboutPage{width:calc(100% - 24px);padding:38px 0 55px}
+  .aboutPageHero h1{font-size:clamp(42px,12vw,58px);letter-spacing:-2.8px}
+  .aboutPageHero p{font-size:14px}
+  .aboutPageGrid{grid-template-columns:1fr;gap:12px}
+  .aboutInfoCard{padding:21px}
+  .aboutBottom{padding:20px;display:grid}
+  .aboutBottom .primary{width:100%}
+}
