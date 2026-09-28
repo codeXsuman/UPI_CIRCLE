@@ -10,6 +10,7 @@ export async function GET() {
     SELECT id, name, upi_id AS upi
     FROM users
     WHERE id <> ${id}
+      AND deactivated_at IS NULL
     ORDER BY name ASC
   `;
 
