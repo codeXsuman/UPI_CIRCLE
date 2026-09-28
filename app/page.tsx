@@ -117,10 +117,10 @@ export default function Home() {
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
   const [registerServerError, setRegisterServerError] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
-  const [existingAccount, setExistingAccount] = useState(false);
-  const [existingAccountMessage, setExistingAccountMessage] = useState("An account already exists with one or more of these details.");
   const [login, setLogin] = useState({ email: "", password: "" });
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [loginCredentialError, setLoginCredentialError] = useState("");
@@ -315,7 +315,7 @@ export default function Home() {
       if (saved?.recipientAmounts && typeof saved.recipientAmounts === "object") setRecipientAmounts(saved.recipientAmounts);
 
       try {
-        setLoading(true);
+        setAuthChecking(true);
         const res = await fetch("/api/auth/me", { cache: "no-store" });
         const data = await res.json();
         if (data.user) {
@@ -344,7 +344,7 @@ export default function Home() {
       } catch {
         if (saved?.page === "product" || saved?.page === "profile") navigate("home");
       } finally {
-        setLoading(false);
+        setAuthChecking(false);
         setHydrated(true);
       }
     })();
@@ -411,7 +411,9 @@ export default function Home() {
       setSelected([]);
       setRecipientAmounts({});
       setRegisterErrors({});
-      setExistingAccount(false);
+      setRegisterServerError("");
+      setLoginErrors({});
+      setLoginCredentialError("");
       setToast("");
       if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       draftActivityRef.current = Date.now();
@@ -420,6 +422,18 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [hydrated, page]);
 
+
+  useEffect(() => {
+    if (page === "account") {
+      setLoginErrors({});
+      setLoginCredentialError("");
+      setLoginLoading(false);
+    } else if (page === "login") {
+      setRegisterErrors({});
+      setRegisterServerError("");
+      setRegisterLoading(false);
+    }
+  }, [page]);
 
   const registerAccount = async () => {
     const errors: Record<string, string> = {};
@@ -469,8 +483,7 @@ export default function Home() {
           setRegisterServerError(data.error);
         }
         setRegisterErrors(nextErrors);
-        setRegisterServerError("");
-        setExistingAccount(false);
+        if (!conflicts.length) setRegisterServerError(data.error || "An account already exists with these details.");
         const first = Object.keys(nextErrors)[0];
         if (first) document.getElementById("register-" + first)?.focus();
         return;
@@ -500,6 +513,7 @@ export default function Home() {
   };
 
   const loginAccount = async () => {
+    if (loginLoading) return;
     const errors: Record<string, string> = {};
     if (!login.email.trim()) errors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email.trim())) errors.email = "Enter a valid email address";
@@ -511,17 +525,21 @@ export default function Home() {
 
     try {
       setLoading(true);
+      setLoginLoading(true);
+      const normalizedEmail = login.email.trim().toLowerCase();
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(login)
+        body: JSON.stringify({ email: normalizedEmail, password: login.password })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        // Show one generic credential error only; do not reveal which credential failed.
         setLoginErrors({});
-        setLoginCredentialError("Invalid email address or password");
-        pop("Invalid email address or password", "error");
+        const message = res.status === 401
+          ? "Invalid email address or password"
+          : (data.error || "We couldn't log you in right now. Please try again.");
+        setLoginCredentialError(message);
+        pop(message, "error");
         return;
       }
       setProfile({ ...data.user, password: "" });
@@ -532,8 +550,14 @@ export default function Home() {
       navigate("dashboard", true);
       await loadMembers();
       pop("Logged in successfully");
-    } catch { pop("Unable to login"); }
-    finally { setLoading(false); }
+    } catch {
+      setLoginErrors({});
+      setLoginCredentialError("We couldn't connect to the server. Check your connection and try again.");
+      pop("Check your connection and try again.", "error");
+    } finally {
+      setLoginLoading(false);
+      setLoading(false);
+    }
   };
 
   const logout = async () => {
@@ -1198,7 +1222,8 @@ export default function Home() {
                 </div>
               </div>
             )}
-            <div className="formStack">
+            <form className="authForm" onSubmit={e => { e.preventDefault(); registerAccount(); }}>
+              <div className="formStack">
               <label className={registerErrors.name ? "fieldError" : ""}>Name
                 <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
                 {registerErrors.name && <span className="fieldErrorMessage">{registerErrors.name}</span>}
@@ -1243,9 +1268,10 @@ export default function Home() {
               {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
             </div>
             {registerServerError && <div className="registerServerError" role="alert"><span>!</span><div><strong>Registration couldn’t be completed</strong><small>{registerServerError}</small></div></div>}
-            <button className="primary accountSubmit" onClick={registerAccount} disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
-            <div className="accountLoginPrompt">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in</button></div>
-            <button className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
+              <button type="submit" className="primary accountSubmit" disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
+              <div className="accountLoginPrompt">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in</button></div>
+              <button type="button" className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
+            </form>
           </div>
         </section>
       )}
@@ -1265,7 +1291,8 @@ export default function Home() {
                 </div>
               </div>
             )}
-            <div className="formStack loginFormStack">
+            <form className="authForm" onSubmit={e => { e.preventDefault(); loginAccount(); }}>
+              <div className="formStack loginFormStack">
               <label className={loginErrors.email ? "fieldError" : ""}>Email address
                 <input value={login.email} aria-invalid={!!loginErrors.email} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
                 {loginErrors.email && <span className="fieldErrorMessage">{loginErrors.email}</span>}
@@ -1290,10 +1317,11 @@ export default function Home() {
                 {loginCredentialError && <span className="loginCredentialError">{loginCredentialError}</span>}
               </label>
             </div>
-            <button className="primary accountSubmit" onClick={loginAccount}>Login</button>
-            <button className="newAccountPrompt" onClick={() => navigate("account")}>
-              New here? <strong>Create an account now</strong>
-            </button>
+              <button type="submit" className="primary accountSubmit" disabled={loginLoading}>{loginLoading ? "Logging in…" : "Login"}</button>
+              <button type="button" className="newAccountPrompt" onClick={() => navigate("account")}>
+                New here? <strong>Create an account now</strong>
+              </button>
+            </form>
           </div>
         </section>
       )}
@@ -1632,23 +1660,7 @@ export default function Home() {
         </section>
       )}
 
-      {existingAccount && (
-        <div className="accountModalOverlay" onClick={() => setExistingAccount(false)}>
-          <div className="accountModal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button className="accountModalClose" onClick={() => setExistingAccount(false)} aria-label="Close">×</button>
-            <div className="accountModalIcon">!</div>
-            <span className="live">ACCOUNT EXISTS</span>
-            <h2>Existing account found</h2>
-            <p>{existingAccountMessage}</p>
-            <div className="accountModalActions">
-              <button className="primary" onClick={() => { setExistingAccount(false); navigate("login"); }}>Go to Login →</button>
-              <button className="wideBtn" onClick={() => { setExistingAccount(false); setExistingAccountMessage("An account already exists with one or more of these details."); }}>Stay here</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {loading && (
+      {loading && page !== "account" && page !== "login" && (
         <div className="loadingOverlay" role="status" aria-live="polite" aria-label="Loading">
           <div className="loadingCard">
             <span className="loadingSpinner" aria-hidden="true" />
