@@ -1369,16 +1369,6 @@ export default function Home() {
                 <p>Use the email address and password associated with your account.</p>
               </div>
 
-              {(Object.keys(loginErrors).length > 0 || loginCredentialError) && (
-                <div className="loginAlert" role="alert">
-                  <span className="loginAlertIcon" aria-hidden="true">!</span>
-                  <div>
-                    <strong>{loginCredentialError ? "Login unsuccessful" : "Check your details"}</strong>
-                    <span>{loginCredentialError || "Please fix the highlighted fields and try again."}</span>
-                  </div>
-                </div>
-              )}
-
               <form className="loginForm" onSubmit={e => { e.preventDefault(); loginAccount(); }} noValidate>
                 <div className="loginFields">
                   <label className={loginErrors.email ? "fieldError" : ""}>
