@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     if (limited(clientKey(req, upi))) return NextResponse.json({ error: "Too many login attempts. Please try again later." }, { status: 429, headers: { "Retry-After": "900" } });
     const rows = await sql`SELECT id,name,upi_id AS upi,mobile,email,password_hash FROM users WHERE LOWER(upi_id)=${upi} AND deactivated_at IS NULL LIMIT 1`;
     const passwordMatches = await bcrypt.compare(password, rows[0]?.password_hash || DUMMY_HASH);
-    if (!rows.length || !passwordMatches) return NextResponse.json({ error: "Invalid email address or password" }, { status: 401 });
+    if (!rows.length || !passwordMatches) return NextResponse.json({ error: "Invalid UPI ID or password" }, { status: 401 });
     await setSession(rows[0].id);
     const { password_hash, ...user } = rows[0];
     return NextResponse.json({ user });
