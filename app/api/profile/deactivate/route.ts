@@ -26,10 +26,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });
     }
 
-    await sql`UPDATE users SET deactivated_at=NOW(), updated_at=NOW() WHERE id=${id} AND deactivated_at IS NULL`;
+    await sql`DELETE FROM bill_recipients WHERE user_id=\${id}`;
+    await sql`DELETE FROM bill_items WHERE bill_id IN (SELECT id FROM bills WHERE creator_id=\${id})`;
+    await sql`DELETE FROM bills WHERE creator_id=\${id}`;
+    await sql`DELETE FROM users WHERE id=\${id}`;
     await clearSession();
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, deleted: true });
   } catch (error) {
     console.error("Account deactivation error:", error);
     return NextResponse.json({ error: "Unable to deactivate your account right now. Please try again." }, { status: 500 });
