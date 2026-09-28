@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body?.password === "string" ? body.password : "";
 
-    if (!email || !/^\\S+@\\S+\\.\\S+$/.test(email) || email.length > 254 || !password) {
+    if (!email || !/^\S+@\S+\.\S+$/.test(email) || email.length > 254 || !password) {
       return NextResponse.json({ error: "Invalid email address or password" }, { status: 401 });
     }
 
