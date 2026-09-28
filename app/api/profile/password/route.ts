@@ -12,7 +12,7 @@ export async function PATCH(req: Request) {
     const next = String(newPassword || "").trim();
     if (!current) return NextResponse.json({ error: "Current password is required" }, { status: 400 });
     if (!next) return NextResponse.json({ error: "New password is required" }, { status: 400 });
-    if (next.length < 6) return NextResponse.json({ error: "New password must be at least 6 characters" }, { status: 400 });
+    if (next.length < 8 || !/[A-Za-z]/.test(next) || !/\d/.test(next)) return NextResponse.json({ error: "Use at least 8 characters with a letter and a number" }, { status: 400 });
     if (current === next) return NextResponse.json({ error: "New password must be different from your current password" }, { status: 400 });
     const rows = await sql`SELECT password_hash FROM users WHERE id=${id} LIMIT 1`;
     if (!rows.length || !(await bcrypt.compare(current, rows[0].password_hash))) return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });
