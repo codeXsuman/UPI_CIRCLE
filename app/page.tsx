@@ -343,7 +343,10 @@ export default function Home() {
             setPage(resolvedPage);
             touchDraftActivity(resolvedPage);
           }
-          await loadMembers();
+          // Members are not required to resolve the current page.
+          // Start loading them in the background so auth/page rendering is not
+          // blocked by a second network request.
+          void loadMembers();
         } else if (urlPage === "account" || urlPage === "login") {
           setPage(urlPage);
         } else {
@@ -1813,12 +1816,18 @@ export default function Home() {
         </section>
       )}
 
-      {(loading || authChecking) && page !== "account" && page !== "login" && (
-        <div className="loadingOverlay" role="status" aria-live="polite" aria-label="Loading">
+      {authChecking && page !== "account" && page !== "login" && (
+        <div className="loadingOverlay loadingOverlayBoot" role="status" aria-live="polite" aria-label="Checking your session">
           <div className="loadingCard">
             <span className="loadingSpinner" aria-hidden="true" />
-            <span>Loading...</span>
+            <span>Getting things ready…</span>
           </div>
+        </div>
+      )}
+
+      {loading && !authChecking && (
+        <div className="loadingProgress" role="progressbar" aria-label="Updating">
+          <span />
         </div>
       )}
 
