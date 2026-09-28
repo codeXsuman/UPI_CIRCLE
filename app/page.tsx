@@ -1278,16 +1278,6 @@ export default function Home() {
                 <span className="registerStepCount">01 / 01</span>
               </div>
 
-              {(Object.keys(registerErrors).length > 0 || registerServerError) && (
-                <div className="registerAlert" role="alert">
-                  <span className="registerAlertIcon" aria-hidden="true">!</span>
-                  <div>
-                    <strong>{registerServerError ? "We couldn't create your account" : "A few details need attention"}</strong>
-                    <span>{registerServerError || "Check the highlighted fields and try again."}</span>
-                  </div>
-                </div>
-              )}
-
               <form className="registerForm" onSubmit={e => { e.preventDefault(); registerAccount(); }} noValidate>
                 <div className="registerFields">
                   <label className={registerErrors.name ? "fieldError" : ""}>
