@@ -1263,11 +1263,10 @@ export default function Home() {
             <div className={"privacyCheckWrap " + (registerErrors.privacy ? "fieldError" : "")}>
               <label className="privacyCheck">
                 <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); }} />
-                <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
+                <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>Privacy Policy</a>.</span>
               </label>
               {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
             </div>
-            {registerServerError && <div className="registerServerError" role="alert"><span>!</span><div><strong>Registration couldn’t be completed</strong><small>{registerServerError}</small></div></div>}
               <button type="submit" className="primary accountSubmit" disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
               <div className="accountLoginPrompt">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in</button></div>
               <button type="button" className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
@@ -1660,7 +1659,7 @@ export default function Home() {
         </section>
       )}
 
-      {loading && page !== "account" && page !== "login" && (
+      {(loading || authChecking) && page !== "account" && page !== "login" && (
         <div className="loadingOverlay" role="status" aria-live="polite" aria-label="Loading">
           <div className="loadingCard">
             <span className="loadingSpinner" aria-hidden="true" />
