@@ -1184,48 +1184,58 @@ export default function Home() {
       </header>
 
       {page === "home" && (
-        <section className="authLanding">
-          <div className="authHero">
-            <div className="eyebrow"><span>●</span> UPI BILLS <b>SIMPLE BILLING</b></div>
-            <h1>Share bills.<br /><i>Together.</i></h1>
-            <p>A simple way to create, share and manage bills with your friends.</p>
-            <div className="authActions">
-              <button className="primary authPrimary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
-              <button className="secondary authSecondary loginHighlight" onClick={() => navigate("login")}><span className="loginDot">●</span> Login</button>
+        <main className="homePage">
+          <section className="homeHero">
+            <div className="homeHeroCopy">
+              <div className="eyebrow"><span>●</span> UPI BILLS <b>SIMPLE BILLING</b></div>
+              <h1>Share bills.<br /><i>Without the mess.</i></h1>
+              <p className="homeHeroLead">Create, split, share and track group expenses in one simple place.</p>
+              <div className="authActions">
+                <button className="primary authPrimary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
+                <button className="secondary authSecondary loginHighlight" onClick={() => navigate("login")}>Login</button>
+              </div>
+              <p className="homeHeroNote">Made for friends, trips, meals and everyday shared expenses.</p>
             </div>
-            <small className="authNote">Create your account once. Create bills, scan to pay, and keep your payment history in one place.</small>
-          </div>
-          <div className="authVisual">
-            <div className="authOrb orbOne" /><div className="authOrb orbTwo" />
-            <div className="authPanel">
-              <div className="authPanelTop"><span>UPI BILLS</span><b>●</b></div>
-              <div className="authPanelLine" />
-              <div className="authPanelBalance"><small>TOTAL BILLS</small><strong>₹ 2,450.00</strong></div>
-              <div className="authRows">
-                <div><b>SC</b><span><strong>Coffee bill</strong><small>4 members</small></span><em>₹ 320</em></div>
-                <div><b>TR</b><span><strong>Trip bill</strong><small>6 members</small></span><em>₹ 1,840</em></div>
-                <div><b>FD</b><span><strong>Dinner bill</strong><small>3 members</small></span><em>₹ 290</em></div>
+
+            <div className="homeHeroVisual" aria-label="Example UPI Bills dashboard">
+              <div className="homeVisualGlow homeGlowOne" />
+              <div className="homeVisualGlow homeGlowTwo" />
+              <div className="homeBillCard">
+                <div className="homeBillHeader"><span>UPI BILLS</span><b>•••</b></div>
+                <div className="homeBillRule" />
+                <small>Total bill</small>
+                <strong className="homeBillTotal">₹ 2,450.00</strong>
+                <div className="homeBillItems">
+                  <div><span className="homeAvatar">SC</span><span><b>Coffee bill</b><small>4 people</small></span><em>₹ 320</em></div>
+                  <div><span className="homeAvatar">TR</span><span><b>Trip bill</b><small>6 people</small></span><em>₹ 1,840</em></div>
+                  <div><span className="homeAvatar">FD</span><span><b>Dinner bill</b><small>3 people</small></span><em>₹ 290</em></div>
+                </div>
+                <div className="homeBillFooter"><span>3 bills</span><b>Organized</b></div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
 
-      {page === "home" && (
-        <section className="aboutTeaser" id="about">
-          <div className="aboutTeaserCopy">
-            <div className="eyebrow"><span>●</span> ABOUT UPI BILLS</div>
-            <h2>What is <i>UPI Bills?</i></h2>
-            <p>UPI Bills is a simple bill-sharing application that helps you create a bill, split it among people, share payment details, and keep track of what has been paid.</p>
-            <p>Instead of calculating everything manually across chats and notes, UPI Bills keeps the bill, participants, amounts, and payment status together in one place.</p>
-            <button className="secondary aboutLearnBtn" onClick={() => navigate("about")}>Learn more about UPI Bills <span>→</span></button>
-          </div>
-          <div className="aboutFeatureGrid">
-            <div className="aboutFeature"><b>01</b><strong>Create & split</strong><span>Add items and divide the bill between selected people.</span></div>
-            <div className="aboutFeature"><b>02</b><strong>Share & pay</strong><span>Share bill details and use UPI payment options when it is time to pay.</span></div>
-            <div className="aboutFeature"><b>03</b><strong>Track bills</strong><span>Keep created bills and payment activity organized in one place.</span></div>
-          </div>
-        </section>
+          <section className="homeAbout">
+            <div className="homeAboutIntro">
+              <span className="homeSectionLabel">WHAT IS UPI BILLS?</span>
+              <h2>A simpler way to handle <i>shared expenses.</i></h2>
+              <p>UPI Bills keeps the bill, people, amounts and payment status together, so you don't have to manage everything across chats, notes and calculators.</p>
+            </div>
+            <div className="homeAboutPoints">
+              <div><span>01</span><div><strong>Create a bill</strong><small>Add items and amounts, then choose who is involved.</small></div></div>
+              <div><span>02</span><div><strong>Split it clearly</strong><small>See each person's amount before sharing the bill.</small></div></div>
+              <div><span>03</span><div><strong>Pay and track</strong><small>Use UPI payment options and keep the activity organized.</small></div></div>
+            </div>
+          </section>
+
+          <section className="homeCta">
+            <div>
+              <span className="homeSectionLabel">READY WHEN YOU ARE</span>
+              <h2>Make the next shared bill <i>easy.</i></h2>
+            </div>
+            <button className="primary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
+          </section>
+        </main>
       )}
 
       {page === "about" && (
