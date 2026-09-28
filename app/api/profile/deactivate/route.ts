@@ -26,10 +26,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });
     }
 
-    await sql`DELETE FROM bill_recipients WHERE user_id=${id}`;
-    await sql`DELETE FROM bill_items WHERE bill_id IN (SELECT id FROM bills WHERE creator_id=${id})`;
-    await sql`DELETE FROM bills WHERE creator_id=${id}`;
-    await sql`DELETE FROM users WHERE id=${id}`;
+    // Run the destructive operations as one atomic database transaction.
+    // If any step fails, Neon rolls the entire deletion back.
+    await sql.transaction([
+      sql`DELETE FROM bill_recipients WHERE user_id=${id}`,
+      sql`DELETE FROM bill_items WHERE bill_id IN (SELECT id FROM bills WHERE creator_id=${id})`,
+      sql`DELETE FROM bills WHERE creator_id=${id}`,
+      sql`DELETE FROM users WHERE id=${id}`
+    ]);
+
     await clearSession();
 
     return NextResponse.json({ success: true, deleted: true });
