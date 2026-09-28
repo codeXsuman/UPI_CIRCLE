@@ -1228,13 +1228,11 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="homeCta">
-            <div>
-              <span className="homeSectionLabel">READY WHEN YOU ARE</span>
-              <h2>Make the next shared bill <i>easy.</i></h2>
-            </div>
-            <button className="primary" onClick={() => navigate("account")}>Create a new account <span>→</span></button>
-          </section>
+          <div className="homeAboutButtonWrap">
+            <button className="secondary homeAboutButton" onClick={() => navigate("about")}>
+              What is UPI Bills? <span>→</span>
+            </button>
+          </div>
         </main>
       )}
 
