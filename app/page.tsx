@@ -1246,77 +1246,113 @@ export default function Home() {
       )}
 
       {page === "account" && (
-        <section key="account-page" className="account authPageTransition">
-          <div className="card accountCard">
-            <div className="accountBadge">CREATE ACCOUNT</div>
-            <div className="authSectionEyebrow">UPI BILLS REGISTRATION</div>
-            <h1>Create your account</h1>
-            <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
-            {(Object.keys(registerErrors).length > 0 || registerServerError) && (
-              <div className="formWarning" role="alert">
-                <span className="formWarningIcon">!</span>
-                <div>
-                  <strong>{registerServerError ? "Registration needs attention" : "Check your details"}</strong>
-                  <small>{registerServerError || "Please fix the highlighted fields before creating your account."}</small>
-                </div>
+        <section key="account-page" className="registerPage">
+          <div className="registerShell">
+            <aside className="registerIntro">
+              <button type="button" className="registerBack" onClick={() => navigate("home")} aria-label="Back to home">
+                <span aria-hidden="true">←</span> Back to home
+              </button>
+              <div className="registerBrandMark" aria-hidden="true"><b>U</b></div>
+              <div className="eyebrow"><span>●</span> UPI BILLS <b>GET STARTED</b></div>
+              <h1>Everything you need to manage shared bills.</h1>
+              <p>Create your account once, then create bills, split expenses, share payment details, and keep your activity organized.</p>
+
+              <div className="registerBenefits">
+                <div><span>01</span><div><strong>Create & split</strong><small>Build a bill and divide it between the people involved.</small></div></div>
+                <div><span>02</span><div><strong>Pay with UPI</strong><small>Keep payment details and QR options close to the bill.</small></div></div>
+                <div><span>03</span><div><strong>Track everything</strong><small>See your bills and payment activity in one place.</small></div></div>
               </div>
-            )}
-            <form className="authForm" onSubmit={e => { e.preventDefault(); registerAccount(); }}>
-              <div className="formStack">
-              <label className={registerErrors.name ? "fieldError" : ""}>Name
-                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} autoComplete="name" maxLength={100} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
-                {registerErrors.name && <span className="fieldErrorMessage">{registerErrors.name}</span>}
-              </label>
-              <label className={registerErrors.upi ? "fieldError" : ""}>UPI ID
-                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} autoComplete="off" maxLength={100} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />
-                {registerErrors.upi && <span className="fieldErrorMessage">{registerErrors.upi}</span>}
-              </label>
-              <label className={registerErrors.mobile ? "fieldError" : ""}>Mobile number <span className="optionalTag">Optional</span>
-                <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); setRegisterServerError(""); }} />
-                {registerErrors.mobile && <span className="fieldErrorMessage">{registerErrors.mobile}</span>}
-              </label>
-              <label className={registerErrors.email ? "fieldError" : ""}>Email
-                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); setRegisterServerError(""); }} />
-                {registerErrors.email && <span className="fieldErrorMessage">{registerErrors.email}</span>}
-              </label>
-              <label className={registerErrors.password ? "fieldError" : ""}>Password
-                <div className="passwordInputWrap">
-                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} aria-describedby="register-password-help register-password-strength" type={showRegisterPassword ? "text" : "password"} autoComplete="new-password" maxLength={128} placeholder="Create a password" onKeyDown={e => setRegisterCapsLock(e.getModifierState("CapsLock"))} onKeyUp={e => setRegisterCapsLock(e.getModifierState("CapsLock"))} onBlur={() => setRegisterCapsLock(false)} onChange={e => {
-                  const value = e.target.value;
-                  setRegister({ ...register, password: value });
-                  setRegisterErrors(old => ({ ...old, password: "" }));
-                  setRegisterServerError("");
-                  if (!value) setPasswordStrength("");
-                  else if (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) setPasswordStrength("weak");
-                  else if (value.length < 10 || !/[A-Z]/.test(value) || !/[^A-Za-z0-9]/.test(value)) setPasswordStrength("medium");
-                  else setPasswordStrength("strong");
-                }} />
-                <button type="button" className="passwordToggle" onClick={() => setShowRegisterPassword(old => !old)} aria-label={showRegisterPassword ? "Hide password" : "Show password"}>
-                  {showRegisterPassword ? "Hide" : "Show"}
-                </button>
+              <div className="registerLoginHint">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in →</button></div>
+            </aside>
+
+            <div className="registerFormCard">
+              <div className="registerFormHeader">
+                <div>
+                  <span className="registerStep">ACCOUNT SETUP</span>
+                  <h2>Create your account</h2>
+                  <p>It only takes a minute. Your password is never saved in your browser draft.</p>
                 </div>
-                <div id="register-password-help" className="passwordGuidance">Use at least 8 characters with a letter and a number.</div>
-                {registerCapsLock && <div className="capsLockHint" role="status"><span aria-hidden="true">⇧</span> Caps Lock is on</div>}
-                {register.password && (
-                  <div id="register-password-strength" className={"passwordStrengthPanel " + passwordStrength} aria-live="polite">
-                    <div className="passwordStrengthTop"><span>Password strength</span><strong>{passwordStrength === "weak" ? "Weak" : passwordStrength === "medium" ? "Medium" : "Strong"}</strong></div>
-                    <div className="passwordStrengthBars" aria-hidden="true"><i/><i/><i/></div>
+                <span className="registerStepCount">01 / 01</span>
+              </div>
+
+              {(Object.keys(registerErrors).length > 0 || registerServerError) && (
+                <div className="registerAlert" role="alert">
+                  <span className="registerAlertIcon" aria-hidden="true">!</span>
+                  <div>
+                    <strong>{registerServerError ? "We couldn't create your account" : "A few details need attention"}</strong>
+                    <span>{registerServerError || "Check the highlighted fields and try again."}</span>
                   </div>
-                )}
-                {registerErrors.password && <span className="fieldErrorMessage">{registerErrors.password}</span>}
-              </label>
+                </div>
+              )}
+
+              <form className="registerForm" onSubmit={e => { e.preventDefault(); registerAccount(); }} noValidate>
+                <div className="registerFields">
+                  <label className={registerErrors.name ? "fieldError" : ""}>
+                    <span>Full name</span>
+                    <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} autoComplete="name" maxLength={100} placeholder="e.g. Suman Nandi" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
+                    {registerErrors.name && <small className="fieldErrorMessage">{registerErrors.name}</small>}
+                  </label>
+
+                  <label className={registerErrors.upi ? "fieldError" : ""}>
+                    <span>UPI ID</span>
+                    <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} autoComplete="off" maxLength={100} placeholder="yourname@bank" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />
+                    {registerErrors.upi && <small className="fieldErrorMessage">{registerErrors.upi}</small>}
+                  </label>
+
+                  <label className={registerErrors.mobile ? "fieldError" : ""}>
+                    <span>Mobile number <em>Optional</em></span>
+                    <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} type="tel" inputMode="numeric" autoComplete="tel" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); setRegisterServerError(""); }} />
+                    {registerErrors.mobile && <small className="fieldErrorMessage">{registerErrors.mobile}</small>}
+                  </label>
+
+                  <label className={registerErrors.email ? "fieldError" : ""}>
+                    <span>Email address</span>
+                    <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); setRegisterServerError(""); }} />
+                    {registerErrors.email && <small className="fieldErrorMessage">{registerErrors.email}</small>}
+                  </label>
+
+                  <label className={"registerPasswordField " + (registerErrors.password ? "fieldError" : "")}>
+                    <span>Password</span>
+                    <div className="registerPasswordWrap">
+                      <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} aria-describedby="register-password-help register-password-strength" type={showRegisterPassword ? "text" : "password"} autoComplete="new-password" maxLength={128} placeholder="Create a password" onKeyDown={e => setRegisterCapsLock(e.getModifierState("CapsLock"))} onKeyUp={e => setRegisterCapsLock(e.getModifierState("CapsLock"))} onBlur={() => setRegisterCapsLock(false)} onChange={e => {
+                        const value = e.target.value;
+                        setRegister({ ...register, password: value });
+                        setRegisterErrors(old => ({ ...old, password: "" }));
+                        setRegisterServerError("");
+                        if (!value) setPasswordStrength("");
+                        else if (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) setPasswordStrength("weak");
+                        else if (value.length < 10 || !/[A-Z]/.test(value) || !/[^A-Za-z0-9]/.test(value)) setPasswordStrength("medium");
+                        else setPasswordStrength("strong");
+                      }} />
+                      <button type="button" className="registerPasswordToggle" onClick={() => setShowRegisterPassword(v => !v)} aria-label={showRegisterPassword ? "Hide password" : "Show password"}>{showRegisterPassword ? "Hide" : "Show"}</button>
+                    </div>
+                    <small id="register-password-help" className="registerPasswordHelp">At least 8 characters, including a letter and a number.</small>
+                    {registerCapsLock && <small className="registerCapsHint" role="status">⇧ Caps Lock is on</small>}
+                    {register.password && (
+                      <div id="register-password-strength" className={"registerStrength " + passwordStrength} aria-live="polite">
+                        <div><span>Password strength</span><strong>{passwordStrength === "weak" ? "Weak" : passwordStrength === "medium" ? "Medium" : "Strong"}</strong></div>
+                        <span className="registerStrengthTrack" aria-hidden="true"><i/><i/><i/></span>
+                      </div>
+                    )}
+                    {registerErrors.password && <small className="fieldErrorMessage">{registerErrors.password}</small>}
+                  </label>
+                </div>
+
+                <div className={"registerConsent " + (registerErrors.privacy ? "fieldError" : "")}>
+                  <label>
+                    <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); }} />
+                    <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>Privacy Policy</a>.</span>
+                  </label>
+                  {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
+                </div>
+
+                <button type="submit" className="registerSubmit" disabled={registerLoading}>
+                  <span>{registerLoading ? "Creating account…" : "Create account"}</span>
+                  {!registerLoading && <span aria-hidden="true">→</span>}
+                </button>
+                <p className="registerSecureNote"><span aria-hidden="true">✓</span> Your password is encrypted before it is stored.</p>
+              </form>
             </div>
-            <div className={"privacyCheckWrap " + (registerErrors.privacy ? "fieldError" : "")}>
-              <label className="privacyCheck">
-                <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); }} />
-                <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>Privacy Policy</a>.</span>
-              </label>
-              {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
-            </div>
-              <button type="submit" className="primary accountSubmit" disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
-              <div className="accountLoginPrompt">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in</button></div>
-              <button type="button" className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
-            </form>
           </div>
         </section>
       )}
