@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
-import { setSession } from "@/lib/auth";
+import { setSession, ensureAccountStatusSchema } from "@/lib/auth";
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -14,6 +14,7 @@ export async function POST(req: Request) {
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid request body" }, { status: 400 }); }
   try {
+    await ensureAccountStatusSchema();
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body?.password === "string" ? body.password : "";
 
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
     }
 
     if (limited(clientKey(req, email))) return NextResponse.json({ error: "Too many login attempts. Please try again later." }, { status: 429, headers: { "Retry-After": "900" } });
-    const rows = await sql`SELECT id,name,upi_id AS upi,mobile,email,password_hash FROM users WHERE email=${email} LIMIT 1`;
+    const rows = await sql`SELECT id,name,upi_id AS upi,mobile,email,password_hash FROM users WHERE email=${email} AND deactivated_at IS NULL LIMIT 1`;
     const passwordMatches = await bcrypt.compare(password, rows[0]?.password_hash || DUMMY_HASH);
     if (!rows.length || !passwordMatches) return NextResponse.json({ error: "Invalid email address or password" }, { status: 401 });
     await setSession(rows[0].id);
