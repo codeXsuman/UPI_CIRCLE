@@ -1626,3 +1626,121 @@ input,button{touch-action:manipulation}
   .registerConsent{margin-top:17px}
   .registerSubmit{height:49px}
 }
+
+/* Login — complete visual redesign */
+.loginPage{
+  min-height:calc(100vh - 76px);display:flex;align-items:center;justify-content:center;
+  padding:48px 24px 72px
+}
+.loginShell{
+  width:min(1040px,100%);display:grid;grid-template-columns:minmax(0,.9fr) minmax(440px,1fr);
+  border:1px solid #e7e7e3;border-radius:28px;overflow:hidden;background:#fff;
+  box-shadow:0 24px 80px rgba(20,20,20,.08)
+}
+.loginIntro{
+  padding:46px 42px;background:#f8f8f5;border-right:1px solid #e9e9e5;
+  display:flex;flex-direction:column
+}
+.loginBack{
+  align-self:flex-start;border:0;background:transparent;color:#73777f;padding:4px 0;
+  font-size:12px;font-weight:700;cursor:pointer
+}
+.loginBack:hover{color:#171717}
+.loginBrandMark{
+  width:46px;height:46px;display:grid;place-items:center;margin:42px 0 28px;border-radius:14px;
+  background:#171717;color:#ffd21a;font:800 22px 'Space Grotesk';box-shadow:0 8px 20px rgba(17,17,17,.12)
+}
+.loginIntro .eyebrow{margin-bottom:17px}
+.loginIntro h1{
+  max-width:430px;margin:0;font:700 clamp(38px,4vw,55px)/.97 'Space Grotesk';
+  letter-spacing:-2.8px;color:#151515
+}
+.loginIntro h1 i{font-style:normal;color:#6259ed}
+.loginIntro>p{max-width:430px;margin:20px 0 0;color:#70757e;font-size:14px;line-height:1.7}
+.loginFeatureList{display:grid;gap:0;margin-top:34px}
+.loginFeatureList>div{
+  display:grid;grid-template-columns:31px 1fr;gap:12px;padding:13px 0;border-top:1px solid #e4e4df
+}
+.loginFeatureList>div:last-child{border-bottom:1px solid #e4e4df}
+.loginFeatureList>div>span{color:#746cf7;font-size:10px;font-weight:800;padding-top:3px}
+.loginFeatureList strong{display:block;font:700 14px 'Space Grotesk';color:#222}
+.loginFeatureList small{display:block;margin-top:3px;color:#888d95;font-size:11px;line-height:1.5}
+.loginRegisterHint{margin-top:auto;padding-top:38px;color:#858991;font-size:12px}
+.loginRegisterHint button{
+  border:0;background:transparent;color:#6259ed;font-weight:800;cursor:pointer;padding:0
+}
+.loginFormCard{padding:52px 50px;display:flex;flex-direction:column;justify-content:center}
+.loginFormHeader{margin-bottom:28px}
+.loginStep{display:inline-block;color:#7b8190;font-size:10px;font-weight:800;letter-spacing:1.2px}
+.loginFormHeader h2{
+  margin:10px 0 7px;font:700 32px/1.05 'Space Grotesk';letter-spacing:-1.3px;color:#171717
+}
+.loginFormHeader p{margin:0;color:#8a9099;font-size:12px;line-height:1.55;max-width:440px}
+.loginAlert{
+  display:flex;gap:10px;padding:12px 13px;margin-bottom:20px;
+  border:1px solid #f1c9c6;border-radius:12px;background:#fff7f6;color:#7c2720
+}
+.loginAlertIcon{
+  flex:0 0 22px;width:22px;height:22px;border-radius:7px;background:#f9d8d4;
+  display:grid;place-items:center;font-size:11px;font-weight:900
+}
+.loginAlert strong,.loginAlert span{display:block}
+.loginAlert strong{font-size:11px}.loginAlert span{margin-top:3px;font-size:11px;line-height:1.45;color:#96534e}
+.loginFields{display:grid;gap:20px}
+.loginFields>label{color:#30343a;font-size:11px;font-weight:800}
+.loginFields>label>span:first-child{display:block}
+.loginFields input{
+  width:100%;height:50px;margin-top:7px;padding:0 14px;border:1px solid #dfe2e7;border-radius:12px;
+  background:#fff;color:#171717;font-size:13px;outline:none;transition:border-color .16s,box-shadow .16s
+}
+.loginFields input::placeholder{color:#a5aab2}
+.loginFields input:focus{border-color:#8279f7;box-shadow:0 0 0 4px rgba(98,89,237,.08)}
+.loginFields .fieldError input{border-color:#dfaaa5;box-shadow:0 0 0 3px rgba(180,35,24,.06)}
+.loginPasswordWrap{position:relative;margin-top:7px}
+.loginPasswordWrap input{margin-top:0;padding-right:65px}
+.loginPasswordToggle{
+  position:absolute;right:7px;top:50%;transform:translateY(-50%);border:0;border-radius:8px;
+  background:transparent;color:#666d77;padding:6px 8px;font-size:10px;font-weight:800;cursor:pointer
+}
+.loginPasswordToggle:hover{background:#f2f3f5;color:#171717}
+.loginCapsHint{display:block;margin-top:7px;color:#8b5c00;font-size:10px;font-weight:800}
+.loginSubmit{
+  width:100%;height:50px;margin-top:24px;border:0;border-radius:13px;background:#171717;color:#ffd21a;
+  display:flex;align-items:center;justify-content:space-between;padding:0 17px;font-size:13px;font-weight:800;
+  cursor:pointer;box-shadow:0 8px 18px rgba(17,17,17,.09);transition:.16s ease
+}
+.loginSubmit:hover:not(:disabled){background:#080808;transform:translateY(-1px)}
+.loginSubmit:disabled{opacity:.62;cursor:wait;transform:none}
+.loginSecureNote{
+  display:flex;align-items:center;justify-content:center;gap:6px;margin:12px 0 0;color:#9a9fa7;font-size:10px
+}
+.loginSecureNote span{color:#32805e;font-weight:900}
+@media(max-width:800px){
+  .loginPage{align-items:flex-start;padding:30px 16px 55px}
+  .loginShell{grid-template-columns:1fr;border-radius:22px}
+  .loginIntro{padding:28px 24px 24px;border-right:0;border-bottom:1px solid #e9e9e5}
+  .loginBrandMark{margin:25px 0 21px}
+  .loginIntro h1{font-size:38px}
+  .loginIntro>p{font-size:13px;margin-top:15px}
+  .loginFeatureList{margin-top:24px}
+  .loginRegisterHint{margin-top:23px;padding-top:0}
+  .loginFormCard{padding:30px 24px 34px}
+}
+@media(max-width:560px){
+  .loginPage{padding:12px 12px 45px}
+  .loginShell{border-radius:18px}
+  .loginIntro{padding:22px 18px 20px}
+  .loginBack{font-size:11px}
+  .loginBrandMark{width:40px;height:40px;margin:22px 0 18px;border-radius:12px;font-size:19px}
+  .loginIntro h1{font-size:32px;letter-spacing:-1.6px}
+  .loginIntro>p{font-size:12px;line-height:1.6}
+  .loginFeatureList{margin-top:20px}
+  .loginFeatureList small{font-size:10px}
+  .loginFormCard{padding:24px 18px 25px}
+  .loginFormHeader{margin-bottom:22px}
+  .loginFormHeader h2{font-size:27px}
+  .loginFormHeader p{font-size:11px}
+  .loginFields{gap:16px}
+  .loginFields input{height:48px}
+  .loginSubmit{height:49px;margin-top:21px}
+}
