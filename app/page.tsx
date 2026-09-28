@@ -120,7 +120,6 @@ export default function Home() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
-  const [registerPasswordFocused, setRegisterPasswordFocused] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
   const [login, setLogin] = useState({ email: "", password: "" });
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
@@ -526,6 +525,7 @@ export default function Home() {
     }
 
     try {
+      setLoading(true);
       setLoginLoading(true);
       const normalizedEmail = login.email.trim().toLowerCase();
       const res = await fetch("/api/auth/login", {
@@ -557,6 +557,7 @@ export default function Home() {
       pop("Check your connection and try again.", "error");
     } finally {
       setLoginLoading(false);
+      setLoading(false);
     }
   };
 
@@ -624,7 +625,7 @@ export default function Home() {
     if (mobile && !/^[6-9]\d{9}$/.test(mobile)) errors.mobile = "Enter a valid 10-digit Indian mobile number";
     if (!email) errors.email = "Email is required";
     else if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = "Enter a valid email address";
-    if (profile.password?.trim() && (profile.password.trim().length < 8 || !/[A-Za-z]/.test(profile.password.trim()) || !/\d/.test(profile.password.trim()))) errors.password = "Use at least 8 characters with a letter and a number";
+    if (profile.password?.trim() && profile.password.trim().length < 6) errors.password = "Password must be at least 6 characters";
 
     setProfileErrors(errors);
     if (Object.keys(errors).length) {
@@ -707,7 +708,7 @@ export default function Home() {
 
     if (!current) errors.current = "Current password is required";
     if (!next) errors.newPassword = "New password is required";
-    else if (next.length < 8 || !/[A-Za-z]/.test(next) || !/\d/.test(next)) errors.newPassword = "Use at least 8 characters with a letter and a number";
+    else if (next.length < 6) errors.newPassword = "New password must be at least 6 characters";
     if (!confirm) errors.confirmPassword = "Please confirm your new password";
     else if (next !== confirm) errors.confirmPassword = "Passwords do not match";
 
@@ -1225,24 +1226,24 @@ export default function Home() {
             <form className="authForm" onSubmit={e => { e.preventDefault(); registerAccount(); }}>
               <div className="formStack">
               <label className={registerErrors.name ? "fieldError" : ""}>Name
-                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} aria-describedby={registerErrors.name ? "register-name-error" : undefined} autoComplete="name" maxLength={100} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
-                {registerErrors.name && <span id="register-name-error" className="fieldErrorMessage">{registerErrors.name}</span>}
+                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} autoComplete="name" maxLength={100} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
+                {registerErrors.name && <span className="fieldErrorMessage">{registerErrors.name}</span>}
               </label>
               <label className={registerErrors.upi ? "fieldError" : ""}>UPI ID
-                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} aria-describedby={registerErrors.upi ? "register-upi-error" : undefined} autoComplete="off" maxLength={100} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />
-                {registerErrors.upi && <span id="register-upi-error" className="fieldErrorMessage">{registerErrors.upi}</span>}
+                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} autoComplete="off" maxLength={100} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />
+                {registerErrors.upi && <span className="fieldErrorMessage">{registerErrors.upi}</span>}
               </label>
               <label className={registerErrors.mobile ? "fieldError" : ""}>Mobile number <span className="optionalTag">Optional</span>
-                <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} aria-describedby={registerErrors.mobile ? "register-mobile-error" : undefined} type="tel" autoComplete="tel" inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); setRegisterServerError(""); }} />
-                {registerErrors.mobile && <span id="register-mobile-error" className="fieldErrorMessage">{registerErrors.mobile}</span>}
+                <input id="register-mobile" value={register.mobile} aria-invalid={!!registerErrors.mobile} inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" onChange={e => { setRegister({ ...register, mobile: e.target.value.replace(/\D/g, "") }); setRegisterErrors(old => ({ ...old, mobile: "" })); setRegisterServerError(""); }} />
+                {registerErrors.mobile && <span className="fieldErrorMessage">{registerErrors.mobile}</span>}
               </label>
               <label className={registerErrors.email ? "fieldError" : ""}>Email
-                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} aria-describedby={registerErrors.email ? "register-email-error" : undefined} type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); setRegisterServerError(""); }} />
-                {registerErrors.email && <span id="register-email-error" className="fieldErrorMessage">{registerErrors.email}</span>}
+                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); setRegisterServerError(""); }} />
+                {registerErrors.email && <span className="fieldErrorMessage">{registerErrors.email}</span>}
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
-                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} aria-describedby={registerErrors.password ? "register-password-error" : "register-password-hint"} type={showRegisterPassword ? "text" : "password"} autoComplete="new-password" maxLength={128} placeholder="Create a password" onChange={e => {
+                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type={showRegisterPassword ? "text" : "password"} autoComplete="new-password" maxLength={128} placeholder="Create a password" onChange={e => {
                   const value = e.target.value;
                   setRegister({ ...register, password: value });
                   setRegisterErrors(old => ({ ...old, password: "" }));
@@ -1256,19 +1257,18 @@ export default function Home() {
                   {showRegisterPassword ? "Hide" : "Show"}
                 </button>
                 </div>
-                {registerPasswordFocused && <small id="register-password-hint" className="passwordHint">Use at least 8 characters with a letter and a number.</small>}
                 {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}
-                {registerErrors.password && <span id="register-password-error" className="fieldErrorMessage">{registerErrors.password}</span>}
+                {registerErrors.password && <span className="fieldErrorMessage">{registerErrors.password}</span>}
               </label>
             </div>
             <div className={"privacyCheckWrap " + (registerErrors.privacy ? "fieldError" : "")}>
-              <label className="privacyCheck" aria-describedby={registerErrors.privacy ? "register-privacy-error" : undefined}>
-                <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); setRegisterServerError(""); }} />
+              <label className="privacyCheck">
+                <input id="register-privacy" type="checkbox" checked={privacyAccepted} onChange={e => { setPrivacyAccepted(e.target.checked); setRegisterErrors(old => ({ ...old, privacy: "" })); }} />
                 <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>Privacy Policy</a>.</span>
               </label>
-              {registerErrors.privacy && <small id="register-privacy-error" className="privacyError">{registerErrors.privacy}</small>}
+              {registerErrors.privacy && <small className="privacyError">{registerErrors.privacy}</small>}
             </div>
-              <button type="submit" className="primary accountSubmit" aria-busy={registerLoading} disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
+              <button type="submit" className="primary accountSubmit" disabled={registerLoading}>{registerLoading ? "Creating account…" : "Create account"}</button>
               <div className="accountLoginPrompt">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in</button></div>
               <button type="button" className="wideBtn" onClick={() => navigate("home")}>Back to home</button>
             </form>
@@ -1294,12 +1294,12 @@ export default function Home() {
             <form className="authForm" onSubmit={e => { e.preventDefault(); loginAccount(); }}>
               <div className="formStack loginFormStack">
               <label className={loginErrors.email ? "fieldError" : ""}>Email address
-                <input id="login-email" value={login.email} aria-invalid={!!loginErrors.email} aria-describedby={loginErrors.email ? "login-email-error" : loginCredentialError ? "login-credential-error" : undefined} autoComplete="email" maxLength={254} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
-                {loginErrors.email && <span id="login-email-error" className="fieldErrorMessage">{loginErrors.email}</span>}
+                <input id="login-email" value={login.email} aria-invalid={!!loginErrors.email} autoComplete="email" maxLength={254} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
+                {loginErrors.email && <span className="fieldErrorMessage">{loginErrors.email}</span>}
               </label>
               <label className={loginErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
-                  <input id="login-password" value={login.password} aria-invalid={!!loginErrors.password} aria-describedby={loginErrors.password ? "login-password-error" : loginCredentialError ? "login-credential-error" : undefined} autoComplete="current-password" maxLength={128} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
+                  <input id="login-password" value={login.password} aria-invalid={!!loginErrors.password} autoComplete="current-password" maxLength={128} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
                   <button
                     type="button"
                     className="passwordToggle"
@@ -1313,11 +1313,11 @@ export default function Home() {
                     )}
                   </button>
                 </div>
-                {loginErrors.password && <span id="login-password-error" className="fieldErrorMessage">{loginErrors.password}</span>}
-                {loginCredentialError && <span id="login-credential-error" className="loginCredentialError" role="alert">{loginCredentialError}</span>}
+                {loginErrors.password && <span className="fieldErrorMessage">{loginErrors.password}</span>}
+                {loginCredentialError && <span className="loginCredentialError">{loginCredentialError}</span>}
               </label>
             </div>
-              <button type="submit" className="primary accountSubmit" aria-busy={loginLoading} disabled={loginLoading}>{loginLoading ? "Logging in…" : "Login"}</button>
+              <button type="submit" className="primary accountSubmit" disabled={loginLoading}>{loginLoading ? "Logging in…" : "Login"}</button>
               <button type="button" className="newAccountPrompt" onClick={() => navigate("account")}>
                 New here? <strong>Create an account now</strong>
               </button>
@@ -1415,7 +1415,7 @@ export default function Home() {
                   {profileErrors.upi && <span className="fieldErrorMessage">{profileErrors.upi}</span>}
                 </label>
                 <label className={profileErrors.mobile ? "fieldError" : ""}>Mobile number
-                  <input id="profile-mobile" disabled={!profileEditing} value={profile.mobile} maxLength={10} type="tel" autoComplete="tel" inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
+                  <input id="profile-mobile" disabled={!profileEditing} value={profile.mobile} maxLength={10} inputMode="numeric" aria-invalid={!!profileErrors.mobile} onChange={e => { setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "") }); setProfileErrors(old => ({ ...old, mobile: "" })); }} />
                   {profileErrors.mobile && <span className="fieldErrorMessage">{profileErrors.mobile}</span>}
                 </label>
                 <label className={profileErrors.email ? "fieldError" : ""}>Email
@@ -1474,8 +1474,7 @@ export default function Home() {
                       <input id="change-new-password" value={changeNewPassword} type={showChangeNewPassword ? "text" : "password"} placeholder="Create a new password" autoComplete="new-password" aria-invalid={!!changePasswordErrors.newPassword} onChange={e => { setChangeNewPassword(e.target.value); setChangePasswordErrors(old => ({ ...old, newPassword: "", form: "" })); }} />
                       <button type="button" className="passwordToggle" onClick={() => setShowChangeNewPassword(v => !v)} aria-label={showChangeNewPassword ? "Hide new password" : "Show new password"}>{showChangeNewPassword ? "Hide" : "Show"}</button>
                     </div>
-                    <small className="passwordHint">Use at least 8 characters with a letter and a number.</small>
-                    {changePasswordErrors.newPassword && <span className="fieldErrorMessage">{changePasswordErrors.newPassword}</span>
+                    {changePasswordErrors.newPassword && <span className="fieldErrorMessage">{changePasswordErrors.newPassword}</span>}
                   </label>
                   <label className={changePasswordErrors.confirmPassword ? "fieldError" : ""}>Confirm new password
                     <div className="passwordInputWrap">
