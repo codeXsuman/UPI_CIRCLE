@@ -515,6 +515,7 @@ export default function Home() {
   const loginAccount = async () => {
     if (loginLoading) return;
     const errors: Record<string, string> = {};
+    setLoginCredentialError("");
     if (!login.email.trim()) errors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email.trim())) errors.email = "Enter a valid email address";
     if (!login.password) errors.password = "Password is required";
@@ -1225,11 +1226,11 @@ export default function Home() {
             <form className="authForm" onSubmit={e => { e.preventDefault(); registerAccount(); }}>
               <div className="formStack">
               <label className={registerErrors.name ? "fieldError" : ""}>Name
-                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
+                <input id="register-name" value={register.name} aria-invalid={!!registerErrors.name} autoComplete="name" maxLength={100} placeholder="Your full name" onChange={e => { setRegister({ ...register, name: e.target.value }); setRegisterErrors(old => ({ ...old, name: "" })); setRegisterServerError(""); }} />
                 {registerErrors.name && <span className="fieldErrorMessage">{registerErrors.name}</span>}
               </label>
               <label className={registerErrors.upi ? "fieldError" : ""}>UPI ID
-                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />
+                <input id="register-upi" value={register.upi} aria-invalid={!!registerErrors.upi} autoComplete="off" maxLength={100} placeholder="yourname@upi" onChange={e => { setRegister({ ...register, upi: e.target.value }); setRegisterErrors(old => ({ ...old, upi: "" })); setRegisterServerError(""); }} />
                 {registerErrors.upi && <span className="fieldErrorMessage">{registerErrors.upi}</span>}
               </label>
               <label className={registerErrors.mobile ? "fieldError" : ""}>Mobile number <span className="optionalTag">Optional</span>
@@ -1237,12 +1238,12 @@ export default function Home() {
                 {registerErrors.mobile && <span className="fieldErrorMessage">{registerErrors.mobile}</span>}
               </label>
               <label className={registerErrors.email ? "fieldError" : ""}>Email
-                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); setRegisterServerError(""); }} />
+                <input id="register-email" value={register.email} aria-invalid={!!registerErrors.email} type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" onChange={e => { setRegister({ ...register, email: e.target.value }); setRegisterErrors(old => ({ ...old, email: "" })); setRegisterServerError(""); }} />
                 {registerErrors.email && <span className="fieldErrorMessage">{registerErrors.email}</span>}
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
-                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type={showRegisterPassword ? "text" : "password"} placeholder="Create a password" onChange={e => {
+                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type={showRegisterPassword ? "text" : "password"} autoComplete="new-password" maxLength={128} placeholder="Create a password" onChange={e => {
                   const value = e.target.value;
                   setRegister({ ...register, password: value });
                   setRegisterErrors(old => ({ ...old, password: "" }));
@@ -1293,12 +1294,12 @@ export default function Home() {
             <form className="authForm" onSubmit={e => { e.preventDefault(); loginAccount(); }}>
               <div className="formStack loginFormStack">
               <label className={loginErrors.email ? "fieldError" : ""}>Email address
-                <input value={login.email} aria-invalid={!!loginErrors.email} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
+                <input id="login-email" value={login.email} aria-invalid={!!loginErrors.email} autoComplete="email" maxLength={254} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
                 {loginErrors.email && <span className="fieldErrorMessage">{loginErrors.email}</span>}
               </label>
               <label className={loginErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
-                  <input value={login.password} aria-invalid={!!loginErrors.password} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
+                  <input id="login-password" value={login.password} aria-invalid={!!loginErrors.password} autoComplete="current-password" maxLength={128} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
                   <button
                     type="button"
                     className="passwordToggle"
