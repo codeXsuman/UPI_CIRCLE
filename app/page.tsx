@@ -31,7 +31,7 @@ function ToastNotification({ message, type }: { message: string; type: "success"
 }
 
 export default function Home() {
-  type AppPage = "home" | "account" | "login" | "dashboard" | "product" | "mine" | "others" | "profile";
+  type AppPage = "home" | "about" | "account" | "login" | "dashboard" | "product" | "mine" | "others" | "profile";
   const [page, setPage] = useState<AppPage>("home");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileSection, setProfileSection] = useState<"profile" | "activity" | "settings">("profile");
@@ -50,6 +50,7 @@ export default function Home() {
     const path = window.location.pathname.replace(/\/+$/, "") || "/";
     const routes: Record<string, AppPage> = {
       "/": "home",
+      "/about": "about",
       "/dashboard": "dashboard",
       "/login": "login",
       "/register": "account",
@@ -72,6 +73,7 @@ export default function Home() {
 
   const pagePath = (nextPage: AppPage) => ({
     home: "/",
+    about: "/about",
     account: "/register",
     login: "/login",
     dashboard: "/dashboard",
@@ -1172,13 +1174,13 @@ export default function Home() {
               )}
             </div>
           </div>
-        ) : <div className="accountMenuWrap">
+        ) : <div className="publicHeaderActions"><button className="headerAboutLink" onClick={() => navigate("about")}>About</button><div className="accountMenuWrap">
           <button className="profilePlaceholder accountButton" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen(v => !v)}>Account</button>
           {accountMenuOpen && <div className="accountDropdown">
             <button onClick={() => { setAccountMenuOpen(false); navigate("account"); }}>Create account</button>
             <button onClick={() => { setAccountMenuOpen(false); navigate("login"); }}>Login</button>
           </div>}
-        </div>}
+        </div></div>}
       </header>
 
       {page === "home" && (
@@ -1206,6 +1208,40 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </section>
+      )}
+
+      {page === "home" && (
+        <section className="aboutTeaser" id="about">
+          <div className="aboutTeaserCopy">
+            <div className="eyebrow"><span>●</span> ABOUT UPI BILLS</div>
+            <h2>What is <i>UPI Bills?</i></h2>
+            <p>UPI Bills is a simple bill-sharing application that helps you create a bill, split it among people, share payment details, and keep track of what has been paid.</p>
+            <p>Instead of calculating everything manually across chats and notes, UPI Bills keeps the bill, participants, amounts, and payment status together in one place.</p>
+            <button className="secondary aboutLearnBtn" onClick={() => navigate("about")}>Learn more about UPI Bills <span>→</span></button>
+          </div>
+          <div className="aboutFeatureGrid">
+            <div className="aboutFeature"><b>01</b><strong>Create & split</strong><span>Add items and divide the bill between selected people.</span></div>
+            <div className="aboutFeature"><b>02</b><strong>Share & pay</strong><span>Share bill details and use UPI payment options when it is time to pay.</span></div>
+            <div className="aboutFeature"><b>03</b><strong>Track bills</strong><span>Keep created bills and payment activity organized in one place.</span></div>
+          </div>
+        </section>
+      )}
+
+      {page === "about" && (
+        <section className="aboutPage authPageTransition">
+          <div className="aboutPageHero">
+            <div className="eyebrow"><span>●</span> ABOUT UPI BILLS <b>SIMPLE BILLING</b></div>
+            <h1>Bill sharing,<br /><i>without the mess.</i></h1>
+            <p>UPI Bills is designed to make shared expenses easier to create, understand, pay, and track.</p>
+          </div>
+          <div className="aboutPageGrid">
+            <div className="card aboutInfoCard"><span>01</span><h2>Create a bill</h2><p>Add the items and amounts that make up a shared expense, then choose the people who are part of it.</p></div>
+            <div className="card aboutInfoCard"><span>02</span><h2>Split the expense</h2><p>See how much each selected person needs to contribute instead of doing the calculations manually.</p></div>
+            <div className="card aboutInfoCard"><span>03</span><h2>Make payment easier</h2><p>Use the available UPI payment flow or QR code to help the right person pay the right amount.</p></div>
+            <div className="card aboutInfoCard"><span>04</span><h2>Keep everything organized</h2><p>View your bills, other bills shared with you, payment activity, and account information from one application.</p></div>
+          </div>
+          <div className="aboutBottom card"><div><strong>Ready to simplify shared bills?</strong><span>Create an account and start organizing your next expense.</span></div><button className="primary" onClick={() => navigate("account")}>Create a new account <span>→</span></button></div>
         </section>
       )}
 
