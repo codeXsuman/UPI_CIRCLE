@@ -160,6 +160,10 @@ export default function Home() {
   const [changePasswordSaving, setChangePasswordSaving] = useState(false);
   const [changePasswordErrors, setChangePasswordErrors] = useState<Record<string, string>>({});
   const [loggingOut, setLoggingOut] = useState(false);
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [deactivatePassword, setDeactivatePassword] = useState("");
+  const [deactivateSaving, setDeactivateSaving] = useState(false);
+  const [deactivateError, setDeactivateError] = useState("");
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const profileEditOriginalRef = useRef<User | null>(null);
   const toastTimerRef = useRef<number | null>(null);
@@ -750,6 +754,52 @@ export default function Home() {
       setChangePasswordErrors({ form: "Unable to change password. Check your connection and try again." });
     } finally {
       setChangePasswordSaving(false);
+    }
+  };
+
+  const deactivateAccount = async () => {
+    if (deactivateSaving) return;
+    const password = deactivatePassword.trim();
+    if (!password) {
+      setDeactivateError("Current password is required");
+      return;
+    }
+
+    try {
+      setDeactivateSaving(true);
+      setDeactivateError("");
+      const res = await fetch("/api/profile/deactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: password })
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setDeactivateError(data.error || "Unable to deactivate your account");
+        return;
+      }
+
+      setDeactivateOpen(false);
+      setDeactivatePassword("");
+      setDeactivateError("");
+      setProfile(null);
+      setMembers([]);
+      setSelected([]);
+      setRecipientAmounts({});
+      setMyBills([]);
+      setOtherBills([]);
+      setDashboardStats({ created: 0, pending: 0, received: 0, owing: 0 });
+      setProfileMenuOpen(false);
+      setAccountMenuOpen(false);
+      profileEditOriginalRef.current = null;
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+      navigate("home", true);
+      pop("Your account has been deactivated", "success");
+    } catch {
+      setDeactivateError("Check your connection and try again.");
+    } finally {
+      setDeactivateSaving(false);
     }
   };
 
@@ -1524,6 +1574,33 @@ export default function Home() {
                 </div>
               </div>
             </div>}
+            {deactivateOpen && <div className="profileSaveModalBackdrop" onClick={() => !deactivateSaving && setDeactivateOpen(false)}>
+              <div className="profileSaveModal deactivateModal" onClick={e => e.stopPropagation()}>
+                <div className="profileSaveModalIcon deactivateModalIcon">!</div>
+                <h3>Deactivate account?</h3>
+                <p>Your account will be deactivated and you will be signed out. Your existing bill records will be retained. You can contact support if you need help restoring access.</p>
+                <label className={deactivateError ? "fieldError" : ""}>Current password
+                  <div className="passwordInputWrap">
+                    <input
+                      id="deactivate-password"
+                      value={deactivatePassword}
+                      type="password"
+                      autoFocus
+                      autoComplete="current-password"
+                      placeholder="Enter your current password"
+                      aria-invalid={!!deactivateError}
+                      onChange={e => { setDeactivatePassword(e.target.value); setDeactivateError(""); }}
+                      onKeyDown={e => { if (e.key === "Enter") deactivateAccount(); }}
+                    />
+                  </div>
+                  {deactivateError && <span className="fieldErrorMessage">{deactivateError}</span>}
+                </label>
+                <div className="profileSaveModalActions">
+                  <button className="secondary" type="button" onClick={() => setDeactivateOpen(false)} disabled={deactivateSaving}>Cancel</button>
+                  <button className="dangerAction" type="button" onClick={deactivateAccount} disabled={deactivateSaving}>{deactivateSaving ? "Deactivating…" : "Deactivate account"}</button>
+                </div>
+              </div>
+            </div>}
             <div className="profileSettingsCard card">
               <div className="profileSettingsIntro">
                 <span>ACCOUNT</span>
@@ -1565,7 +1642,7 @@ export default function Home() {
               </div>
 
               <div className="profileSettingsActions">
-                <button className="secondary" onClick={() => pop("This feature is coming soon.", "info")}>Deactivate account</button>
+                <button className="secondary" onClick={() => { setDeactivateError(""); setDeactivatePassword(""); setDeactivateOpen(true); }}>Deactivate account</button>
                 <button className="secondary dangerAction" onClick={logout} disabled={loggingOut}>{loggingOut ? "Logging out…" : "Log out"}</button>
               </div>
             </div>
