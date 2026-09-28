@@ -1257,11 +1257,6 @@ export default function Home() {
               <h1>Everything you need to manage shared bills.</h1>
               <p>Create your account once, then create bills, split expenses, share payment details, and keep your activity organized.</p>
 
-              <div className="registerBenefits">
-                <div><span>01</span><div><strong>Create & split</strong><small>Build a bill and divide it between the people involved.</small></div></div>
-                <div><span>02</span><div><strong>Pay with UPI</strong><small>Keep payment details and QR options close to the bill.</small></div></div>
-                <div><span>03</span><div><strong>Track everything</strong><small>See your bills and payment activity in one place.</small></div></div>
-              </div>
               <div className="registerLoginHint">Already have an account? <button type="button" onClick={() => navigate("login")}>Log in →</button></div>
             </aside>
 
