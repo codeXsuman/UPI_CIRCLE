@@ -124,7 +124,7 @@ export default function Home() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [registerCapsLock, setRegisterCapsLock] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
-  const [login, setLogin] = useState({ email: "", password: "" });
+  const [login, setLogin] = useState({ upi: "", password: "" });
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [loginCredentialError, setLoginCredentialError] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -317,7 +317,7 @@ export default function Home() {
 
       if (saved?.register) setRegister(saved.register);
       if (saved?.privacyAccepted) setPrivacyAccepted(true);
-      if (saved?.login) setLogin(saved.login);
+      if (saved?.login) setLogin({ upi: saved.login.upi || "", password: saved.login.password || "" });
       if (Array.isArray(saved?.items) && saved.items.length) setItems(saved.items);
       if (Array.isArray(saved?.selected)) setSelected(saved.selected);
       if (saved?.recipientAmounts && typeof saved.recipientAmounts === "object") setRecipientAmounts(saved.recipientAmounts);
@@ -414,7 +414,7 @@ export default function Home() {
 
       setRegister({ name: "", upi: "", mobile: "", email: "", password: "" });
       setPrivacyAccepted(false);
-      setLogin({ email: "", password: "" });
+      setLogin({ upi: "", password: "" });
       setItems([{ id: 1, name: "", amount: "" }]);
       setSelected([]);
       setRecipientAmounts({});
@@ -524,8 +524,8 @@ export default function Home() {
     if (loginLoading) return;
     const errors: Record<string, string> = {};
     setLoginCredentialError("");
-    if (!login.email.trim()) errors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email.trim())) errors.email = "Enter a valid email address";
+    if (!login.upi.trim()) errors.upi = "UPI ID is required";
+    else if (!/^[A-Za-z0-9][A-Za-z0-9._-]{1,}@[A-Za-z0-9][A-Za-z0-9.-]{1,}$/.test(login.upi.trim())) errors.upi = "Enter a valid UPI ID";
     if (!login.password) errors.password = "Password is required";
     if (Object.keys(errors).length) {
       setLoginErrors(errors);
@@ -535,24 +535,24 @@ export default function Home() {
     try {
       setLoading(true);
       setLoginLoading(true);
-      const normalizedEmail = login.email.trim().toLowerCase();
+      const normalizedUpi = login.upi.trim().toLowerCase();
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail, password: login.password })
+        body: JSON.stringify({ upi: normalizedUpi, password: login.password })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setLoginErrors({});
         const message = res.status === 401
-          ? "Invalid email address or password"
+          ? "Invalid UPI ID or password"
           : (data.error || "We couldn't log you in right now. Please try again.");
         setLoginCredentialError(message);
         pop(message, "error");
         return;
       }
       setProfile({ ...data.user, password: "" });
-      setLogin({ email: "", password: "" });
+      setLogin({ upi: "", password: "" });
       setLoginErrors({});
       setLoginCredentialError("");
       setShowLoginPassword(false);
@@ -1416,15 +1416,15 @@ export default function Home() {
               <div className="loginFormHeader">
                 <span className="loginStep">ACCOUNT ACCESS</span>
                 <h2>Log in to UPI Bills</h2>
-                <p>Use the email address and password associated with your account.</p>
+                <p>Use your UPI ID and password to access your account.</p>
               </div>
 
               <form className="loginForm" onSubmit={e => { e.preventDefault(); loginAccount(); }} noValidate>
                 <div className="loginFields">
-                  <label className={loginErrors.email ? "fieldError" : ""}>
-                    <span>Email address</span>
-                    <input id="login-email" value={login.email} aria-invalid={!!loginErrors.email} autoComplete="email" maxLength={254} type="email" placeholder="you@example.com" onChange={e => { setLogin({ ...login, email: e.target.value }); setLoginErrors(old => ({ ...old, email: "" })); setLoginCredentialError(""); }} />
-                    {loginErrors.email && <small className="fieldErrorMessage">{loginErrors.email}</small>}
+                  <label className={loginErrors.upi ? "fieldError" : ""}>
+                    <span>UPI ID</span>
+                    <input id="login-upi" value={login.upi} aria-invalid={!!loginErrors.upi} autoComplete="username" maxLength={100} type="text" inputMode="email" placeholder="yourname@bank" onChange={e => { setLogin({ ...login, upi: e.target.value }); setLoginErrors(old => ({ ...old, upi: "" })); setLoginCredentialError(""); }} />
+                    {loginErrors.upi && <small className="fieldErrorMessage">{loginErrors.upi}</small>}
                   </label>
 
                   <label className={loginErrors.password ? "fieldError" : ""}>
