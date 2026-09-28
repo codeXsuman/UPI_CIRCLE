@@ -12,9 +12,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Please complete all required fields" }, { status: 400 });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedUpi = upi.trim().toLowerCase();
-    const normalizedMobile = (mobile || "").replace(/\D/g, "");
+    const rawName = String(name).trim();
+    const normalizedEmail = String(email).trim().toLowerCase();
+    if (rawName.length > 100) {
+      return NextResponse.json({ error: "Name must be 100 characters or fewer" }, { status: 400 });
+    }
+    if (normalizedEmail.length > 254) {
+      return NextResponse.json({ error: "Email address is too long" }, { status: 400 });
+    }
+    const normalizedUpi = String(upi).trim().toLowerCase();
+    const normalizedMobile = String(mobile || "").replace(/\D/g, "");
+    if (normalizedUpi.length > 100) {
+      return NextResponse.json({ error: "UPI ID is too long" }, { status: 400 });
+    }
 
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
       return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
@@ -72,7 +82,7 @@ export async function POST(req: Request) {
       INSERT INTO users (id, name, upi_id, mobile, email, password_hash)
       VALUES (
         ${id},
-        ${name.trim()},
+        ${rawName},
         ${normalizedUpi},
         ${normalizedMobile || ""},
         ${normalizedEmail},
