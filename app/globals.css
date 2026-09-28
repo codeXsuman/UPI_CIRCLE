@@ -1748,3 +1748,107 @@ input,button{touch-action:manipulation}
 /* Simplified login intro after removing secondary feature list */
 .loginIntro{justify-content:flex-start}
 .loginIntro .loginRegisterHint{margin-top:34px;padding-top:22px;border-top:1px solid #e4e4df}
+
+/* Home page — complete responsive redesign */
+.homePage{width:100%;overflow:hidden}
+.homeHero{
+  width:min(1180px,calc(100% - 48px));min-height:650px;margin:0 auto;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,.9fr);
+  align-items:center;gap:70px;padding:72px 0 78px;
+}
+.homeHeroCopy{max-width:590px}
+.homeHeroCopy h1{
+  margin:20px 0 20px;font:700 clamp(54px,6.3vw,86px)/.9 'Space Grotesk';
+  letter-spacing:-5px;color:#111
+}
+.homeHeroCopy h1 i{font-style:normal;color:#6259ed}
+.homeHeroLead{max-width:540px;margin:0;color:#717780;font-size:17px;line-height:1.65}
+.homeHero .authActions{margin-top:28px}
+.homeHeroNote{margin:17px 0 0;color:#a0a5ad;font-size:11px}
+.homeHeroVisual{position:relative;min-height:470px;display:grid;place-items:center}
+.homeVisualGlow{position:absolute;border-radius:50%;filter:blur(1px)}
+.homeGlowOne{width:290px;height:290px;background:#fff0a8;right:3%;top:12%}
+.homeGlowTwo{width:190px;height:190px;background:#e9e7ff;left:2%;bottom:8%}
+.homeBillCard{
+  position:relative;z-index:1;width:min(455px,100%);padding:25px 25px 20px;
+  border:1px solid #e7e5df;border-radius:25px;background:rgba(255,255,255,.96);
+  box-shadow:0 28px 70px rgba(27,27,27,.13);transform:rotate(1.5deg)
+}
+.homeBillHeader{display:flex;justify-content:space-between;align-items:center;color:#6a61e9;font-size:10px;font-weight:900;letter-spacing:1.5px}
+.homeBillHeader b{letter-spacing:2px;color:#a4a7ad}
+.homeBillRule{height:1px;background:#ecece8;margin:18px 0 20px}
+.homeBillCard>small{color:#a0a5ad;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+.homeBillTotal{display:block;margin-top:4px;font:700 42px 'Space Grotesk';letter-spacing:-2px}
+.homeBillItems{display:grid;gap:9px;margin-top:22px}
+.homeBillItems>div{
+  display:grid;grid-template-columns:38px 1fr auto;gap:11px;align-items:center;
+  padding:11px 12px;border:1px solid #ecece8;border-radius:13px;background:#fff
+}
+.homeAvatar{
+  width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  background:#fff0a0;color:#514c2e;font-size:10px;font-weight:900
+}
+.homeBillItems b{display:block;font-size:12px}.homeBillItems small{display:block;color:#9a9fa7;font-size:9px;margin-top:2px}
+.homeBillItems em{font-style:normal;font-size:11px;font-weight:800}
+.homeBillFooter{
+  display:flex;justify-content:space-between;margin-top:16px;padding-top:13px;border-top:1px solid #ecece8;
+  color:#9a9fa7;font-size:10px
+}
+.homeBillFooter b{color:#2e805d}
+.homeAbout{
+  width:min(1180px,calc(100% - 48px));margin:0 auto;
+  padding:82px 0 88px;border-top:1px solid #e5e5e1;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.85fr);gap:90px;align-items:center
+}
+.homeSectionLabel{display:block;color:#757b84;font-size:10px;font-weight:900;letter-spacing:1.5px}
+.homeAboutIntro h2{
+  max-width:680px;margin:15px 0 18px;font:700 clamp(38px,4.5vw,62px)/.98 'Space Grotesk';
+  letter-spacing:-3px
+}
+.homeAboutIntro h2 i,.homeCta h2 i{font-style:normal;color:#6259ed}
+.homeAboutIntro p{max-width:610px;margin:0;color:#737a83;font-size:14px;line-height:1.75}
+.homeAboutPoints{display:grid;border-top:1px solid #e5e5e1}
+.homeAboutPoints>div{
+  display:grid;grid-template-columns:35px 1fr;gap:13px;padding:20px 0;border-bottom:1px solid #e5e5e1
+}
+.homeAboutPoints>div>span{color:#6259ed;font-size:10px;font-weight:900;padding-top:3px}
+.homeAboutPoints strong{display:block;font:700 16px 'Space Grotesk'}
+.homeAboutPoints small{display:block;color:#92979f;font-size:11px;line-height:1.5;margin-top:4px}
+.homeCta{
+  width:min(1180px,calc(100% - 48px));margin:0 auto 70px;padding:28px 30px;
+  border-radius:22px;background:#171717;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:30px
+}
+.homeCta .homeSectionLabel{color:#aaaeb5}
+.homeCta h2{margin:7px 0 0;font:700 clamp(25px,3vw,38px)/1 'Space Grotesk';letter-spacing:-1.5px}
+.homeCta .primary{margin:0;white-space:nowrap}
+@media(max-width:900px){
+  .homeHero{grid-template-columns:1fr;gap:35px;padding:52px 0 65px;min-height:auto}
+  .homeHeroCopy{max-width:700px}
+  .homeHeroCopy h1{font-size:clamp(52px,9vw,76px)}
+  .homeHeroVisual{min-height:390px}
+  .homeAbout{grid-template-columns:1fr;gap:40px;padding:65px 0 70px}
+  .homeAboutIntro h2{max-width:720px}
+}
+@media(max-width:600px){
+  .homeHero,.homeAbout,.homeCta{width:calc(100% - 28px)}
+  .homeHero{padding:42px 0 48px;gap:20px}
+  .homeHeroCopy h1{font-size:clamp(43px,13vw,62px);letter-spacing:-3px;margin:16px 0 15px}
+  .homeHeroLead{font-size:14px;line-height:1.6}
+  .homeHero .authActions{display:grid;grid-template-columns:1fr 92px;gap:8px}
+  .homeHero .authPrimary,.homeHero .authSecondary{width:100%;min-width:0;justify-content:center}
+  .homeHeroNote{font-size:10px;line-height:1.5}
+  .homeHeroVisual{min-height:315px}
+  .homeBillCard{padding:19px;width:calc(100% - 12px);border-radius:20px}
+  .homeBillTotal{font-size:34px}
+  .homeBillItems>div{padding:9px}
+  .homeBillItems em{font-size:10px}
+  .homeGlowOne{width:210px;height:210px}.homeGlowTwo{width:130px;height:130px}
+  .homeAbout{padding:52px 0 58px;gap:30px}
+  .homeAboutIntro h2{font-size:38px;letter-spacing:-2px;margin:12px 0 14px}
+  .homeAboutIntro p{font-size:13px;line-height:1.65}
+  .homeAboutPoints>div{padding:16px 0}
+  .homeAboutPoints strong{font-size:14px}.homeAboutPoints small{font-size:10px}
+  .homeCta{margin-bottom:45px;padding:23px 20px;display:grid;gap:20px}
+  .homeCta h2{font-size:27px}
+  .homeCta .primary{width:100%}
+}
