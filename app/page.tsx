@@ -1578,7 +1578,7 @@ export default function Home() {
               <div className="profileSaveModal deactivateModal" onClick={e => e.stopPropagation()}>
                 <div className="profileSaveModalIcon deactivateModalIcon">!</div>
                 <h3>Deactivate account?</h3>
-                <p>Your account will be deactivated and you will be signed out. Your existing bill records will be retained. You can contact support if you need help restoring access.</p>
+                <p>Your account and personal data will be permanently deleted. Bills you created will also be removed, and your participation will be removed from bills created by others. This action cannot be undone.</p>
                 <label className={deactivateError ? "fieldError" : ""}>Current password
                   <div className="passwordInputWrap">
                     <input
