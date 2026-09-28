@@ -795,7 +795,7 @@ export default function Home() {
       profileEditOriginalRef.current = null;
       try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
       navigate("home", true);
-      pop("Your account has been deactivated", "success");
+      pop("Your account and related data have been deleted", "success");
     } catch {
       setDeactivateError("Check your connection and try again.");
     } finally {
@@ -1577,7 +1577,7 @@ export default function Home() {
             {deactivateOpen && <div className="profileSaveModalBackdrop" onClick={() => !deactivateSaving && setDeactivateOpen(false)}>
               <div className="profileSaveModal deactivateModal" onClick={e => e.stopPropagation()}>
                 <div className="profileSaveModalIcon deactivateModalIcon">!</div>
-                <h3>Deactivate account?</h3>
+                <h3>Delete account permanently?</h3>
                 <p>Your account and personal data will be permanently deleted. Bills you created will also be removed, and your participation will be removed from bills created by others. This action cannot be undone.</p>
                 <label className={deactivateError ? "fieldError" : ""}>Current password
                   <div className="passwordInputWrap">
@@ -1597,7 +1597,7 @@ export default function Home() {
                 </label>
                 <div className="profileSaveModalActions">
                   <button className="secondary" type="button" onClick={() => setDeactivateOpen(false)} disabled={deactivateSaving}>Cancel</button>
-                  <button className="dangerAction" type="button" onClick={deactivateAccount} disabled={deactivateSaving}>{deactivateSaving ? "Deactivating…" : "Deactivate account"}</button>
+                  <button className="dangerAction" type="button" onClick={deactivateAccount} disabled={deactivateSaving}>{deactivateSaving ? "Deleting…" : "Delete account"}</button>
                 </div>
               </div>
             </div>}
