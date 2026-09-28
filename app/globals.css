@@ -164,6 +164,40 @@ footer{padding:28px 20px 34px;text-align:center;color:#98a2b3;font-size:11px}
 .historyEmpty{padding:65px 30px;text-align:center}.historyEmptyIcon{width:58px;height:58px;border-radius:18px;background:#efedff;color:var(--brand);display:grid;place-items:center;margin:0 auto 18px;font-size:25px}.historyEmpty h2{font:700 24px 'Space Grotesk';margin:0}.historyEmpty p{color:var(--muted);font-size:13px;max-width:480px;margin:8px auto 20px}
 .historyList{display:grid;gap:16px}.historyCard{padding:24px}.historyCardTop{display:flex;justify-content:space-between;gap:20px}.historyCardTop h2{font:700 19px 'Space Grotesk';margin:10px 0 5px}.historyCardTop small{color:#98a2b3;font-size:10px}.historyCardTop>strong{font:700 25px 'Space Grotesk';white-space:nowrap}.historyItems{margin-top:18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.historyItems>div{display:flex;justify-content:space-between;gap:15px;padding:10px 0;font-size:11px}.historyMeta{display:flex;gap:25px;flex-wrap:wrap;padding-top:15px;color:#98a2b3;font-size:10px}.historyMeta b{color:#475467}.historyCardActions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}.historyCardActions button{min-height:40px;padding:0 13px;border-radius:11px;font-size:11px}.alertStatus{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:9px;font-weight:800;letter-spacing:.8px}.alertStatus.pending{background:#fff5dc;color:#a66b00}.alertStatus.paid{background:var(--successBg);color:var(--success)}
 
+/* Loading UX: boot uses a centered card; normal network work uses a tiny
+   non-blocking top progress bar so existing page content stays interactive. */
+.loadingOverlayBoot{animation:loadingBootIn .18s ease-out both}
+.loadingProgress{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  z-index:1000;
+  overflow:hidden;
+  pointer-events:none;
+  background:rgba(98,89,237,.08);
+}
+.loadingProgress span{
+  display:block;
+  width:38%;
+  height:100%;
+  border-radius:999px;
+  background:var(--brand);
+  animation:loadingProgressMove 1.05s ease-in-out infinite;
+  transform:translateX(-110%);
+}
+@keyframes loadingProgressMove{
+  0%{transform:translateX(-110%);opacity:.35}
+  45%{opacity:1}
+  100%{transform:translateX(365%);opacity:.35}
+}
+@keyframes loadingBootIn{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  .loadingProgress span{animation:none;transform:none;width:100%}
+  .loadingOverlayBoot{animation:none}
+}
+
 /* Modals / loading / toast */
 .shareOverlay,.accountModalOverlay,.loadingOverlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(10,14,24,.48);backdrop-filter:blur(8px)}
 .shareModal,.accountModal,.loadingCard{background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.22)}
