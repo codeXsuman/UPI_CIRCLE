@@ -30,7 +30,9 @@ export async function getSessionUserId() {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret);
-    return typeof payload.userId === "string" ? payload.userId : null;
+    if (typeof payload.userId !== "string") return null;
+    const rows = await sql`SELECT id FROM users WHERE id=${payload.userId} AND deactivated_at IS NULL LIMIT 1`;
+    return rows[0]?.id || null;
   } catch { return null; }
 }
 
