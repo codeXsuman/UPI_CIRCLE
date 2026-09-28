@@ -1366,11 +1366,6 @@ export default function Home() {
               <div className="eyebrow"><span>●</span> UPI BILLS <b>WELCOME BACK</b></div>
               <h1>Your bills.<br /><i>Right where you left them.</i></h1>
               <p>Sign in to continue managing shared expenses, checking bills, and keeping your payment activity organized.</p>
-              <div className="loginFeatureList">
-                <div><span>01</span><strong>Shared bills</strong><small>See the bills you've created or received.</small></div>
-                <div><span>02</span><strong>Payment activity</strong><small>Keep track of pending and completed payments.</small></div>
-                <div><span>03</span><strong>Quick access</strong><small>Return to your account without rebuilding anything.</small></div>
-              </div>
               <div className="loginRegisterHint">Don't have an account? <button type="button" onClick={() => navigate("account")}>Create one →</button></div>
             </aside>
 
