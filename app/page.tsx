@@ -120,11 +120,13 @@ export default function Home() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [registerCapsLock, setRegisterCapsLock] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | "">("");
   const [login, setLogin] = useState({ email: "", password: "" });
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [loginCredentialError, setLoginCredentialError] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginCapsLock, setLoginCapsLock] = useState(false);
   const [items, setItems] = useState<Item[]>([{ id: 1, name: "", amount: "" }]);
 
   const [myBills, setMyBills] = useState<any[]>([]);
@@ -1211,7 +1213,7 @@ export default function Home() {
         <section key="account-page" className="account authPageTransition">
           <div className="card accountCard">
             <div className="accountBadge">CREATE ACCOUNT</div>
-            <label>UPI BILLS REGISTRATION</label>
+            <div className="authSectionEyebrow">UPI BILLS REGISTRATION</div>
             <h1>Create your account</h1>
             <p>Your registration draft is kept in this browser if you accidentally refresh.</p>
             {(Object.keys(registerErrors).length > 0 || registerServerError) && (
@@ -1243,7 +1245,7 @@ export default function Home() {
               </label>
               <label className={registerErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
-                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} type={showRegisterPassword ? "text" : "password"} autoComplete="new-password" maxLength={128} placeholder="Create a password" onChange={e => {
+                <input id="register-password" value={register.password} aria-invalid={!!registerErrors.password} aria-describedby="register-password-help register-password-strength" type={showRegisterPassword ? "text" : "password"} autoComplete="new-password" maxLength={128} placeholder="Create a password" onKeyDown={e => setRegisterCapsLock(e.getModifierState("CapsLock"))} onKeyUp={e => setRegisterCapsLock(e.getModifierState("CapsLock"))} onBlur={() => setRegisterCapsLock(false)} onChange={e => {
                   const value = e.target.value;
                   setRegister({ ...register, password: value });
                   setRegisterErrors(old => ({ ...old, password: "" }));
@@ -1257,7 +1259,14 @@ export default function Home() {
                   {showRegisterPassword ? "Hide" : "Show"}
                 </button>
                 </div>
-                {register.password && <small className={"passwordStrength " + passwordStrength}>Password strength: <strong>{passwordStrength}</strong></small>}
+                <div id="register-password-help" className="passwordGuidance">Use at least 8 characters with a letter and a number.</div>
+                {registerCapsLock && <div className="capsLockHint" role="status"><span aria-hidden="true">⇧</span> Caps Lock is on</div>}
+                {register.password && (
+                  <div id="register-password-strength" className={"passwordStrengthPanel " + passwordStrength} aria-live="polite">
+                    <div className="passwordStrengthTop"><span>Password strength</span><strong>{passwordStrength === "weak" ? "Weak" : passwordStrength === "medium" ? "Medium" : "Strong"}</strong></div>
+                    <div className="passwordStrengthBars" aria-hidden="true"><i/><i/><i/></div>
+                  </div>
+                )}
                 {registerErrors.password && <span className="fieldErrorMessage">{registerErrors.password}</span>}
               </label>
             </div>
@@ -1280,7 +1289,7 @@ export default function Home() {
         <section key="login-page" className="account authPageTransition">
           <div className="card accountCard">
             <div className="accountBadge">WELCOME BACK</div>
-            <label>UPI BILLS LOGIN</label><h1>Login</h1>
+            <div className="authSectionEyebrow">UPI BILLS LOGIN</div><h1>Login</h1>
             <p>Your login form also stays on this page after an accidental refresh.</p>
             {(Object.keys(loginErrors).length > 0 || loginCredentialError) && (
               <div className="formWarning" role="alert">
@@ -1299,7 +1308,7 @@ export default function Home() {
               </label>
               <label className={loginErrors.password ? "fieldError" : ""}>Password
                 <div className="passwordInputWrap">
-                  <input id="login-password" value={login.password} aria-invalid={!!loginErrors.password} autoComplete="current-password" maxLength={128} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
+                  <input id="login-password" value={login.password} aria-invalid={!!loginErrors.password} aria-describedby={loginCapsLock ? "login-caps-lock" : undefined} autoComplete="current-password" maxLength={128} type={showLoginPassword ? "text" : "password"} placeholder="Your password" onKeyDown={e => setLoginCapsLock(e.getModifierState("CapsLock"))} onKeyUp={e => setLoginCapsLock(e.getModifierState("CapsLock"))} onBlur={() => setLoginCapsLock(false)} onChange={e => { setLogin({ ...login, password: e.target.value }); setLoginErrors(old => ({ ...old, password: "" })); setLoginCredentialError(""); }} />
                   <button
                     type="button"
                     className="passwordToggle"
@@ -1313,6 +1322,7 @@ export default function Home() {
                     )}
                   </button>
                 </div>
+                {loginCapsLock && <div id="login-caps-lock" className="capsLockHint" role="status"><span aria-hidden="true">⇧</span> Caps Lock is on</div>}
                 {loginErrors.password && <span className="fieldErrorMessage">{loginErrors.password}</span>}
                 {loginCredentialError && <span className="loginCredentialError">{loginCredentialError}</span>}
               </label>
