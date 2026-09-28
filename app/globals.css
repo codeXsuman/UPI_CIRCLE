@@ -2083,3 +2083,24 @@ input,button{touch-action:manipulation}
   .changePasswordSection{padding:13px!important}
   .profileSettingsActions{grid-template-columns:1fr}
 }
+
+/* Account deactivation modal */
+.deactivateModal h3{color:#171717}
+.deactivateModalIcon{
+  background:#fff1f0!important;
+  color:#b42318;
+  font-weight:900;
+  font-size:18px;
+}
+.deactivateModal>p{max-width:360px}
+.deactivateModal .dangerAction{
+  min-height:42px;
+  padding:0 15px;
+  border:1px solid #b42318;
+  border-radius:10px;
+  background:#b42318;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+.deactivateModal .dangerAction:disabled{opacity:.6;cursor:not-allowed}
