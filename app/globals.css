@@ -198,6 +198,15 @@ footer{padding:28px 20px 34px;text-align:center;color:#98a2b3;font-size:11px}
   .loadingOverlayBoot{animation:none}
 }
 
+/* My Bills payment QR */
+.minePaymentArea{display:flex;align-items:center;gap:18px;margin:14px 0 4px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fafaff}
+.mineQr{width:196px;min-width:196px;padding:8px;border-radius:14px;background:#fff;border:1px solid var(--line);display:grid;place-items:center}
+.mineQr canvas{display:block;max-width:100%;height:auto}
+.mineQrCopy{display:grid;gap:5px}
+.mineQrCopy strong{font:700 15px 'Space Grotesk';color:#101828}
+.mineQrCopy small{font-size:11px;line-height:1.55;color:var(--muted);word-break:break-word}
+@media(max-width:640px){.minePaymentArea{flex-direction:column;text-align:center}.mineQrCopy{justify-items:center}.mineQr{width:190px;min-width:190px}}
+
 /* Modals / loading / toast */
 .shareOverlay,.accountModalOverlay,.loadingOverlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(10,14,24,.48);backdrop-filter:blur(8px)}
 .shareModal,.accountModal,.loadingCard{background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.22)}
