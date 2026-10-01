@@ -199,13 +199,17 @@ footer{padding:28px 20px 34px;text-align:center;color:#98a2b3;font-size:11px}
 }
 
 /* My Bills payment QR */
-.minePaymentArea{display:flex;align-items:center;gap:18px;margin:14px 0 4px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fafaff}
-.mineQr{width:196px;min-width:196px;padding:8px;border-radius:14px;background:#fff;border:1px solid var(--line);display:grid;place-items:center}
-.mineQr canvas{display:block;max-width:100%;height:auto}
-.mineQrCopy{display:grid;gap:5px}
-.mineQrCopy strong{font:700 15px 'Space Grotesk';color:#101828}
-.mineQrCopy small{font-size:11px;line-height:1.55;color:var(--muted);word-break:break-word}
-@media(max-width:640px){.minePaymentArea{flex-direction:column;text-align:center}.mineQrCopy{justify-items:center}.mineQr{width:190px;min-width:190px}}
+.mineDetailGrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:22px;align-items:start}
+.minePayColumn{min-width:0}
+.minePaymentArea{display:flex;align-items:center;justify-content:center;gap:14px;margin:10px 0 2px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fafaff}
+.mineQr{width:148px;min-width:148px;padding:7px;border-radius:12px;background:#fff;border:1px solid var(--line);display:grid;place-items:center}
+.mineQr canvas{display:block;width:100%!important;height:auto!important}
+.mineQrCopy{display:grid;gap:5px;min-width:0}
+.mineQrCopy strong{font:700 14px 'Space Grotesk';color:#101828}
+.mineQrCopy small{font-size:10px;line-height:1.5;color:var(--muted);word-break:break-word}
+.copyPaymentLinkButton{font-size:11px!important;padding:8px 10px!important;width:max-content}
+@media(max-width:800px){.mineDetailGrid{grid-template-columns:1fr}.minePaymentArea{justify-content:flex-start}}
+@media(max-width:640px){.minePaymentArea{flex-direction:column;text-align:center}.mineQrCopy{justify-items:center}.mineQr{width:190px;min-width:190px}.copyPaymentLinkButton{width:100%}}
 
 /* Modals / loading / toast */
 .shareOverlay,.accountModalOverlay,.loadingOverlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(10,14,24,.48);backdrop-filter:blur(8px)}
