@@ -2258,3 +2258,49 @@ input,button{touch-action:manipulation}
     grid-template-columns:1fr;
   }
 }
+
+
+/* My Bills responsive layout override */
+.billDetailPanel > .mineDetailGrid{
+  display:grid !important;
+  grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr) !important;
+  align-items:start;
+  gap:28px;
+  width:100%;
+}
+.billDetailPanel > .mineDetailGrid > .mineItemsColumn,
+.billDetailPanel > .mineDetailGrid > .minePayColumn{
+  display:block;
+  min-width:0;
+  width:auto;
+}
+@media(max-width:1100px){
+  .billDetailPanel > .mineDetailGrid{
+    grid-template-columns:1fr !important;
+    gap:20px;
+  }
+  .billDetailPanel > .mineDetailGrid > .mineItemsColumn,
+  .billDetailPanel > .mineDetailGrid > .minePayColumn{
+    width:100%;
+  }
+}
+@media(max-width:640px){
+  .billDetailPanel > .mineDetailGrid{
+    grid-template-columns:1fr !important;
+    gap:18px;
+  }
+  .billDetailPanel > .mineDetailGrid .minePaymentArea{
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+  .billDetailPanel > .mineDetailGrid .mineQr{
+    width:180px;
+    min-width:180px;
+  }
+  .billDetailPanel > .mineDetailGrid .mineQrCopy{
+    width:100%;
+    max-width:100%;
+    justify-items:center;
+  }
+}
